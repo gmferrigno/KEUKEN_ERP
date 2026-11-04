@@ -8,6 +8,7 @@ import {
 } from '@/app/actions/auth.actions';
 import {
     canAccess as canAccessHelper,
+    canRenderRoute,
     evaluateAccess as evaluateAccessHelper,
     hasModule as hasModuleHelper,
     isLicenseLocked as isLicenseLockedHelper,
@@ -309,10 +310,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     localStorage.removeItem('companyLicense');
                 }
 
-                updateCompanyLicenseCookieAction(newLicense).catch((err) => {
-                    console.error('Error updating companyLicense cookie on refresh:', err);
-                });
-
                 const calculatedPermissions = Array.from(new Set([
                     ...(newProfileContext.rolesEffective || []),
                     ...(newProfileContext.scopesEffective || []),
@@ -320,14 +317,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 setEffectiveScopes(calculatedPermissions);
                 setPermissions(mapPermissionsToFrontend(calculatedPermissions));
 
-                updatePermissionsCookieAction(calculatedPermissions).catch((err) => {
-                    console.error('Error updating permissions cookie on refresh:', err);
-                });
+                // Await cookies before any navigation/soft-refresh so proxy sees the new company context.
+                await Promise.all([
+                    updateCompanyLicenseCookieAction(newLicense).catch((err) => {
+                        console.error('Error updating companyLicense cookie on refresh:', err);
+                    }),
+                    updatePermissionsCookieAction(calculatedPermissions).catch((err) => {
+                        console.error('Error updating permissions cookie on refresh:', err);
+                    }),
+                ]);
 
                 if (user) {
                     const updatedUser = { ...user, roles: newProfileContext.rolesEffective || [] };
                     setUser(updatedUser);
                     localStorage.setItem('userData', JSON.stringify(updatedUser));
+                }
+
+                // If the current route is no longer allowed for this company, leave the page.
+                if (!canRenderRoute(pathname, calculatedPermissions, newLicense ?? undefined)) {
+                    router.replace('/refused');
                 }
 
                 return newProfileContext;
@@ -371,16 +379,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
     }, [companyLicense, permissions, isSuperAdmin]);
 
+    const userRoles = useMemo(() => {
+        return profileContext?.rolesEffective || user?.roles || [];
+    }, [profileContext?.rolesEffective, user?.roles]);
+
+    const activeUserRole = useMemo(() => {
+        if (isSuperAdmin) return 'superadmin';
+        return userRoles[0] || null;
+    }, [isSuperAdmin, userRoles]);
+
     const accessValue = useMemo(() => ({
         companyLicense,
         isLicenseLocked,
         permissions,
         isSuperAdmin,
         effectiveScopes,
+        roles: userRoles,
+        userRole: activeUserRole,
         hasModule,
         canAccess,
         evaluateAccess,
-    }), [companyLicense, isLicenseLocked, permissions, isSuperAdmin, effectiveScopes, hasModule, canAccess, evaluateAccess]);
+    }), [companyLicense, isLicenseLocked, permissions, isSuperAdmin, effectiveScopes, userRoles, activeUserRole, hasModule, canAccess, evaluateAccess]);
 
     return (
         <AuthContext.Provider value={{
