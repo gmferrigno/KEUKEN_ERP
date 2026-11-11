@@ -2,7 +2,7 @@ import "@/lib/erp-api-client.setup";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { DxConfigProvider } from "@/contexts/DxConfigProvider";
 import { LocaleProvider } from "@/contexts/LocaleContext";
-import { BrandProvider, getBrandConfig } from "@repo/ui/brand";
+import { BrandProvider, getBrandConfig, getDefaultDeployConfig } from "@repo/ui/brand";
 import type { Metadata } from "next";
 import './globals.css';
 
@@ -27,6 +27,9 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Resolve on the server so DEPLOY_ENV / APP_PORT work without NEXT_PUBLIC_*.
+  const deploy = getDefaultDeployConfig();
+
   return (
     <html lang="es">
       <body
@@ -35,7 +38,7 @@ export default function RootLayout({
         <DxConfigProvider>
           <LocaleProvider>
             <AuthProvider>
-              <BrandProvider>
+              <BrandProvider deploy={deploy}>
                 {children}
               </BrandProvider>
             </AuthProvider>
