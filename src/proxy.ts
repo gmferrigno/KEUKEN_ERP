@@ -16,6 +16,8 @@ function matchesPath(pathname: string, prefixes: string[]): boolean {
 export function proxy(request: NextRequest) {
     const { pathname } = request.nextUrl;
     const token = request.cookies.get('authToken')?.value;
+    const mustChangePassword =
+        request.cookies.get('mustChangePassword')?.value === '1';
 
     const isPublicPath = matchesPath(pathname, publicPaths);
     const isAccessExempt = matchesPath(pathname, accessExemptPaths);
@@ -24,7 +26,12 @@ export function proxy(request: NextRequest) {
         return NextResponse.redirect(new URL('/login', request.url));
     }
 
-    if (token && isPublicPath) {
+    // Gate first-login / forced password change: stay on /login until flag is cleared.
+    if (token && mustChangePassword && !isPublicPath) {
+        return NextResponse.redirect(new URL('/login', request.url));
+    }
+
+    if (token && isPublicPath && !mustChangePassword) {
         return NextResponse.redirect(new URL('/', request.url));
     }
 

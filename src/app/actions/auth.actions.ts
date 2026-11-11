@@ -4,6 +4,15 @@ import { authService } from '@repo/erp-services/userContext/auth.service';
 import { TFMeLicenseField } from '@repo/api-contracts/erp';
 import { cookies, headers } from 'next/headers';
 
+const DEFAULT_SESSION_MAX_AGE_SECONDS = 60 * 60;
+
+function resolveSessionMaxAgeSeconds(expiresIn?: number): number {
+    if (typeof expiresIn === 'number' && Number.isFinite(expiresIn) && expiresIn > 0) {
+        return Math.floor(expiresIn);
+    }
+    return DEFAULT_SESSION_MAX_AGE_SECONDS;
+}
+
 async function getIsSecure(): Promise<boolean> {
     const headersList = await headers();
     const xForwardedProto = headersList.get('x-forwarded-proto');
@@ -30,24 +39,45 @@ export async function loginAction(email: string, password: string) {
     try {
         const authData = await authService.login(email, password);
 
-        // Obtener la primera compañía por defecto si existe
-        const defaultCompanyId = authData.user?.companyIds?.[0];
-
-        // Obtener el contexto de perfil del usuario utilizando el token devuelto y la compañía por defecto
-        const profileData = await authService.getProfileContext(authData.accessToken, defaultCompanyId);
-
         const cookieStore = await cookies();
         const isSecure = await getIsSecure();
+        const sessionMaxAge = resolveSessionMaxAgeSeconds(authData.expiresIn);
 
         cookieStore.set('authToken', authData.accessToken, {
             httpOnly: true,
             secure: isSecure,
             sameSite: 'lax',
             path: '/',
-            maxAge: 60 * 60 * 24 * 7,
+            maxAge: sessionMaxAge,
         });
 
-        // Combinar roles y scopes de la empresa operativa (roles_effective + scopes_effective)
+        if (authData.mustChangePassword) {
+            cookieStore.set('mustChangePassword', '1', {
+                httpOnly: true,
+                secure: isSecure,
+                sameSite: 'lax',
+                path: '/',
+                maxAge: sessionMaxAge,
+            });
+
+            return {
+                success: true,
+                mustChangePassword: true,
+                user: {
+                    ...authData.user,
+                    active: true,
+                    roles: [] as string[],
+                },
+                token: authData.accessToken,
+                expiresIn: sessionMaxAge,
+            };
+        }
+
+        cookieStore.delete('mustChangePassword');
+
+        const defaultCompanyId = authData.user?.companyIds?.[0];
+        const profileData = await authService.getProfileContext(authData.accessToken, defaultCompanyId);
+
         const permissionsArray = Array.from(new Set([
             ...(profileData.rolesEffective || []),
             ...(profileData.scopesEffective || []),
@@ -58,17 +88,16 @@ export async function loginAction(email: string, password: string) {
             secure: isSecure,
             sameSite: 'lax',
             path: '/',
-            maxAge: 60 * 60 * 24 * 7,
+            maxAge: sessionMaxAge,
         });
 
-        // Guardar licencia de la compañía operativa en cookie para SSR y middleware
         if (profileData.license) {
             cookieStore.set('companyLicense', encodeURIComponent(JSON.stringify(profileData.license)), {
                 httpOnly: false,
                 secure: isSecure,
                 sameSite: 'lax',
                 path: '/',
-                maxAge: 60 * 60 * 24 * 7,
+                maxAge: sessionMaxAge,
             });
         }
 
@@ -79,13 +108,23 @@ export async function loginAction(email: string, password: string) {
             roles: permissionsArray,
         };
 
-        return { success: true, user: userWithRoles, token: authData.accessToken, profileContext: profileData };
+        return {
+            success: true,
+            mustChangePassword: false,
+            user: userWithRoles,
+            token: authData.accessToken,
+            expiresIn: sessionMaxAge,
+            profileContext: profileData,
+        };
     } catch (error: any) {
         return { success: false, error: error.message || 'Error al iniciar sesión' };
     }
 }
 
-export async function updatePermissionsCookieAction(permissions: string[]) {
+export async function updatePermissionsCookieAction(
+    permissions: string[],
+    maxAgeSeconds: number = DEFAULT_SESSION_MAX_AGE_SECONDS,
+) {
     try {
         const cookieStore = await cookies();
         const isSecure = await getIsSecure();
@@ -94,7 +133,7 @@ export async function updatePermissionsCookieAction(permissions: string[]) {
             secure: isSecure,
             sameSite: 'lax',
             path: '/',
-            maxAge: 60 * 60 * 24 * 7,
+            maxAge: resolveSessionMaxAgeSeconds(maxAgeSeconds),
         });
         return { success: true };
     } catch (error: any) {
@@ -103,7 +142,10 @@ export async function updatePermissionsCookieAction(permissions: string[]) {
     }
 }
 
-export async function updateCompanyLicenseCookieAction(license: TFMeLicenseField | undefined) {
+export async function updateCompanyLicenseCookieAction(
+    license: TFMeLicenseField | undefined,
+    maxAgeSeconds: number = DEFAULT_SESSION_MAX_AGE_SECONDS,
+) {
     try {
         const cookieStore = await cookies();
         const isSecure = await getIsSecure();
@@ -113,7 +155,7 @@ export async function updateCompanyLicenseCookieAction(license: TFMeLicenseField
                 secure: isSecure,
                 sameSite: 'lax',
                 path: '/',
-                maxAge: 60 * 60 * 24 * 7,
+                maxAge: resolveSessionMaxAgeSeconds(maxAgeSeconds),
             });
         } else {
             cookieStore.delete('companyLicense');
@@ -125,9 +167,30 @@ export async function updateCompanyLicenseCookieAction(license: TFMeLicenseField
     }
 }
 
+export async function setMustChangePasswordCookieAction(
+    required: boolean,
+    maxAgeSeconds: number = DEFAULT_SESSION_MAX_AGE_SECONDS,
+) {
+    const cookieStore = await cookies();
+    const isSecure = await getIsSecure();
+    if (required) {
+        cookieStore.set('mustChangePassword', '1', {
+            httpOnly: true,
+            secure: isSecure,
+            sameSite: 'lax',
+            path: '/',
+            maxAge: resolveSessionMaxAgeSeconds(maxAgeSeconds),
+        });
+    } else {
+        cookieStore.delete('mustChangePassword');
+    }
+    return { success: true };
+}
+
 export async function logoutAction() {
     const cookieStore = await cookies();
     cookieStore.delete('authToken');
     cookieStore.delete('permissions');
     cookieStore.delete('companyLicense');
+    cookieStore.delete('mustChangePassword');
 }

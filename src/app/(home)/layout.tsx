@@ -9,7 +9,6 @@ import { getAppRoutes } from '../lib/routes/getRoutes';
 import Footer from './components/layout/customFooter';
 import Header from './components/layout/customHeader';
 import Sidebar from './components/layout/navSidebar';
-import { APP_VERSION } from '../lib/constants/app.constants';
 
 export default function HomeLayout({
   children,
