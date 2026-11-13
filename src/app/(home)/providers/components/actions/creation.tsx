@@ -155,7 +155,8 @@ const ProviderCreationModal = ({ isOpen, onClose, onSuccess, initialData }: Prov
                     stateCode: formData.stateCode,
                     taxData: formData.taxData,
                     cityId: formData.cityId,
-                    email: formData.email
+                    email: formData.email,
+                    taxId: formData.taxId,
                 };
                 await providerService.update(initialData.id, updateData, token);
                 notify("Proveedor actualizado exitosamente", "success", 3000);
@@ -249,7 +250,6 @@ const ProviderCreationModal = ({ isOpen, onClose, onSuccess, initialData }: Prov
                             editorOptions={{
                                 placeholder: "Ej: 30-XXXXXXXX-X",
                                 stylingMode: 'filled',
-                                readOnly: !!initialData
                             }}
                             validationRules={[{ type: 'required', message: "El Tax ID es obligatorio" }]}
                         />
