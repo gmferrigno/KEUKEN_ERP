@@ -8,6 +8,7 @@ import DevExtremeIntlBridge from '../lib/locale/localeHandler';
 import { getAppRoutes } from '../lib/routes/getRoutes';
 import Footer from './components/layout/customFooter';
 import Header from './components/layout/customHeader';
+import LicenseGraceStatusClient from './components/layout/licenseGraceStatusClient';
 import Sidebar from './components/layout/navSidebar';
 
 export default function HomeLayout({
@@ -42,7 +43,9 @@ export default function HomeLayout({
                     {/* Main Content */}
                     <Item ratio={1}>
                       <div className="h-full w-full overflow-y-auto flex flex-col relative bg-primary-950/80 backdrop-blur-sm p-4">
-                        {children}
+                        <LicenseGraceStatusClient>
+                          {children}
+                        </LicenseGraceStatusClient>
                       </div>
                     </Item>
                     {/* Footer */}

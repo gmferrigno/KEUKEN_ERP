@@ -23,9 +23,10 @@ export default function CustomHeader({ routes }: HeaderProps) {
     ...getCustomData(route.routeKey),
   }));
 
+  const hasMultipleCompanies = companies.length > 1;
+
   const accountMenuItems = [
     { id: 'profile', text: 'Perfil', icon: 'user', hint: 'Ver y editar mi perfil' },
-    { id: 'settings', text: 'Configuración', icon: 'preferences', hint: 'Configuración de la cuenta' },
     { id: 'logout', text: 'Cerrar sesión', icon: 'export', hint: 'Cerrar sesión de forma segura' },
   ];
 
@@ -41,9 +42,6 @@ export default function CustomHeader({ routes }: HeaderProps) {
     switch (item.id) {
       case 'profile':
         router.push('/users/me');
-        break;
-      case 'settings':
-        console.log('Navigate to settings');
         break;
       case 'logout':
         logout();
@@ -83,35 +81,42 @@ export default function CustomHeader({ routes }: HeaderProps) {
 
   return (
     <header className="w-full h-14 bg-primary-500 border-b border-main/10 flex items-center justify-between px-4 z-20 sticky top-0 left-0">
-      {/* Logo Section */}
       <div className="flex items-center gap-3 h-full">
-        {/* Breadcrumb */}
         <div className="ml-4">
           <Breadcrumb routes={customRoutes} />
         </div>
       </div>
-      {/* Account Menu Section */}
       <div className="flex items-center gap-3">
         <ThemeSwitcher />
-        <DropDownButton
-          text={currentCompany?.name || 'Empresa'}
-          hint={currentCompany?.name || 'Empresa'}
-          icon="home"
-          items={companyItems}
-          onItemClick={handleCompanyClick}
-          stylingMode="text"
-          keyExpr="id"
-          displayExpr="text"
-          useItemTextAsTitle={false}
-          itemRender={renderItemWithHint}
-          dropDownOptions={{
-            width: 240,
-            maxHeight: 180,
-            wrapperAttr: {
-              class: "popup-menu-container company-dropdown-popup"
-            }
-          }}
-        />
+        {hasMultipleCompanies ? (
+          <DropDownButton
+            text={currentCompany?.name || 'Empresa'}
+            hint={currentCompany?.name || 'Empresa'}
+            icon="home"
+            items={companyItems}
+            onItemClick={handleCompanyClick}
+            stylingMode="text"
+            keyExpr="id"
+            displayExpr="text"
+            useItemTextAsTitle={false}
+            itemRender={renderItemWithHint}
+            dropDownOptions={{
+              width: 240,
+              maxHeight: 180,
+              wrapperAttr: {
+                class: 'popup-menu-container company-dropdown-popup header-dropdown-offset',
+              },
+            }}
+          />
+        ) : (
+          <div
+            className="inline-flex items-center gap-1.5 px-2 py-1 text-sm text-main/90 select-none"
+            title={currentCompany?.name || 'Empresa'}
+          >
+            <i className="dx-icon-home" />
+            <span className="truncate max-w-[180px]">{currentCompany?.name || 'Empresa'}</span>
+          </div>
+        )}
         <DropDownButton
           text={loadingBranches ? 'Cargando sucursales...' : (currentBranch?.name || 'Sucursal')}
           hint={currentBranch?.name || 'Sucursal'}
@@ -128,8 +133,8 @@ export default function CustomHeader({ routes }: HeaderProps) {
             width: 240,
             maxHeight: 180,
             wrapperAttr: {
-              class: "popup-menu-container company-dropdown-popup"
-            }
+              class: 'popup-menu-container company-dropdown-popup',
+            },
           }}
         />
         <DropDownButton
@@ -145,8 +150,8 @@ export default function CustomHeader({ routes }: HeaderProps) {
           dropDownOptions={{
             minWidth: 180,
             wrapperAttr: {
-              class: "popup-menu-container"
-            }
+              class: 'popup-menu-container header-dropdown-offset',
+            },
           }}
         />
       </div>

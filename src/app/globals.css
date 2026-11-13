@@ -15,3 +15,8 @@
 .company-dropdown-popup .dx-list {
   max-height: 180px !important;
 }
+
+/* Separación del invocador sin pisar position/`of` de DevExtreme */
+.header-dropdown-offset .dx-overlay-content {
+  margin-top: 12px;
+}
