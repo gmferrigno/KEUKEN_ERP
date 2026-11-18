@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { usersService } from '@repo/erp-services/users.service';
 import { TUserRole } from '@repo/api-contracts/erp';
-import { DEFAULT_ROLE_OPTIONS } from '@/app/lib/constants/users.constants';
+import { getDefaultRoleOptions } from '@/app/lib/constants/users.constants';
 
 interface UserModalProps {
     selectedUser: any;
@@ -16,14 +16,16 @@ interface UserModalProps {
 }
 
 const UserModal = ({ selectedUser, mode = 'view', onSave, onCancel, onEditPermissions }: UserModalProps) => {
-    const { token, currentCompany } = useAuth();
+    const { token, currentCompany, isSuperAdmin } = useAuth();
     const formRef = useRef<any>(null);
     const [formData, setFormData] = useState<any>(() => ({
         role: 'user',
         ...(selectedUser ?? {})
     }));
     const [loading, setLoading] = useState(false);
-    const [roleOptions, setRoleOptions] = useState<{ id: string; label: string }[]>(DEFAULT_ROLE_OPTIONS);
+    const [roleOptions, setRoleOptions] = useState<{ id: string; label: string }[]>(() =>
+        getDefaultRoleOptions(false).map((r) => ({ id: String(r.id), label: r.label })),
+    );
 
     useEffect(() => {
         setFormData({
@@ -34,12 +36,19 @@ const UserModal = ({ selectedUser, mode = 'view', onSave, onCancel, onEditPermis
 
     useEffect(() => {
         if (mode === 'create' && token) {
+            const fallback = getDefaultRoleOptions(isSuperAdmin).map((r) => ({
+                id: String(r.id),
+                label: r.label,
+            }));
+            setRoleOptions(fallback);
+
             usersService.getRolesOptions(token)
                 .then(res => {
                     if (res?.items && res.items.length > 0) {
                         const formatted = res.items.map(item => {
                             const code = (item.code || item.id) as TUserRole;
-                            const defaultMatch = DEFAULT_ROLE_OPTIONS.find(d => d.id === code);
+                            const defaultMatch = fallback.find(d => d.id === code)
+                                || getDefaultRoleOptions(true).find(d => d.id === code);
                             return {
                                 id: code,
                                 label: defaultMatch ? defaultMatch.label : (item.label || code),
@@ -52,7 +61,7 @@ const UserModal = ({ selectedUser, mode = 'view', onSave, onCancel, onEditPermis
                     console.warn('No se pudieron obtener roles para creación de usuario:', err);
                 });
         }
-    }, [mode, token]);
+    }, [mode, token, isSuperAdmin]);
 
     const handleSaveClick = async () => {
         const formInstance = formRef.current?.instance();

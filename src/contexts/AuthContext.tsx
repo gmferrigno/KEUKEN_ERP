@@ -23,8 +23,14 @@ import {
     AccessProvider,
 } from '@repo/access';
 import { authService } from '@repo/erp-services/userContext/auth.service';
-import { configureErpApiClient } from '@repo/erp-api-client';
-import { ICompany, IFProfileContext, IFUser } from "@repo/api-contracts/erp";
+import { ApiError, configureErpApiClient } from '@repo/erp-api-client';
+import {
+    ICompany,
+    IFProfileContext,
+    IFUser,
+    PASSWORD_CHANGE_REQUIRED_DETAIL,
+    mapMeCompanyToSessionCompany,
+} from "@repo/api-contracts/erp";
 import { companiesService } from '@repo/erp-services/userContext/companies.service';
 import { getToken } from '@/lib/utils/token.helper';
 import { usePathname, useRouter } from 'next/navigation';
@@ -52,6 +58,53 @@ function buildEffectiveScopes(
         ...(profile.rolesEffective || []),
         ...(profile.scopesEffective || []),
     ]));
+}
+
+function companiesFromProfile(profile?: IFProfileContext | null): ICompany[] {
+    if (!profile?.companies?.length) return [];
+    return profile.companies.map(mapMeCompanyToSessionCompany);
+}
+
+/** Prefer `/me.companies`; SA sin membresía (lista vacía) → `GET /common/companies`. */
+async function loadSessionCompanies(
+    authToken: string,
+    authUser: { companyIds?: string[] } | null | undefined,
+    profileHint?: IFProfileContext | null,
+): Promise<ICompany[]> {
+    const fromMe = companiesFromProfile(profileHint);
+    if (fromMe.length > 0) return fromMe;
+
+    const companiesResponse = await companiesService.getAll({ limit: 500, offset: 0 }, authToken);
+    const allCompanies = (companiesResponse.items || []) as unknown as ICompany[];
+    const ownedCompanyIds = new Set<string>(
+        (authUser?.companyIds || profileHint?.companyIds || []).map(String),
+    );
+    if (ownedCompanyIds.size > 0) {
+        return allCompanies.filter((c) => ownedCompanyIds.has(String(c.id)));
+    }
+    return allCompanies;
+}
+
+function pickSessionCompany(
+    companiesList: ICompany[],
+    options?: { previousId?: string | null; operationalId?: string | null },
+): ICompany | null {
+    if (!companiesList.length) return null;
+    if (options?.previousId) {
+        const previous = companiesList.find((c) => String(c.id) === String(options.previousId));
+        if (previous) return previous;
+    }
+    if (options?.operationalId) {
+        const operational = companiesList.find((c) => String(c.id) === String(options.operationalId));
+        if (operational) return operational;
+    }
+    return companiesList[0];
+}
+
+function isPasswordChangeRequiredError(err: unknown): boolean {
+    if (!(err instanceof ApiError) || err.status !== 403) return false;
+    const detail = (err.rawDetails as { detail?: unknown } | null)?.detail;
+    return detail === PASSWORD_CHANGE_REQUIRED_DETAIL || err.code === PASSWORD_CHANGE_REQUIRED_DETAIL;
 }
 
 interface AuthContextType {
@@ -132,16 +185,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
                 let calculatedPermissions: string[] = parsedUser.roles || [];
                 let restoredLicense: TFMeLicenseField | null = null;
+                let parsedProfileContext: IFProfileContext | null = null;
 
                 if (savedProfileContext) {
                     try {
-                        const parsedProfileContext: IFProfileContext = JSON.parse(savedProfileContext);
-                        setProfileContext(parsedProfileContext);
-                        calculatedPermissions = buildEffectiveScopes(parsedProfileContext, parsedUser.roles || []);
+                        parsedProfileContext = JSON.parse(savedProfileContext);
+                        if (parsedProfileContext) {
+                            setProfileContext(parsedProfileContext);
+                            calculatedPermissions = buildEffectiveScopes(parsedProfileContext, parsedUser.roles || []);
 
-                        if (parsedProfileContext.license && !savedCompanyLicense) {
-                            restoredLicense = parsedProfileContext.license;
-                            setCompanyLicense(parsedProfileContext.license);
+                            if (parsedProfileContext.license && !savedCompanyLicense) {
+                                restoredLicense = parsedProfileContext.license;
+                                setCompanyLicense(parsedProfileContext.license);
+                            }
                         }
                     } catch (e) {
                         console.error('Error parsing stored profileContext:', e);
@@ -157,52 +213,139 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     }
                 }
 
+                let parsedCompanies: ICompany[] = [];
+                if (savedCompanies) {
+                    try {
+                        parsedCompanies = JSON.parse(savedCompanies);
+                        const ownedCompanyIds = new Set<string>((parsedUser.companyIds || []).map(String));
+                        if (ownedCompanyIds.size > 0) {
+                            parsedCompanies = parsedCompanies.filter((c) => ownedCompanyIds.has(String(c.id)));
+                        }
+                    } catch (e) {
+                        console.error('Error parsing stored companies:', e);
+                    }
+                }
+
+                const fromMe = companiesFromProfile(parsedProfileContext);
+                if (fromMe.length > 0) {
+                    parsedCompanies = fromMe;
+                }
+
+                let activeCompany: ICompany | null = null;
+                const savedPreviousCompanyId = localStorage.getItem('previousCompanyId');
+
+                if (savedCurrentCompany) {
+                    try {
+                        const parsed = JSON.parse(savedCurrentCompany);
+                        activeCompany = parsedCompanies.find((c) => String(c.id) === String(parsed.id)) || null;
+                    } catch (e) {
+                        console.error('Error parsing stored currentCompany:', e);
+                    }
+                }
+
+                if (!activeCompany) {
+                    activeCompany = pickSessionCompany(parsedCompanies, {
+                        previousId: savedPreviousCompanyId,
+                        operationalId: parsedProfileContext?.operationalCompanyId,
+                    });
+                }
+
+                if (activeCompany) {
+                    setCurrentCompany(activeCompany);
+                    localStorage.setItem('currentCompany', JSON.stringify(activeCompany));
+                    localStorage.setItem('previousCompanyId', String(activeCompany.id));
+                }
+                setCompanies(parsedCompanies);
+                localStorage.setItem('companies', JSON.stringify(parsedCompanies));
+
+                // Re-hidratar con /auth/me antes de liberar menús/scopes (evita LS stale).
+                if (activeCompany?.id) {
+                    try {
+                        const freshProfile = await authService.getProfileContext(
+                            storedToken,
+                            activeCompany.id,
+                        );
+                        if (freshProfile.mustChangePassword) {
+                            localStorage.setItem(MUST_CHANGE_PASSWORD_KEY, '1');
+                            setMustChangePassword(true);
+                            setIsAuthenticated(false);
+                            await setMustChangePasswordCookieAction(true).catch((err) => {
+                                console.error('Error setting mustChangePassword cookie on restore:', err);
+                            });
+                            setLoading(false);
+                            return;
+                        }
+
+                        parsedProfileContext = freshProfile;
+                        setProfileContext(freshProfile);
+                        localStorage.setItem('profileContext', JSON.stringify(freshProfile));
+
+                        const meCompanies = companiesFromProfile(freshProfile);
+                        if (meCompanies.length > 0) {
+                            parsedCompanies = meCompanies;
+                            setCompanies(meCompanies);
+                            localStorage.setItem('companies', JSON.stringify(meCompanies));
+                            const syncedActive =
+                                meCompanies.find((c) => String(c.id) === String(activeCompany?.id)) ||
+                                pickSessionCompany(meCompanies, {
+                                    previousId: activeCompany.id,
+                                    operationalId: freshProfile.operationalCompanyId,
+                                });
+                            if (syncedActive) {
+                                activeCompany = {
+                                    ...syncedActive,
+                                    isMdm: freshProfile.isMdm,
+                                };
+                                setCurrentCompany(activeCompany);
+                                localStorage.setItem('currentCompany', JSON.stringify(activeCompany));
+                                localStorage.setItem('previousCompanyId', String(activeCompany.id));
+                            }
+                        } else if (activeCompany) {
+                            activeCompany = { ...activeCompany, isMdm: freshProfile.isMdm };
+                            setCurrentCompany(activeCompany);
+                            localStorage.setItem('currentCompany', JSON.stringify(activeCompany));
+                        }
+
+                        calculatedPermissions = buildEffectiveScopes(freshProfile, parsedUser.roles || []);
+                        restoredLicense = freshProfile.license || null;
+                        setCompanyLicense(restoredLicense);
+                        if (restoredLicense) {
+                            localStorage.setItem('companyLicense', JSON.stringify(restoredLicense));
+                        } else {
+                            localStorage.removeItem('companyLicense');
+                        }
+
+                        const updatedUser = {
+                            ...parsedUser,
+                            roles: freshProfile.rolesEffective || parsedUser.roles || [],
+                        };
+                        setUser(updatedUser);
+                        localStorage.setItem('userData', JSON.stringify(updatedUser));
+                    } catch (err) {
+                        if (isPasswordChangeRequiredError(err)) {
+                            localStorage.setItem(MUST_CHANGE_PASSWORD_KEY, '1');
+                            setMustChangePassword(true);
+                            setIsAuthenticated(false);
+                            await setMustChangePasswordCookieAction(true).catch((cookieErr) => {
+                                console.error('Error setting mustChangePassword cookie on restore:', cookieErr);
+                            });
+                            setLoading(false);
+                            return;
+                        }
+                        console.error('Error refreshing profile context on session restore:', err);
+                    }
+                }
+
                 setEffectiveScopes(calculatedPermissions);
                 setPermissions(mapPermissionsToFrontend(calculatedPermissions));
 
                 // Proxy lee cookies, no localStorage: re-sincronizar antes de liberar loading.
-                // Sin esto el sidebar (React) puede mostrar rutas que el proxy redirige a /refused.
                 await Promise.all([
                     updatePermissionsCookieAction(calculatedPermissions),
                     updateCompanyLicenseCookieAction(restoredLicense ?? undefined),
                 ]).catch((err) => {
                     console.error('Error syncing access cookies on session restore:', err);
                 });
-
-                if (savedCompanies) {
-                    let parsedCompanies: ICompany[] = JSON.parse(savedCompanies);
-                    const ownedCompanyIds = new Set<string>((parsedUser.companyIds || []).map(String));
-                    if (ownedCompanyIds.size > 0) {
-                        parsedCompanies = parsedCompanies.filter(c => ownedCompanyIds.has(String(c.id)));
-                    }
-                    setCompanies(parsedCompanies);
-
-                    let activeCompany: ICompany | null = null;
-                    const savedPreviousCompanyId = localStorage.getItem('previousCompanyId');
-
-                    if (savedCurrentCompany) {
-                        try {
-                            const parsed = JSON.parse(savedCurrentCompany);
-                            activeCompany = parsedCompanies.find(c => String(c.id) === String(parsed.id)) || null;
-                        } catch (e) {
-                            console.error('Error parsing stored currentCompany:', e);
-                        }
-                    }
-
-                    if (!activeCompany && savedPreviousCompanyId) {
-                        activeCompany = parsedCompanies.find(c => String(c.id) === String(savedPreviousCompanyId)) || null;
-                    }
-
-                    if (!activeCompany && parsedCompanies.length > 0) {
-                        activeCompany = parsedCompanies[0];
-                    }
-
-                    if (activeCompany) {
-                        setCurrentCompany(activeCompany);
-                        localStorage.setItem('currentCompany', JSON.stringify(activeCompany));
-                        localStorage.setItem('previousCompanyId', String(activeCompany.id));
-                    }
-                }
             }
             setLoading(false);
         };
@@ -235,51 +378,50 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         let companiesList: ICompany[] = [];
         let selectedCompany: ICompany | null = null;
+        let fetchedProfileContext: IFProfileContext | null = initialProfileContext || null;
 
         try {
-            const companiesResponse = await companiesService.getAll({ limit: 500, offset: 0 }, authToken);
-            const allCompanies = (companiesResponse.items || []) as unknown as ICompany[];
-
-            // Filtrar para listar ÚNICAMENTE las empresas que el usuario posee
-            const ownedCompanyIds = new Set<string>(
-                (authUser.companyIds || initialProfileContext?.companyIds || []).map(String)
-            );
-
-            if (ownedCompanyIds.size > 0) {
-                companiesList = allCompanies.filter(c => ownedCompanyIds.has(String(c.id)));
-            } else {
-                companiesList = allCompanies;
-            }
-
-            setCompanies(companiesList);
-            localStorage.setItem('companies', JSON.stringify(companiesList));
-
-            // Si existe previousCompanyId y está en las empresas del usuario, se carga por defecto
-            const savedPreviousCompanyId = localStorage.getItem('previousCompanyId');
-            const previousCompany = savedPreviousCompanyId
-                ? companiesList.find(c => String(c.id) === String(savedPreviousCompanyId))
-                : null;
-
-            if (previousCompany) {
-                selectedCompany = previousCompany;
-            } else if (companiesList.length > 0) {
-                selectedCompany = companiesList[0];
-            }
+            companiesList = await loadSessionCompanies(authToken, authUser, initialProfileContext);
+            selectedCompany = pickSessionCompany(companiesList, {
+                previousId: localStorage.getItem('previousCompanyId'),
+                operationalId: initialProfileContext?.operationalCompanyId,
+            });
 
             if (selectedCompany) {
                 setCurrentCompany(selectedCompany);
                 localStorage.setItem('currentCompany', JSON.stringify(selectedCompany));
                 localStorage.setItem('previousCompanyId', String(selectedCompany.id));
             }
+            setCompanies(companiesList);
+            localStorage.setItem('companies', JSON.stringify(companiesList));
         } catch (err) {
-            console.error('Error fetching companies on login:', err);
+            console.error('Error resolving session companies on login:', err);
         }
-
-        let fetchedProfileContext: IFProfileContext | null = initialProfileContext || null;
 
         if (selectedCompany?.id) {
             try {
                 fetchedProfileContext = await authService.getProfileContext(authToken, selectedCompany.id);
+                const meCompanies = companiesFromProfile(fetchedProfileContext);
+                if (meCompanies.length > 0) {
+                    companiesList = meCompanies;
+                    setCompanies(meCompanies);
+                    localStorage.setItem('companies', JSON.stringify(meCompanies));
+                    selectedCompany =
+                        meCompanies.find((c) => String(c.id) === String(selectedCompany?.id)) ||
+                        pickSessionCompany(meCompanies, {
+                            previousId: selectedCompany.id,
+                            operationalId: fetchedProfileContext.operationalCompanyId,
+                        });
+                }
+                if (selectedCompany) {
+                    selectedCompany = {
+                        ...selectedCompany,
+                        isMdm: fetchedProfileContext.isMdm,
+                    };
+                    setCurrentCompany(selectedCompany);
+                    localStorage.setItem('currentCompany', JSON.stringify(selectedCompany));
+                    localStorage.setItem('previousCompanyId', String(selectedCompany.id));
+                }
             } catch (err) {
                 console.error('Error fetching profile context for operational company:', err);
             }
@@ -302,7 +444,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setPermissions(mapPermissionsToFrontend(calculatedPermissions));
 
             // loginAction cookiea la 1ª company del backend; acá puede elegirse otra.
-            // Aguardar cookies antes de navegar para que el proxy vea scopes/licencia correctos.
             const remainingMaxAge = getRemainingSessionMaxAgeSeconds();
             await Promise.all([
                 updateCompanyLicenseCookieAction(activeLicense ?? undefined, remainingMaxAge),
@@ -494,6 +635,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
                 setEffectiveScopes(calculatedPermissions);
                 setPermissions(mapPermissionsToFrontend(calculatedPermissions));
+
+                const meCompanies = companiesFromProfile(newProfileContext);
+                if (meCompanies.length > 0) {
+                    const withMdm = meCompanies.map((company) =>
+                        String(company.id) === String(targetCompanyId)
+                            ? { ...company, isMdm: newProfileContext.isMdm }
+                            : company,
+                    );
+                    setCompanies(withMdm);
+                    localStorage.setItem('companies', JSON.stringify(withMdm));
+                    setCurrentCompany((prev) => {
+                        const synced =
+                            withMdm.find((c) => String(c.id) === String(targetCompanyId)) ||
+                            withMdm.find((c) => String(c.id) === String(prev?.id)) ||
+                            prev;
+                        if (!synced) return prev;
+                        localStorage.setItem('currentCompany', JSON.stringify(synced));
+                        return synced;
+                    });
+                } else {
+                    setCurrentCompany((prev) => {
+                        if (!prev || String(prev.id) !== String(targetCompanyId)) return prev;
+                        const synced = { ...prev, isMdm: newProfileContext.isMdm };
+                        localStorage.setItem('currentCompany', JSON.stringify(synced));
+                        return synced;
+                    });
+                    setCompanies((prev) => {
+                        const next = prev.map((company) =>
+                            String(company.id) === String(targetCompanyId)
+                                ? { ...company, isMdm: newProfileContext.isMdm }
+                                : company,
+                        );
+                        localStorage.setItem('companies', JSON.stringify(next));
+                        return next;
+                    });
+                }
 
                 if (user) {
                     const updatedUser = { ...user, roles: newProfileContext.rolesEffective || [] };
