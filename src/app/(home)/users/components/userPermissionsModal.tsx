@@ -9,7 +9,10 @@ import { Popup, Position } from "devextreme-react/popup";
 import { SelectBox } from "devextreme-react/select-box";
 import notify from "devextreme/ui/notify";
 import PermissionsSelector from "../../system/keysManager/components/permissionsSelector";
-import { DEFAULT_ROLE_OPTIONS } from "@/app/lib/constants/users.constants";
+import {
+    getDefaultRoleOptions,
+    mapUsersAbmError,
+} from "@/app/lib/constants/users.constants";
 
 interface UserPermissionsModalProps {
     isOpen: boolean;
@@ -20,9 +23,11 @@ interface UserPermissionsModalProps {
 }
 
 export default function UserPermissionsModal({ isOpen, onClose, onHidden, user, onSuccess }: UserPermissionsModalProps) {
-    const { token, currentCompany } = useAuth();
+    const { token, currentCompany, isSuperAdmin } = useAuth();
     const [selectedRole, setSelectedRole] = useState<string>('user');
-    const [rolesOptions, setRolesOptions] = useState<{ id: string; label: string }[]>(DEFAULT_ROLE_OPTIONS);
+    const [rolesOptions, setRolesOptions] = useState<{ id: string; label: string }[]>(
+        () => getDefaultRoleOptions(false).map((r) => ({ id: String(r.id), label: r.label })),
+    );
 
     // Initial role based on active company's role assignment
     useEffect(() => {
@@ -35,15 +40,22 @@ export default function UserPermissionsModal({ isOpen, onClose, onHidden, user, 
         }
     }, [isOpen, user, currentCompany?.id]);
 
-    // Load available roles from backend options, fall back to default list
+    // Load available roles from backend options, fall back to default list (sin SA/dbadmin si no es SA)
     useEffect(() => {
         if (isOpen && token) {
+            const fallback = getDefaultRoleOptions(isSuperAdmin).map((r) => ({
+                id: String(r.id),
+                label: r.label,
+            }));
+            setRolesOptions(fallback);
+
             usersService.getRolesOptions(token)
                 .then(res => {
                     if (res?.items && res.items.length > 0) {
                         const formatted = res.items.map(item => {
                             const code = (item.code || item.id) as TUserRole;
-                            const defaultMatch = DEFAULT_ROLE_OPTIONS.find(d => d.id === code);
+                            const defaultMatch = fallback.find(d => d.id === code)
+                                || getDefaultRoleOptions(true).find(d => d.id === code);
                             return {
                                 id: code,
                                 label: defaultMatch ? defaultMatch.label : (item.label || code),
@@ -56,7 +68,7 @@ export default function UserPermissionsModal({ isOpen, onClose, onHidden, user, 
                     console.warn('No se pudieron obtener roles desde /roles/options, usando catálogo local:', err);
                 });
         }
-    }, [isOpen, token]);
+    }, [isOpen, token, isSuperAdmin]);
 
     const handleSave = async (newPermissions: string[], active: boolean) => {
         if (!user || !token) return;
@@ -93,8 +105,7 @@ export default function UserPermissionsModal({ isOpen, onClose, onHidden, user, 
             onClose();
         } catch (error: any) {
             console.error('Error al actualizar permisos:', error);
-            const errorMessage = error instanceof Error && error.message ? error.message : 'Error al actualizar permisos';
-            notify(errorMessage, 'error', 3000);
+            notify(mapUsersAbmError(error, 'Error al actualizar permisos'), 'error', 3000);
         }
     };
 

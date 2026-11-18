@@ -11,6 +11,7 @@ import { Popup, Position } from 'devextreme-react/popup';
 import CustomStore from 'devextreme/data/custom_store';
 import notify from 'devextreme/ui/notify';
 import { useMemo, useRef, useState } from 'react';
+import { mapUsersAbmError } from '@/app/lib/constants/users.constants';
 import UserModal from './components/userModal';
 import UserPermissionsModal from './components/userPermissionsModal';
 
@@ -208,8 +209,7 @@ export default function UsersClient() {
                                     setIsModalOpen(false);
                                 } catch (error: any) {
                                     console.error('Error creating user:', error);
-                                    const errorMessage = error instanceof Error && error.message ? error.message : 'Error al crear usuario';
-                                    notify(errorMessage, 'error', 3000);
+                                    notify(mapUsersAbmError(error, 'Error al crear usuario'), 'error', 3000);
                                 }
                             }
                         }}
