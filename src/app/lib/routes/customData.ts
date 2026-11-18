@@ -18,7 +18,8 @@ export type TRouteKey =
     'salebillingmodes' | 'uom-categories' | 'sales-channels' | 'productdetail' | 'taxes' |
     'serial-numbers' | 'consignments' | 'partners' | 'customers' | 'commercial-platforms' |
     'articlehandling' | 'metadata' | 'pricelistdetail' | 'saleorderdetail' | 'system' |
-    'audit' | 'localization' | 'structure' | 'branches' | 'establishments' | 'logisticcenters' | 'audiences' | 'details' | 'mapa' | 'companies' | 'combos';
+    'audit' | 'localization' | 'structure' | 'branches' | 'establishments' | 'logisticcenters' | 'audiences' | 'details' | 'mapa' | 'companies' | 'combos' |
+    'sysadmin' | 'licenses' | 'firebird';
 
 export type TCustomDataRoutes = Record<TRouteKey, ICustomDataRoute>;
 
@@ -30,6 +31,24 @@ export const CustomDataRoutes: TCustomDataRoutes = {
         text: 'Empresas',
         position: 50,
         parentSubText: 'Gestión de Empresas'
+    },
+
+    sysadmin: {
+        icon: 'preferences',
+        text: 'SysAdmin',
+        position: 45,
+        hideMainSubRoute: true,
+        parentSubText: 'Licencias'
+    },
+    licenses: {
+        icon: 'key',
+        text: 'Licencias',
+        position: 10
+    },
+    firebird: {
+        icon: 'fields',
+        text: 'Firebird',
+        position: 20
     },
 
     structure: {

@@ -214,6 +214,11 @@ export const ROUTES = [
     "routeKey": "uoms"
   },
   {
+    "id": "productsv2",
+    "path": "/productsv2",
+    "routeKey": "productsv2"
+  },
+  {
     "id": "providers",
     "path": "/providers",
     "routeKey": "providers"
@@ -269,6 +274,23 @@ export const ROUTES = [
     "parentId": "structure",
     "path": "/structure/logisticCenters",
     "routeKey": "logisticcenters"
+  },
+  {
+    "id": "sysAdmin",
+    "path": "/sysAdmin",
+    "routeKey": "sysadmin"
+  },
+  {
+    "id": "sysAdmin/firebird",
+    "parentId": "sysAdmin",
+    "path": "/sysAdmin/firebird",
+    "routeKey": "firebird"
+  },
+  {
+    "id": "sysAdmin/licenses",
+    "parentId": "sysAdmin",
+    "path": "/sysAdmin/licenses",
+    "routeKey": "licenses"
   },
   {
     "id": "system",
@@ -357,6 +379,11 @@ export const FIRST_LEVEL_ROUTES = [
     "routeKey": "products"
   },
   {
+    "id": "productsv2",
+    "path": "/productsv2",
+    "routeKey": "productsv2"
+  },
+  {
     "id": "providers",
     "path": "/providers",
     "routeKey": "providers"
@@ -370,6 +397,11 @@ export const FIRST_LEVEL_ROUTES = [
     "id": "structure",
     "path": "/structure",
     "routeKey": "structure"
+  },
+  {
+    "id": "sysAdmin",
+    "path": "/sysAdmin",
+    "routeKey": "sysadmin"
   },
   {
     "id": "system",

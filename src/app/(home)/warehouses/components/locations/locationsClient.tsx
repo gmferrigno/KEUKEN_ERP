@@ -174,7 +174,7 @@ const LocationsClient = ({ warehouseId }: LocationsClientProps) => {
     return (
         <>
             <div className="flex flex-col w-full h-full" >
-                <div className={`w-full mt-2 transition-opacity duration-300 ${isPending ? 'opacity-50' : 'opacity-100'}`} >
+                <div className={`w-full mt-2 mb-0.5 transition-opacity duration-300 ${isPending ? 'opacity-50' : 'opacity-100'}`} >
                     <LocationBreadcrumbs
                         currentPath={activePath}
                         onNavigate={navigate}
