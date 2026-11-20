@@ -35,8 +35,22 @@ const USERS_COLUMNS: IGenericDataGridColumn[] = [
     },
     {
         dataField: 'login',
-        caption: 'Usuario (Login)',
+        caption: 'Email (Login)',
         visible: true,
+    },
+    {
+        dataField: 'phoneE164',
+        caption: 'Teléfono',
+        visible: true,
+        width: 160,
+    },
+    {
+        dataField: 'activationPending',
+        caption: 'Activación',
+        visible: true,
+        width: 140,
+        calculateCellValue: (row: { activationPending?: boolean }) =>
+            row.activationPending ? 'Pendiente' : 'OK',
     },
 ];
 
@@ -191,7 +205,7 @@ export default function UsersClient() {
                                     const payload = {
                                         name: values.name,
                                         login: values.login,
-                                        password: values.password,
+                                        phoneE164: values.phoneE164?.trim() || null,
                                         roles: [selectedRole],
                                         roleAssignments: [
                                             {
@@ -201,10 +215,13 @@ export default function UsersClient() {
                                             }
                                         ],
                                         companyIds: [companyId],
-                                        active: values.active !== undefined ? values.active : true
                                     };
                                     await usersService.create(payload, token);
-                                    notify('Usuario creado exitosamente', 'success', 3000);
+                                    notify(
+                                        'Usuario invitado. Se envió el mail de activación.',
+                                        'success',
+                                        3500
+                                    );
                                     setRefreshVersion(v => v + 1);
                                     setIsModalOpen(false);
                                 } catch (error: any) {
@@ -218,6 +235,18 @@ export default function UsersClient() {
                             setIsModalOpen(false);
                             setSelectedUserForPermissions(selectedUser);
                             setIsPermissionsModalOpen(true);
+                        }}
+                        onResendActivation={async () => {
+                            try {
+                                await usersService.resendActivation(selectedUser.id, token);
+                                notify('Activación reenviada', 'success', 3000);
+                            } catch (error: any) {
+                                notify(
+                                    mapUsersAbmError(error, 'No se pudo reenviar la activación'),
+                                    'error',
+                                    3500
+                                );
+                            }
                         }}
                     />
                 ) : null}

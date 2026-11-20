@@ -13,9 +13,17 @@ interface UserModalProps {
     onSave?: (data: any) => void;
     onCancel?: () => void;
     onEditPermissions?: () => void;
+    onResendActivation?: () => Promise<void> | void;
 }
 
-const UserModal = ({ selectedUser, mode = 'view', onSave, onCancel, onEditPermissions }: UserModalProps) => {
+const UserModal = ({
+    selectedUser,
+    mode = 'view',
+    onSave,
+    onCancel,
+    onEditPermissions,
+    onResendActivation,
+}: UserModalProps) => {
     const { token, currentCompany, isSuperAdmin } = useAuth();
     const formRef = useRef<any>(null);
     const [formData, setFormData] = useState<any>(() => ({
@@ -23,6 +31,7 @@ const UserModal = ({ selectedUser, mode = 'view', onSave, onCancel, onEditPermis
         ...(selectedUser ?? {})
     }));
     const [loading, setLoading] = useState(false);
+    const [resending, setResending] = useState(false);
     const [roleOptions, setRoleOptions] = useState<{ id: string; label: string }[]>(() =>
         getDefaultRoleOptions(false).map((r) => ({ id: String(r.id), label: r.label })),
     );
@@ -93,7 +102,12 @@ const UserModal = ({ selectedUser, mode = 'view', onSave, onCancel, onEditPermis
                         <p className="text-main/70 text-sm truncate">@{selectedUser.login}</p>
                     </div>
 
-                    <div className="shrink-0 flex items-center gap-2">
+                    <div className="shrink-0 flex items-center gap-2 flex-wrap justify-end">
+                        {selectedUser.activationPending ? (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-status-warning/15 text-status-warning border border-status-warning/25">
+                                Activación pendiente
+                            </span>
+                        ) : null}
                         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold shadow-sm transition-all ${selectedUser.active
                             ? 'bg-focus-500/10 text-focus-400 border border-focus-500/20'
                             : 'bg-primary-500/15 text-main/60 border border-primary-500/10'
@@ -139,27 +153,29 @@ const UserModal = ({ selectedUser, mode = 'view', onSave, onCancel, onEditPermis
                                 editorType="dxTextBox"
                                 editorOptions={{
                                     stylingMode: 'filled',
-                                    valueChangeEvent: "blur"
+                                    valueChangeEvent: "blur",
+                                    mode: 'email',
+                                    placeholder: 'usuario@empresa.com',
                                 }}
                                 isRequired={mode === 'create'}
-                                validationRules={[{ type: 'required', message: "El usuario es obligatorio" }]}
+                                validationRules={[
+                                    { type: 'required', message: "El email es obligatorio" },
+                                    { type: 'email', message: "Ingresá un email válido" },
+                                ]}
                             >
-                                <Label text="Usuario (Login)" />
+                                <Label text="Email (Login)" />
                             </SimpleItem>
 
                             <SimpleItem
-                                dataField="password"
+                                dataField="phoneE164"
                                 editorType="dxTextBox"
                                 editorOptions={{
                                     stylingMode: 'filled',
-                                    mode: 'password',
-                                    valueChangeEvent: "blur"
+                                    valueChangeEvent: "blur",
+                                    placeholder: '+54911...',
                                 }}
-                                visible={mode === 'create'}
-                                isRequired={mode === 'create'}
-                                validationRules={[{ type: 'required', message: "La contraseña es obligatoria" }]}
                             >
-                                <Label text="Contraseña" />
+                                <Label text="Teléfono (E.164)" />
                             </SimpleItem>
 
                             {mode === 'create' ? (
@@ -230,16 +246,36 @@ const UserModal = ({ selectedUser, mode = 'view', onSave, onCancel, onEditPermis
 
 {/* View Mode Footer Buttons */ }
 {
-    mode === 'view' && onEditPermissions ? (
-        <div className="flex justify-end gap-2 pt-2 border-t border-main/10">
-            <Button
-                text="Configurar Rol y Permisos"
-                icon="key"
-                type="default"
-                stylingMode="outlined"
-                onClick={onEditPermissions}
-                className="!rounded-dx"
-            />
+    mode === 'view' && (onEditPermissions || onResendActivation) ? (
+        <div className="flex justify-end gap-2 pt-2 border-t border-main/10 flex-wrap">
+            {selectedUser.activationPending && onResendActivation ? (
+                <Button
+                    text={resending ? 'Reenviando...' : 'Reenviar activación'}
+                    icon="email"
+                    type="normal"
+                    stylingMode="outlined"
+                    disabled={resending}
+                    onClick={async () => {
+                        setResending(true);
+                        try {
+                            await onResendActivation();
+                        } finally {
+                            setResending(false);
+                        }
+                    }}
+                    className="!rounded-dx"
+                />
+            ) : null}
+            {onEditPermissions ? (
+                <Button
+                    text="Configurar Rol y Permisos"
+                    icon="key"
+                    type="default"
+                    stylingMode="outlined"
+                    onClick={onEditPermissions}
+                    className="!rounded-dx"
+                />
+            ) : null}
         </div>
     ) : null
 }
