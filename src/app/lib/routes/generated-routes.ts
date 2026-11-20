@@ -35,11 +35,6 @@ export const ROUTES = [
     "routeKey": "audiences"
   },
   {
-    "id": "companies",
-    "path": "/companies",
-    "routeKey": "companies"
-  },
-  {
     "id": "customers",
     "path": "/customers",
     "routeKey": "customers"
@@ -281,6 +276,12 @@ export const ROUTES = [
     "routeKey": "sysadmin"
   },
   {
+    "id": "sysAdmin/companies",
+    "parentId": "sysAdmin",
+    "path": "/sysAdmin/companies",
+    "routeKey": "companies"
+  },
+  {
     "id": "sysAdmin/firebird",
     "parentId": "sysAdmin",
     "path": "/sysAdmin/firebird",
@@ -342,11 +343,6 @@ export const FIRST_LEVEL_ROUTES = [
     "id": "audiences",
     "path": "/audiences",
     "routeKey": "audiences"
-  },
-  {
-    "id": "companies",
-    "path": "/companies",
-    "routeKey": "companies"
   },
   {
     "id": "customers",

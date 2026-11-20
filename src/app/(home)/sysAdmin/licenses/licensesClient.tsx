@@ -6,6 +6,7 @@ import { Button, GenericSelectBox } from '@repo/devextreme';
 import { custom } from 'devextreme/ui/dialog';
 import notify from 'devextreme/ui/notify';
 import {
+    IFCatalogVersionMeta,
     IFLicenseContract,
     IFLicensePutRequest,
     IFLicenseValidityPatch,
@@ -15,8 +16,11 @@ import {
     TFProductModuleCode,
     TFQuotaCode,
 } from '@repo/api-contracts/erp';
-import { licenseCompanyService } from '@repo/erp-services/userContext/licenseCompany.service';
-import { canDo } from '@repo/access';
+import {
+    IFCompanyLicenseRow,
+    licenseCompanyService,
+} from '@repo/erp-services/userContext/licenseCompany.service';
+import { canDo, LICENSE_PLANS } from '@repo/access';
 import PERMISSIONS_CONSTANTS from '@repo/access';
 import { useAuth } from '@/contexts/AuthContext';
 import SectionHeader from '../../components/section/sectionHeader';
@@ -35,13 +39,16 @@ import { useCompaniesList } from '../components/useCompaniesList';
 import { useCompanyQueryParam } from '../components/useCompanyQueryParam';
 import LicenseBadges from './components/licenseBadges';
 import {
-    LICENSE_PLANS,
+    LICENSE_STATUS_LABELS,
+    LICENSE_WARNING_LABELS,
     PRODUCT_MODULES,
     QUOTA_CODES,
 } from '../lib/constants';
 
 type LicenseFormState = {
     plan: TFLicensePlanCode | string;
+    /** UUID published; null/omitir = pin actual o última published (BE). */
+    catalogVersionId: string | null;
     validFrom: string | null;
     validUntil: string | null;
     graceDays: number;
@@ -51,6 +58,7 @@ type LicenseFormState = {
 
 const emptyForm = (): LicenseFormState => ({
     plan: 'core',
+    catalogVersionId: null,
     validFrom: null,
     validUntil: null,
     graceDays: 7,
@@ -77,6 +85,7 @@ function contractToForm(license: IFLicenseContract | null): LicenseFormState {
 
     return {
         plan: license.plan,
+        catalogVersionId: license.catalogVersionId || null,
         validFrom: license.validFrom,
         validUntil: license.validUntil,
         graceDays: license.graceDays ?? 7,
@@ -105,6 +114,8 @@ function formToPutRequest(form: LicenseFormState): IFLicensePutRequest {
         validFrom: form.validFrom || null,
         validUntil: form.validUntil || null,
         graceDays: Number(form.graceDays) >= 0 ? Number(form.graceDays) : 7,
+        // Omitir si vacío: BE pinea la published actual / última
+        catalogVersionId: form.catalogVersionId || undefined,
         moduleOverrides: moduleOverrides.length ? moduleOverrides : undefined,
         quotaOverrides: quotaOverrides.length ? quotaOverrides : undefined,
     };
@@ -128,36 +139,101 @@ function LicensesClientInner() {
         graceDays: 7,
     });
     const [showAssignForm, setShowAssignForm] = useState(false);
+    const [catalogVersions, setCatalogVersions] = useState<IFCatalogVersionMeta[]>([]);
+    const [loadingCatalogVersions, setLoadingCatalogVersions] = useState(false);
+    const [licenseRows, setLicenseRows] = useState<IFCompanyLicenseRow[]>([]);
+    const [loadingLicenseRows, setLoadingLicenseRows] = useState(false);
 
     const canModify = useMemo(() => {
         return Boolean(isSuperAdmin || (permissions && canDo('modify', PERMISSIONS_CONSTANTS.modifySysAdmin, permissions)));
     }, [isSuperAdmin, permissions]);
+
+    /** Solo versiones published se pueden pinear en PUT (licenses-list-endpoints.md). */
+    const publishedCatalogVersions = useMemo(
+        () => catalogVersions.filter((v) => v.status === 'published'),
+        [catalogVersions]
+    );
+
+    const applyLicenseToState = useCallback((data: IFLicenseContract | null) => {
+        setLicense(data);
+        setFormData(contractToForm(data));
+        setShowAssignForm(!data || data.status === 'revoked');
+        if (data) {
+            setValidityData({
+                validFrom: data.validFrom,
+                validUntil: data.validUntil,
+                graceDays: data.graceDays,
+            });
+        }
+    }, []);
+
+    const upsertLicenseRow = useCallback((companyId: string, companyName: string, next: IFLicenseContract | null) => {
+        setLicenseRows((prev) => {
+            const idx = prev.findIndex((r) => r.companyId === companyId);
+            const row: IFCompanyLicenseRow = { companyId, companyName, license: next };
+            if (idx === -1) return [...prev, row];
+            const copy = [...prev];
+            copy[idx] = row;
+            return copy;
+        });
+    }, []);
 
     const loadLicense = useCallback(async (id: string) => {
         if (!token) return;
         setLoadingLicense(true);
         try {
             const data = await licenseCompanyService.getCompanyLicense(id, token);
-            setLicense(data);
-            setFormData(contractToForm(data));
-            setShowAssignForm(!data || data.status === 'revoked');
-            if (data) {
-                setValidityData({
-                    validFrom: data.validFrom,
-                    validUntil: data.validUntil,
-                    graceDays: data.graceDays,
-                });
-            }
+            applyLicenseToState(data);
+            const companyName = companies.find((c) => c.id === id)?.name || id;
+            upsertLicenseRow(id, companyName, data);
         } catch (err: any) {
             console.error(err);
             notify(err?.message || 'Error al obtener la licencia', 'error', 3500);
-            setLicense(null);
-            setFormData(emptyForm());
+            applyLicenseToState(null);
             setShowAssignForm(true);
         } finally {
             setLoadingLicense(false);
         }
-    }, [token]);
+    }, [token, companies, applyLicenseToState, upsertLicenseRow]);
+
+    const loadLicenseRows = useCallback(async () => {
+        if (!token || companies.length === 0) return;
+        setLoadingLicenseRows(true);
+        try {
+            const rows = await licenseCompanyService.listCompanyLicenses(
+                companies.map((c) => ({ id: c.id, name: c.name })),
+                token
+            );
+            setLicenseRows(rows);
+        } catch (err: any) {
+            console.error(err);
+            notify(err?.message || 'No se pudo listar las licencias', 'error', 3500);
+            setLicenseRows([]);
+        } finally {
+            setLoadingLicenseRows(false);
+        }
+    }, [token, companies]);
+
+    const loadCatalogVersions = useCallback(async () => {
+        if (!token || !isSuperAdmin) return;
+        setLoadingCatalogVersions(true);
+        try {
+            const versions = await licenseCompanyService.listCatalogVersions(token);
+            setCatalogVersions(versions);
+        } catch (err: any) {
+            console.error(err);
+            notify(err?.message || 'No se pudieron cargar las versiones de catálogo', 'error', 3500);
+            setCatalogVersions([]);
+        } finally {
+            setLoadingCatalogVersions(false);
+        }
+    }, [token, isSuperAdmin]);
+
+    useEffect(() => {
+        if (!loadingCompanies && companies.length > 0) {
+            void loadLicenseRows();
+        }
+    }, [loadingCompanies, companies, loadLicenseRows]);
 
     useEffect(() => {
         if (companyId) {
@@ -168,6 +244,12 @@ function LicensesClientInner() {
             setShowAssignForm(false);
         }
     }, [companyId, loadLicense]);
+
+    useEffect(() => {
+        if (showAssignForm) {
+            void loadCatalogVersions();
+        }
+    }, [showAssignForm, loadCatalogVersions]);
 
     const handleSavePut = async () => {
         if (!token || !companyId || !canModify) return;
@@ -185,14 +267,10 @@ function LicensesClientInner() {
         try {
             const body = formToPutRequest(current);
             const updated = await licenseCompanyService.putCompanyLicense(companyId, body, token);
-            setLicense(updated);
-            setFormData(contractToForm(updated));
+            applyLicenseToState(updated);
             setShowAssignForm(false);
-            setValidityData({
-                validFrom: updated.validFrom,
-                validUntil: updated.validUntil,
-                graceDays: updated.graceDays,
-            });
+            const companyName = companies.find((c) => c.id === companyId)?.name || companyId;
+            upsertLicenseRow(companyId, companyName, updated);
             notify('Licencia asignada / reemplazada', 'success', 2500);
         } catch (err: any) {
             console.error(err);
@@ -214,13 +292,9 @@ function LicensesClientInner() {
                 validUntil: current.validUntil ?? null,
                 graceDays: current.graceDays,
             }, token);
-            setLicense(updated);
-            setFormData(contractToForm(updated));
-            setValidityData({
-                validFrom: updated.validFrom,
-                validUntil: updated.validUntil,
-                graceDays: updated.graceDays,
-            });
+            applyLicenseToState(updated);
+            const companyName = companies.find((c) => c.id === companyId)?.name || companyId;
+            upsertLicenseRow(companyId, companyName, updated);
             notify('Vigencia actualizada', 'success', 2500);
         } catch (err: any) {
             console.error(err);
@@ -247,8 +321,9 @@ function LicensesClientInner() {
         setSaving(true);
         try {
             const updated = await licenseCompanyService.revokeCompanyLicense(companyId, token);
-            setLicense(updated);
-            setFormData(contractToForm(updated));
+            applyLicenseToState(updated);
+            const companyName = companies.find((c) => c.id === companyId)?.name || companyId;
+            upsertLicenseRow(companyId, companyName, updated);
             notify('Licencia revocada', 'success', 2500);
         } catch (err: any) {
             console.error(err);
@@ -311,11 +386,63 @@ function LicensesClientInner() {
                 <div className="flex flex-col gap-3">
                 {!companyId ? (
                     <SysAdminPanel className="min-h-[280px] shrink-0">
-                        <SysAdminEmptyState
-                            icon="key"
-                            title="Seleccioná una compañía"
-                            description="Consultá el contrato admin de licencia, asigná un plan o ajustá vigencia / revocá acceso."
+                        <SysAdminPanelHeader
+                            title="Licencias por compañía"
+                            description="Fan-out GET …/companies/{id}/license (no hay listado bulk)."
                         />
+                        <SysAdminPanelBody>
+                            {loadingCompanies || loadingLicenseRows ? (
+                                <SysAdminLoadingState label="Cargando licencias…" />
+                            ) : licenseRows.length === 0 ? (
+                                <SysAdminEmptyState
+                                    icon="key"
+                                    title="Sin compañías"
+                                    description="No hay compañías para consultar licencias."
+                                />
+                            ) : (
+                                <div className="overflow-x-auto rounded border border-main/10">
+                                    <table className="w-full text-sm text-left">
+                                        <thead className="bg-primary-900/40 text-[11px] uppercase tracking-wide text-main/50">
+                                            <tr>
+                                                <th className="px-3 py-2 font-medium">Compañía</th>
+                                                <th className="px-3 py-2 font-medium">Plan</th>
+                                                <th className="px-3 py-2 font-medium">Estado</th>
+                                                <th className="px-3 py-2 font-medium">Warning</th>
+                                                <th className="px-3 py-2 font-medium">Catálogo</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {licenseRows.map((row) => {
+                                                const lic = row.license;
+                                                return (
+                                                    <tr
+                                                        key={row.companyId}
+                                                        className="border-t border-main/10 hover:bg-primary-900/30 cursor-pointer"
+                                                        onClick={() => setCompanyId(row.companyId)}
+                                                    >
+                                                        <td className="px-3 py-2 text-main font-medium">{row.companyName}</td>
+                                                        <td className="px-3 py-2 text-main/80">{lic?.plan ?? '—'}</td>
+                                                        <td className="px-3 py-2 text-main/80">
+                                                            {lic
+                                                                ? LICENSE_STATUS_LABELS[lic.status] || lic.status
+                                                                : 'Sin licencia'}
+                                                        </td>
+                                                        <td className="px-3 py-2 text-main/80">
+                                                            {lic?.warning
+                                                                ? LICENSE_WARNING_LABELS[lic.warning] || lic.warning
+                                                                : '—'}
+                                                        </td>
+                                                        <td className="px-3 py-2 text-main/80">
+                                                            {lic?.catalogVersion ?? '—'}
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+                        </SysAdminPanelBody>
                     </SysAdminPanel>
                 ) : loadingLicense ? (
                     <SysAdminPanel className="min-h-[200px] shrink-0">
@@ -441,7 +568,7 @@ function LicensesClientInner() {
                             <SysAdminPanel className="shrink-0">
                                 <SysAdminPanelHeader
                                     title={license ? 'Asignar / reemplazar licencia' : 'Alta de licencia'}
-                                    description="Crea fila active; la anterior active pasa a superseded. Sin campo status."
+                                    description="Definir nueva licencia"
                                 />
                                 <SysAdminPanelBody>
                                     <Form
@@ -470,6 +597,7 @@ function LicensesClientInner() {
                                                 editorType="dxSelectBox"
                                                 isRequired
                                                 editorOptions={{
+                                                    // Códigos fijos: no hay GET /plans (licenses-list-endpoints.md)
                                                     dataSource: LICENSE_PLANS,
                                                     displayExpr: 'name',
                                                     valueExpr: 'id',
@@ -478,13 +606,33 @@ function LicensesClientInner() {
                                             >
                                                 <Label text="Plan" />
                                             </SimpleItem>
+                                            <SimpleItem
+                                                dataField="catalogVersionId"
+                                                editorType="dxSelectBox"
+                                                editorOptions={{
+                                                    dataSource: publishedCatalogVersions,
+                                                    displayExpr: 'code',
+                                                    valueExpr: 'id',
+                                                    searchEnabled: true,
+                                                    showClearButton: true,
+                                                    disabled: loadingCatalogVersions,
+                                                    placeholder: loadingCatalogVersions
+                                                        ? 'Cargando catálogo…'
+                                                        : 'Automático (última published)',
+                                                    noDataText: isSuperAdmin
+                                                        ? 'No hay versiones published'
+                                                        : 'Solo superadmin puede listar el catálogo',
+                                                }}
+                                            >
+                                                <Label text="Versión de catálogo (pin)" />
+                                            </SimpleItem>
                                             <SimpleItem dataField="graceDays" editorType="dxNumberBox" editorOptions={{ min: 0, showSpinButtons: true }}>
                                                 <Label text="Días de gracia" />
                                             </SimpleItem>
                                             <SimpleItem dataField="validFrom" editorType="dxDateBox" editorOptions={{ type: 'date', displayFormat: 'yyyy-MM-dd', dateSerializationFormat: 'yyyy-MM-dd', openOnFieldClick: true, showClearButton: true }}>
                                                 <Label text="Válida desde (omitir = ya vigente)" />
                                             </SimpleItem>
-                                            <SimpleItem dataField="validUntil" editorType="dxDateBox" editorOptions={{ type: 'date', displayFormat: 'yyyy-MM-dd', dateSerializationFormat: 'yyyy-MM-dd', openOnFieldClick: true, showClearButton: true }}>
+                                            <SimpleItem dataField="validUntil" editorType="dxDateBox" editorOptions={{ type: 'date', displayFormat: 'yyyy-MM-dd', dateSerializationFormat: 'yyyy-MM-dd', openOnFieldClick: true, showClearButton: true }} colSpan={2}>
                                                 <Label text="Válida hasta (vacío = sin vencimiento)" />
                                             </SimpleItem>
                                         </GroupItem>

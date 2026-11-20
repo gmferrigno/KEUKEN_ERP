@@ -5,8 +5,13 @@ import Form, { GroupItem, SimpleItem, Label } from 'devextreme-react/form';
 import { Button, GenericSelectBox } from '@repo/devextreme';
 import { custom } from 'devextreme/ui/dialog';
 import notify from 'devextreme/ui/notify';
-import { IFFirebirdConfig, IFFirebirdPutRequest } from '@repo/api-contracts/erp';
+import {
+    IFFirebirdConfig,
+    IFFirebirdPutRequest,
+    isFirebirdConfigTestable,
+} from '@repo/api-contracts/erp';
 import { firebirdCompanyService } from '@repo/erp-services/userContext/firebirdCompany.service';
+import { ApiError } from '@repo/erp-api-client';
 import { canDo } from '@repo/access';
 import PERMISSIONS_CONSTANTS from '@repo/access';
 import { useAuth } from '@/contexts/AuthContext';
@@ -66,11 +71,14 @@ function FirebirdClientInner() {
     const [formData, setFormData] = useState<FirebirdFormState>(emptyForm);
     const [loadingConfig, setLoadingConfig] = useState(false);
     const [saving, setSaving] = useState(false);
+    const [testing, setTesting] = useState(false);
     const [passwordDirty, setPasswordDirty] = useState(false);
 
     const canModify = useMemo(() => {
         return Boolean(isSuperAdmin || (permissions && canDo('modify', PERMISSIONS_CONSTANTS.modifySysAdmin, permissions)));
     }, [isSuperAdmin, permissions]);
+
+    const canTestConnection = Boolean(isSuperAdmin && isFirebirdConfigTestable(config));
 
     const changePasswordMode = useCallback(() => {
         const editor = formRef.current?.instance()?.getEditor('fdbPassword');
@@ -85,7 +93,7 @@ function FirebirdClientInner() {
             mode: 'password' as const,
             stylingMode: 'filled' as const,
             placeholder: config?.fdbPasswordSet
-                ? '•••••••• (dejar vacío para no cambiar)'
+                ? '••••••••'
                 : 'Nuevo password',
             buttons: [
                 {
@@ -212,6 +220,41 @@ function FirebirdClientInner() {
         await persist(buildPutBody(formData, { clearAll: true }), 'Configuración Firebird vaciada');
     };
 
+    const handleTestConnection = async () => {
+        if (!token || !companyId || !canTestConnection) return;
+
+        setTesting(true);
+        try {
+            const result = await firebirdCompanyService.testCompanyFirebird(companyId, token);
+            if (result.ok && result.status === 'passed') {
+                notify(
+                    `${result.detail || 'Conexión OK'}${result.latencyMs ? ` (${result.latencyMs} ms)` : ''}`,
+                    'success',
+                    3500
+                );
+            } else {
+                notify(result.detail || result.error || 'No se pudo conectar a Firebird', 'error', 5000);
+            }
+        } catch (err: any) {
+            console.error(err);
+            if (err instanceof ApiError && err.status === 422) {
+                const missing = err.rawDetails?.detail?.missing;
+                const missingLabel = Array.isArray(missing) && missing.length
+                    ? ` Faltan: ${missing.join(', ')}.`
+                    : '';
+                notify(
+                    `Configuración Firebird incompleta.${missingLabel} Completá y guardá antes de probar.`,
+                    'error',
+                    5000
+                );
+                return;
+            }
+            notify(err?.message || 'No se pudo probar la conexión Firebird', 'error', 4000);
+        } finally {
+            setTesting(false);
+        }
+    };
+
     return (
         <div className="flex flex-col w-full h-full gap-y-3 overflow-hidden">
             <SectionHeader title="SysAdmin · Firebird" />
@@ -317,19 +360,25 @@ function FirebirdClientInner() {
                                 text="Vaciar config"
                                 stylingMode="outlined"
                                 type="danger"
-                                disabled={!canModify || saving}
+                                disabled={!canModify || saving || testing}
                                 onClick={() => void handleClearAll()}
                             />
                             <Button
                                 text="Limpiar password"
                                 stylingMode="outlined"
-                                disabled={!canModify || saving || !config?.fdbPasswordSet}
+                                disabled={!canModify || saving || testing || !config?.fdbPasswordSet}
                                 onClick={() => void handleClearPassword()}
+                            />
+                            <Button
+                                text={testing ? 'Probando…' : 'Probar conexión'}
+                                stylingMode="outlined"
+                                disabled={!canTestConnection || saving || testing}
+                                onClick={() => void handleTestConnection()}
                             />
                             <Button
                                 text="Guardar"
                                 type="default"
-                                disabled={!canModify || saving}
+                                disabled={!canModify || saving || testing}
                                 onClick={() => void handleSave()}
                             />
                         </SysAdminPanelFooter>

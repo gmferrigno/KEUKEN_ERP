@@ -1,18 +1,4 @@
-import {
-    TFLicensePlanCode,
-    TFProductModuleCode,
-    TFQuotaCode,
-} from "@repo/api-contracts/erp";
-
-export const LICENSE_PLANS: { id: TFLicensePlanCode; name: string }[] = [
-    { id: "core", name: "Core" },
-    { id: "operacion", name: "Operación" },
-    { id: "deposito", name: "Depósito" },
-    { id: "finanzas", name: "Finanzas" },
-    { id: "full", name: "Full" },
-    { id: "legacy", name: "Legacy" },
-    { id: "mdm", name: "MDM" },
-];
+import { TFProductModuleCode, TFQuotaCode } from "@repo/api-contracts/erp";
 
 export const PRODUCT_MODULES: { id: TFProductModuleCode; name: string }[] = [
     { id: "core", name: "Core" },

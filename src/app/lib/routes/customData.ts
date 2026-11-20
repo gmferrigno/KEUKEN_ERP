@@ -26,19 +26,17 @@ export type TCustomDataRoutes = Record<TRouteKey, ICustomDataRoute>;
 
 export const CustomDataRoutes: TCustomDataRoutes = {
 
-    companies: {
-        icon: 'home',
-        text: 'Empresas',
-        position: 50,
-        parentSubText: 'Gestión de Empresas'
-    },
-
     sysadmin: {
         icon: 'preferences',
         text: 'SysAdmin',
         position: 45,
         hideMainSubRoute: true,
-        parentSubText: 'Licencias'
+        parentSubText: 'Empresas'
+    },
+    companies: {
+        icon: 'home',
+        text: 'Empresas',
+        position: 5
     },
     licenses: {
         icon: 'key',
@@ -50,6 +48,7 @@ export const CustomDataRoutes: TCustomDataRoutes = {
         text: 'Firebird',
         position: 20
     },
+
 
     structure: {
         icon: 'hierarchy',
