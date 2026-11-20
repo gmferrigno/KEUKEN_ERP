@@ -15,6 +15,7 @@
     "@repo/erp-api-client": "workspace:*",
     "@repo/erp-services": "workspace:*",
     "@repo/product-ui": "workspace:*",
+    "@repo/profile-ui": "workspace:*",
     "@repo/custom-components": "workspace:*",
 
 
