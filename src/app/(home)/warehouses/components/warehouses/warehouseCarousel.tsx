@@ -13,18 +13,18 @@ interface WarehouseCarouselProps {
 
 const WarehouseCarousel = ({ warehouses, selectedWarehouseId, fetchWarehouses, disabled }: WarehouseCarouselProps) => {
     return (
-        <div className="w-full flex items-center gap-x-1 h-fit">
+        <div className="w-full flex items-center gap-x-1.5 h-fit">
             <WarehouseCreation onSuccess={fetchWarehouses} disabled={disabled} />
             <div className="flex-1 min-w-0">
                 <ScrollView
                     direction="horizontal"
                     showScrollbar="onHover"
                     useNative={false}
-                    scrollByContent={true}
+                    scrollByContent={false}
                     bounceEnabled={false}
                     width="100%"
                 >
-                    <div className="flex flex-nowrap gap-x-2">
+                    <div className="flex flex-nowrap gap-x-1.5">
                         {warehouses.map((warehouse) => (
                             <WarehouseCard key={warehouse.id} {...warehouse} isSelected={warehouse.id === selectedWarehouseId} fetchWarehouses={fetchWarehouses} />
                         ))}

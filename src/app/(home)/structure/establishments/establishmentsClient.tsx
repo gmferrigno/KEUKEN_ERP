@@ -1,10 +1,9 @@
-﻿'use client';
-import { useRecovery } from "@/contexts/RecoveryContext";
+'use client';
 
+import { useRecovery, RECOVERY_ENTITIES } from "@repo/recovery";
 import PERMISSIONS_CONSTANTS from "@repo/access";
 import { canDo } from "@repo/access";
 import { commonService } from "@repo/erp-services/common.service";
-import { RECOVERY_ENTITIES } from "@/app/lib/constants/recoveryWhiteList";
 import { establishmentsService } from "@repo/erp-services/userContext/establishments.service";
 import { IFEstablishment } from "@repo/api-contracts/erp";
 import { GenericDataGrid, IGenericDataGridColumn } from '@repo/devextreme';

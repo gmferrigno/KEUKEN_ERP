@@ -1,8 +1,8 @@
-﻿'use client';
+'use client';
 
-import { useRecovery } from "@/contexts/RecoveryContext";
+
+import { useRecovery, RECOVERY_ENTITIES } from "@repo/recovery";
 import { commonService } from "@repo/erp-services/common.service";
-import { RECOVERY_ENTITIES } from "@/app/lib/constants/recoveryWhiteList";
 import PERMISSIONS_CONSTANTS from "@repo/access";
 import { canDo } from "@repo/access";
 import { paymentTermsService } from "@repo/erp-services/payments_services/paymentTerms.service";

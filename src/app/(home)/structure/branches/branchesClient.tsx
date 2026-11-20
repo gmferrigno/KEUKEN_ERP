@@ -1,10 +1,10 @@
-﻿'use client';
+'use client';
 
-import { useRecovery } from "@/contexts/RecoveryContext";
+
+import { useRecovery, RECOVERY_ENTITIES } from "@repo/recovery";
 import PERMISSIONS_CONSTANTS from "@repo/access";
 import { canDo, useGridColumns, type IAccessGridColumn } from "@repo/access";
 import { commonService } from "@repo/erp-services/common.service";
-import { RECOVERY_ENTITIES } from "@/app/lib/constants/recoveryWhiteList";
 import { GenericDataGrid } from '@repo/devextreme';
 import { useAuth } from "@/contexts/AuthContext";
 import { createGridStateStorage } from "@/lib/storage/gridStateStorage";

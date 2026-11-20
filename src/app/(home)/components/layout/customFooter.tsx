@@ -1,6 +1,6 @@
 'use client';
 
-import { useRecovery } from '@/contexts/RecoveryContext';
+import { useRecovery } from "@repo/recovery";
 import { useBrand } from '@repo/ui/brand';
 import Switch from 'devextreme-react/switch';
 

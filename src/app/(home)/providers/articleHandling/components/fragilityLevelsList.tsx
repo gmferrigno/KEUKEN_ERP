@@ -1,12 +1,11 @@
 'use client';
 
+import { useRecovery, RECOVERY_ENTITIES } from "@repo/recovery";
 import { commonService } from "@repo/erp-services/common.service";
-import { RECOVERY_ENTITIES } from "@/app/lib/constants/recoveryWhiteList";
 import { fragilityService } from "@repo/erp-services/product_services/fragility.service";
 import { IFFragilityClass } from "@repo/api-contracts/erp";
 import { GenericDataGrid, IGenericDataGridColumn } from '@repo/devextreme';
 import { useAuth } from "@/contexts/AuthContext";
-import { useRecovery } from "@/contexts/RecoveryContext";
 import { createGridStateStorage } from "@/lib/storage/gridStateStorage";
 import CustomStore from "devextreme/data/custom_store";
 import { CheckBox } from 'devextreme-react/check-box';
