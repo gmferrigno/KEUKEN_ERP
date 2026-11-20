@@ -45,6 +45,12 @@ export const ROUTES = [
     "routeKey": "customers"
   },
   {
+    "id": "customers/addresses",
+    "parentId": "customers",
+    "path": "/customers/addresses",
+    "routeKey": "addresses"
+  },
+  {
     "id": "delivery",
     "path": "/delivery",
     "routeKey": "delivery"
@@ -214,6 +220,11 @@ export const ROUTES = [
     "routeKey": "uoms"
   },
   {
+    "id": "productsv2",
+    "path": "/productsv2",
+    "routeKey": "productsv2"
+  },
+  {
     "id": "providers",
     "path": "/providers",
     "routeKey": "providers"
@@ -355,6 +366,11 @@ export const FIRST_LEVEL_ROUTES = [
     "id": "products",
     "path": "/products",
     "routeKey": "products"
+  },
+  {
+    "id": "productsv2",
+    "path": "/productsv2",
+    "routeKey": "productsv2"
   },
   {
     "id": "providers",

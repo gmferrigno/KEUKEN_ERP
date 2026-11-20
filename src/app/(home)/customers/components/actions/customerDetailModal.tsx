@@ -3,6 +3,7 @@ import { IFCustomerFull } from "@repo/api-contracts/erp";
 import { useAuth } from "@/contexts/AuthContext";
 import { Popup } from "devextreme-react/popup";
 import Form, { GroupItem, SimpleItem } from "devextreme-react/form";
+import LoadIndicator from "devextreme-react/load-indicator";
 import { useEffect, useState, useCallback } from "react";
 import React from "react";
 import notify from "devextreme/ui/notify";
@@ -209,8 +210,11 @@ const CustomerDetailModal = ({ isOpen, onClose, customerId }: CustomerDetailModa
         >
             <div className="flex flex-col gap-4 p-2 h-full overflow-y-auto custom-scrollbar">
                 {isLoading || !customerFull ? (
-                    <div className="flex justify-center items-center h-40">
-                        <i className="dx-icon-refresh animate-spin text-4xl text-focus-500" />
+                    <div className="flex flex-1 min-h-[320px] w-full flex-col items-center justify-center gap-3 text-main/60">
+                        <LoadIndicator visible height={36} width={36} />
+                        <span className="text-sm text-center">
+                            Cargando datos del cliente...
+                        </span>
                     </div>
                 ) : (
                     <div className="flex flex-col gap-6">

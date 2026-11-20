@@ -5,6 +5,7 @@ import { useAccess } from "@repo/access";
 import { Button } from '@repo/devextreme';
 import { Popup, Position, ToolbarItem } from "devextreme-react/popup";
 import Form, { Item } from "devextreme-react/form";
+import LoadIndicator from "devextreme-react/load-indicator";
 import notify from "devextreme/ui/notify";
 import { useEffect, useRef, useState, useCallback } from "react";
 import MetadataFieldsClient from "@/components/metadata/MetadataFieldsClient";
@@ -241,8 +242,13 @@ const CustomerModal = ({ isOpen, onClose, onSuccess, customerId }: CustomerModal
             <Position at="center" my="center" />
             <div className="flex flex-col gap-4 p-4 h-full overflow-y-auto custom-scrollbar">
                 {isLoading || (customerId && !formData.id) || (!customerId && !formData.companyId) ? (
-                    <div className="flex justify-center items-center h-40">
-                        <i className="dx-icon-refresh animate-spin text-4xl text-focus-500" />
+                    <div className="flex flex-1 min-h-[280px] w-full flex-col items-center justify-center gap-3 text-main/60">
+                        <LoadIndicator visible height={36} width={36} />
+                        <span className="text-sm text-center">
+                            {customerId
+                                ? "Cargando datos del cliente..."
+                                : "Preparando formulario..."}
+                        </span>
                     </div>
                 ) : (
                     <>

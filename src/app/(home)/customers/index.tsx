@@ -4,13 +4,14 @@ import { commonService } from "@repo/erp-services/common.service";
 import { RECOVERY_ENTITIES } from "@/app/lib/constants/recoveryWhiteList";
 import { canDo } from "@repo/access";
 import { customersService } from "@repo/erp-services/partners/customers.service";
-import { GenericDataGrid, IGenericDataGridColumn } from '@repo/devextreme';
+import { confirmDelete, GenericDataGrid, IGenericDataGridColumn } from '@repo/devextreme';
 import { useAuth } from "@/contexts/AuthContext";
 import { createGridStateStorage } from "@/lib/storage/gridStateStorage";
 import CustomStore from "devextreme/data/custom_store";
 import notify from "devextreme/ui/notify";
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import CustomerModal from "./components/actions/customerModal";
+import CustomerCreationWizard from "./components/actions/customerCreationWizard";
 import CustomerDetailModal from "./components/actions/customerDetailModal";
 import { ClusterManagerModal } from "@/app/(home)/audiences/components";
 
@@ -123,8 +124,16 @@ const CustomersClient = () => {
 
     const handleRowRemoved = async (data: any) => {
         if (!token) return;
+        const row = data?.data || data;
+        const confirmed = await confirmDelete({
+            title: "Eliminar Cliente",
+            itemLabel: "el cliente",
+            itemName: row?.name || row?.code,
+        });
+        if (!confirmed) return;
+
         try {
-            const targetId = data?.id || data;
+            const targetId = row?.id || data?.id || data;
             await customersService.delete(targetId, token, currentCompany?.id);
             notify("Cliente eliminado exitosamente", "success", 3000);
             setRefreshVersion(prev => prev + 1);
@@ -314,17 +323,30 @@ const CustomersClient = () => {
                 </div>
             </div>
 
-            <CustomerModal
-                isOpen={isModalOpen}
-                onClose={() => {
-                    setIsModalOpen(false);
-                    setSelectedCustomerId(null);
-                }}
-                onSuccess={() => {
-                    setRefreshVersion(prev => prev + 1);
-                }}
-                customerId={selectedCustomerId}
-            />
+            {selectedCustomerId ? (
+                <CustomerModal
+                    isOpen={isModalOpen}
+                    onClose={() => {
+                        setIsModalOpen(false);
+                        setSelectedCustomerId(null);
+                    }}
+                    onSuccess={() => {
+                        setRefreshVersion(prev => prev + 1);
+                    }}
+                    customerId={selectedCustomerId}
+                />
+            ) : (
+                <CustomerCreationWizard
+                    isOpen={isModalOpen}
+                    onClose={() => {
+                        setIsModalOpen(false);
+                        setSelectedCustomerId(null);
+                    }}
+                    onSuccess={() => {
+                        setRefreshVersion(prev => prev + 1);
+                    }}
+                />
+            )}
 
             <CustomerDetailModal
                 isOpen={isDetailModalOpen}

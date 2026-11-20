@@ -16,7 +16,7 @@ export type TRouteKey =
     'cashregisters' | 'delivery' | 'routes' | 'zones' | 'vehicles' | 'documents' |
     'pricelists' | 'listtypes' | 'pricepolicies' | 'saleorders' | 'salesroutes' |
     'salebillingmodes' | 'uom-categories' | 'sales-channels' | 'productdetail' | 'taxes' |
-    'serial-numbers' | 'consignments' | 'partners' | 'customers' | 'commercial-platforms' |
+    'serial-numbers' | 'consignments' | 'partners' | 'customers' | 'addresses' | 'commercial-platforms' |
     'articlehandling' | 'metadata' | 'pricelistdetail' | 'saleorderdetail' | 'system' |
     'audit' | 'localization' | 'structure' | 'branches' | 'establishments' | 'logisticcenters' | 'audiences' | 'details' | 'mapa' | 'companies' | 'combos';
 
@@ -147,7 +147,13 @@ export const CustomDataRoutes: TCustomDataRoutes = {
     customers: {
         icon: 'user',
         text: 'Clientes',
-        position: 15
+        position: 15,
+        parentSubText: 'Listado de Clientes',
+    },
+    addresses: {
+        icon: 'map',
+        text: 'Direcciones',
+        position: 20,
     },
     uoms: {
         icon: 'selectall',

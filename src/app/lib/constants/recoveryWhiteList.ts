@@ -33,6 +33,7 @@ export const RECOVERY_WHITE_LIST: string[] = [
     '/localization/states',
     '/localization/cities',
     '/customers',
+    '/customers/addresses',
     '/accounting/cashRegisters',
     '/structure/branches',
 ];
