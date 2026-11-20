@@ -27,6 +27,7 @@ import {
     SysAdminMetaGrid,
     SysAdminPanel,
     SysAdminPanelBody,
+    SysAdminPanelFooter,
     SysAdminPanelHeader,
     SysAdminToolbar,
 } from '../components/sysAdminChrome';
@@ -272,145 +273,150 @@ function LicensesClientInner() {
     const showPutForm = Boolean(companyId && showAssignForm);
 
     return (
-        <div className="flex flex-col w-full h-full gap-y-3 overflow-hidden">
-            <SectionHeader title="SysAdmin · Licencias" />
+        <div className="flex flex-col w-full h-full min-h-0 gap-y-3 overflow-hidden">
+            <div className="shrink-0">
+                <SectionHeader title="SysAdmin · Licencias" />
+            </div>
 
-            <SysAdminToolbar>
-                <div className="flex flex-col gap-1 w-full min-w-[280px] max-w-md grow sm:grow-0">
-                    <label className="text-[11px] uppercase tracking-wide text-main/50">Compañía</label>
-                    <GenericSelectBox
-                        dataSource={companies}
-                        value={companyId ?? undefined}
-                        displayExpr="name"
-                        valueExpr="id"
-                        searchExpr={['name', 'taxId']}
-                        placeholder={loadingCompanies ? 'Cargando compañías…' : 'Seleccionar compañía'}
-                        disabled={loadingCompanies}
-                        deferRendering={false}
-                        width="100%"
-                        onValueChanged={(e) => {
-                            if (!e.event) return;
-                            const next = e.value == null || e.value === '' ? null : String(e.value);
-                            if (next === (companyId ?? null)) return;
-                            setCompanyId(next);
-                        }}
-                    />
-                </div>
-                {companyId && !loadingLicense ? (
-                    <div className="pb-1 flex items-center min-h-9">
-                        <LicenseBadges license={license} />
+            <div className="shrink-0">
+                <SysAdminToolbar>
+                    <div className="flex flex-col gap-1.5 w-full">
+                        <label className="text-[11px] uppercase tracking-wide text-main/50">Compañía</label>
+                        <GenericSelectBox
+                            dataSource={companies}
+                            value={companyId ?? undefined}
+                            displayExpr="name"
+                            valueExpr="id"
+                            searchExpr={['name', 'taxId']}
+                            placeholder={loadingCompanies ? 'Cargando compañías…' : 'Seleccionar compañía'}
+                            disabled={loadingCompanies}
+                            deferRendering={false}
+                            width="100%"
+                            onValueChanged={(e) => {
+                                if (!e.event) return;
+                                const next = e.value == null || e.value === '' ? null : String(e.value);
+                                if (next === (companyId ?? null)) return;
+                                setCompanyId(next);
+                            }}
+                        />
+                        {companyId && !loadingLicense ? (
+                            <LicenseBadges license={license} />
+                        ) : null}
                     </div>
-                ) : null}
-            </SysAdminToolbar>
+                </SysAdminToolbar>
+            </div>
 
-            <div className="flex-1 min-h-0 overflow-auto">
-                <SysAdminPanel className="h-full min-h-[320px]">
-                    {!companyId ? (
+            {/* Content box: scroll interno; las cards se muestran completas sin scroll de página */}
+            <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
+                <div className="flex flex-col gap-3">
+                {!companyId ? (
+                    <SysAdminPanel className="min-h-[280px] shrink-0">
                         <SysAdminEmptyState
                             icon="key"
                             title="Seleccioná una compañía"
                             description="Consultá el contrato admin de licencia, asigná un plan o ajustá vigencia / revocá acceso."
                         />
-                    ) : loadingLicense ? (
+                    </SysAdminPanel>
+                ) : loadingLicense ? (
+                    <SysAdminPanel className="min-h-[200px] shrink-0">
                         <SysAdminLoadingState label="Cargando licencia…" />
-                    ) : (
-                        <div className="flex flex-col gap-3 p-3">
-                            {license ? (
-                                <SysAdminPanel className="!shadow-none border-main/5">
-                                    <SysAdminPanelHeader
-                                        title="Contrato actual"
-                                        description={
-                                            <>
-                                                Catálogo: {license.catalogVersion || '—'} · ID{' '}
-                                                <span className="font-mono text-main/70">{license.catalogVersionId}</span>
-                                            </>
-                                        }
-                                        actions={
-                                            <>
-                                                {license.status !== 'revoked' ? (
-                                                    <Button
-                                                        text="Reemplazar plan"
-                                                        stylingMode="outlined"
-                                                        disabled={!canModify || saving}
-                                                        onClick={() => setShowAssignForm(true)}
-                                                    />
-                                                ) : null}
-                                                <Button
-                                                    text="Revocar"
-                                                    type="danger"
-                                                    stylingMode="outlined"
-                                                    disabled={!canRevoke || saving}
-                                                    onClick={() => void handleRevoke()}
-                                                />
-                                            </>
-                                        }
+                    </SysAdminPanel>
+                ) : (
+                    <>
+                        {license ? (
+                            <SysAdminPanel className="shrink-0">
+                                <SysAdminPanelHeader
+                                    title="Contrato actual"
+                                    description={
+                                        <>
+                                            Catálogo: {license.catalogVersion || '—'}
+                                        </>
+                                    }
+                                />
+                                <SysAdminPanelBody>
+                                    <SysAdminMetaGrid>
+                                        <SysAdminMetaField label="Vigencia">
+                                            {license.validFrom || 'ya vigente'} → {license.validUntil || 'sin vencimiento'}
+                                            <span className="text-main/50"> · Gracia de {license.graceDays} días</span>
+                                        </SysAdminMetaField>
+                                        <SysAdminMetaField label="Módulos efectivos">
+                                            {license.lockout || license.modulesEffective.length === 0
+                                                ? '—'
+                                                : license.modulesEffective.join(', ')}
+                                        </SysAdminMetaField>
+                                        <SysAdminMetaField label="Cuotas efectivas" className="md:col-span-2">
+                                            {Object.keys(license.quotasEffective || {}).length === 0
+                                                ? '—'
+                                                : Object.entries(license.quotasEffective)
+                                                    .map(([k, v]) => `${k}: ${v === null ? '∞' : v}`)
+                                                    .join(' · ')}
+                                        </SysAdminMetaField>
+                                    </SysAdminMetaGrid>
+                                </SysAdminPanelBody>
+                                <SysAdminPanelFooter>
+                                    {license.status !== 'revoked' ? (
+                                        <Button
+                                            text="Reemplazar plan"
+                                            stylingMode="outlined"
+                                            disabled={!canModify || saving}
+                                            onClick={() => setShowAssignForm(true)}
+                                        />
+                                    ) : null}
+                                    <Button
+                                        text="Revocar"
+                                        type="danger"
+                                        stylingMode="outlined"
+                                        disabled={!canRevoke || saving}
+                                        onClick={() => void handleRevoke()}
                                     />
-                                    <SysAdminPanelBody>
-                                        <SysAdminMetaGrid>
-                                            <SysAdminMetaField label="Vigencia">
-                                                {license.validFrom || 'ya vigente'} → {license.validUntil || 'sin vencimiento'}
-                                                <span className="text-main/50"> · gracia {license.graceDays}d</span>
-                                            </SysAdminMetaField>
-                                            <SysAdminMetaField label="Módulos efectivos">
-                                                {license.lockout || license.modulesEffective.length === 0
-                                                    ? '—'
-                                                    : license.modulesEffective.join(', ')}
-                                            </SysAdminMetaField>
-                                            <SysAdminMetaField label="Cuotas efectivas" className="md:col-span-2">
-                                                {Object.keys(license.quotasEffective || {}).length === 0
-                                                    ? '—'
-                                                    : Object.entries(license.quotasEffective)
-                                                        .map(([k, v]) => `${k}: ${v === null ? '∞' : v}`)
-                                                        .join(' · ')}
-                                            </SysAdminMetaField>
-                                        </SysAdminMetaGrid>
-                                    </SysAdminPanelBody>
-                                </SysAdminPanel>
-                            ) : null}
+                                </SysAdminPanelFooter>
+                            </SysAdminPanel>
+                        ) : null}
 
-                            {canPatchValidity && !showPutForm ? (
-                                <SysAdminPanel className="!shadow-none border-main/5">
-                                    <SysAdminPanelHeader
-                                        title="Extender / ajustar vigencia"
-                                        description="PATCH in-place (no supersede). Tras grace_ended alcanza con ajustar fechas."
+                        {canPatchValidity && !showPutForm ? (
+                            <SysAdminPanel className="shrink-0">
+                                <SysAdminPanelHeader
+                                    title="Extender / ajustar vigencia"
+                                    description="Configurar vigencia y plan"
+                                />
+                                <SysAdminPanelBody>
+                                    <Form
+                                        ref={validityFormRef}
+                                        formData={validityData}
+                                        onFieldDataChanged={(e) => {
+                                            if (!e.dataField) return;
+                                            setValidityData((prev) => ({
+                                                ...prev,
+                                                [e.dataField as string]: e.value,
+                                            }));
+                                        }}
+                                        labelLocation="top"
+                                        colCount={3}
+                                    >
+                                        <SimpleItem dataField="validFrom" editorType="dxDateBox" editorOptions={{ type: 'date', displayFormat: 'yyyy-MM-dd', dateSerializationFormat: 'yyyy-MM-dd', openOnFieldClick: true }}>
+                                            <Label text="Válida desde" />
+                                        </SimpleItem>
+                                        <SimpleItem dataField="validUntil" editorType="dxDateBox" editorOptions={{ type: 'date', displayFormat: 'yyyy-MM-dd', dateSerializationFormat: 'yyyy-MM-dd', openOnFieldClick: true, showClearButton: true }}>
+                                            <Label text="Válida hasta" />
+                                        </SimpleItem>
+                                        <SimpleItem dataField="graceDays" editorType="dxNumberBox" editorOptions={{ min: 0, showSpinButtons: true }}>
+                                            <Label text="Días de gracia" />
+                                        </SimpleItem>
+                                    </Form>
+                                </SysAdminPanelBody>
+                                <SysAdminPanelFooter>
+                                    <Button
+                                        text="Guardar vigencia"
+                                        type="default"
+                                        disabled={!canModify || saving}
+                                        onClick={() => void handlePatchValidity()}
                                     />
-                                    <SysAdminPanelBody>
-                                        <Form
-                                            ref={validityFormRef}
-                                            formData={validityData}
-                                            onFieldDataChanged={(e) => {
-                                                if (!e.dataField) return;
-                                                setValidityData((prev) => ({
-                                                    ...prev,
-                                                    [e.dataField as string]: e.value,
-                                                }));
-                                            }}
-                                            labelLocation="top"
-                                            colCount={3}
-                                        >
-                                            <SimpleItem dataField="validFrom" editorType="dxDateBox" editorOptions={{ type: 'date', displayFormat: 'yyyy-MM-dd', dateSerializationFormat: 'yyyy-MM-dd', openOnFieldClick: true }}>
-                                                <Label text="Válida desde" />
-                                            </SimpleItem>
-                                            <SimpleItem dataField="validUntil" editorType="dxDateBox" editorOptions={{ type: 'date', displayFormat: 'yyyy-MM-dd', dateSerializationFormat: 'yyyy-MM-dd', openOnFieldClick: true, showClearButton: true }}>
-                                                <Label text="Válida hasta" />
-                                            </SimpleItem>
-                                            <SimpleItem dataField="graceDays" editorType="dxNumberBox" editorOptions={{ min: 0, showSpinButtons: true }}>
-                                                <Label text="Días de gracia" />
-                                            </SimpleItem>
-                                        </Form>
-                                        <div className="mt-4 flex justify-end">
-                                            <Button
-                                                text="Guardar vigencia"
-                                                type="default"
-                                                disabled={!canModify || saving}
-                                                onClick={() => void handlePatchValidity()}
-                                            />
-                                        </div>
-                                    </SysAdminPanelBody>
-                                </SysAdminPanel>
-                            ) : null}
+                                </SysAdminPanelFooter>
+                            </SysAdminPanel>
+                        ) : null}
 
-                            {!license && !showAssignForm ? (
+                        {!license && !showAssignForm ? (
+                            <SysAdminPanel className="min-h-[280px] shrink-0">
                                 <SysAdminEmptyState
                                     icon="lock"
                                     title="Sin licencia asignada"
@@ -428,127 +434,125 @@ function LicensesClientInner() {
                                         ) : null
                                     }
                                 />
-                            ) : null}
+                            </SysAdminPanel>
+                        ) : null}
 
-                            {showPutForm ? (
-                                <SysAdminPanel className="!shadow-none border-main/5">
-                                    <SysAdminPanelHeader
-                                        title={license ? 'Asignar / reemplazar licencia' : 'Alta de licencia'}
-                                        description="Crea fila active; la anterior active pasa a superseded. Sin campo status."
-                                        actions={
-                                            license && license.status !== 'revoked' ? (
-                                                <Button
-                                                    text="Cancelar"
-                                                    stylingMode="text"
-                                                    disabled={saving}
-                                                    onClick={() => {
-                                                        setFormData(contractToForm(license));
-                                                        setShowAssignForm(false);
-                                                    }}
-                                                />
-                                            ) : null
-                                        }
-                                    />
-                                    <SysAdminPanelBody>
-                                        <Form
-                                            ref={formRef}
-                                            formData={formData}
-                                            onFieldDataChanged={(e) => {
-                                                if (!e.dataField) return;
-                                                setFormData((prev) => {
-                                                    const next = { ...prev } as any;
-                                                    const path = String(e.dataField).split('.');
-                                                    if (path.length === 1) {
-                                                        next[path[0]] = e.value;
-                                                    } else if (path.length === 2) {
-                                                        next[path[0]] = { ...next[path[0]], [path[1]]: e.value };
-                                                    }
-                                                    return next;
-                                                });
-                                            }}
-                                            labelLocation="top"
-                                            colCount={2}
-                                            disabled={!canModify}
-                                        >
-                                            <GroupItem colCount={2} colSpan={2} caption="Plan y vigencia">
+                        {showPutForm ? (
+                            <SysAdminPanel className="shrink-0">
+                                <SysAdminPanelHeader
+                                    title={license ? 'Asignar / reemplazar licencia' : 'Alta de licencia'}
+                                    description="Crea fila active; la anterior active pasa a superseded. Sin campo status."
+                                />
+                                <SysAdminPanelBody>
+                                    <Form
+                                        ref={formRef}
+                                        formData={formData}
+                                        onFieldDataChanged={(e) => {
+                                            if (!e.dataField) return;
+                                            setFormData((prev) => {
+                                                const next = { ...prev } as any;
+                                                const path = String(e.dataField).split('.');
+                                                if (path.length === 1) {
+                                                    next[path[0]] = e.value;
+                                                } else if (path.length === 2) {
+                                                    next[path[0]] = { ...next[path[0]], [path[1]]: e.value };
+                                                }
+                                                return next;
+                                            });
+                                        }}
+                                        labelLocation="top"
+                                        colCount={2}
+                                        disabled={!canModify}
+                                    >
+                                        <GroupItem colCount={2} colSpan={2} caption="Plan y vigencia">
+                                            <SimpleItem
+                                                dataField="plan"
+                                                editorType="dxSelectBox"
+                                                isRequired
+                                                editorOptions={{
+                                                    dataSource: LICENSE_PLANS,
+                                                    displayExpr: 'name',
+                                                    valueExpr: 'id',
+                                                    searchEnabled: true,
+                                                }}
+                                            >
+                                                <Label text="Plan" />
+                                            </SimpleItem>
+                                            <SimpleItem dataField="graceDays" editorType="dxNumberBox" editorOptions={{ min: 0, showSpinButtons: true }}>
+                                                <Label text="Días de gracia" />
+                                            </SimpleItem>
+                                            <SimpleItem dataField="validFrom" editorType="dxDateBox" editorOptions={{ type: 'date', displayFormat: 'yyyy-MM-dd', dateSerializationFormat: 'yyyy-MM-dd', openOnFieldClick: true, showClearButton: true }}>
+                                                <Label text="Válida desde (omitir = ya vigente)" />
+                                            </SimpleItem>
+                                            <SimpleItem dataField="validUntil" editorType="dxDateBox" editorOptions={{ type: 'date', displayFormat: 'yyyy-MM-dd', dateSerializationFormat: 'yyyy-MM-dd', openOnFieldClick: true, showClearButton: true }}>
+                                                <Label text="Válida hasta (vacío = sin vencimiento)" />
+                                            </SimpleItem>
+                                        </GroupItem>
+
+                                        <GroupItem colCount={2} colSpan={2} caption="Overrides de módulos">
+                                            {PRODUCT_MODULES.map((mod) => (
                                                 <SimpleItem
-                                                    dataField="plan"
+                                                    key={mod.id}
+                                                    dataField={`moduleOverrides.${mod.id}`}
                                                     editorType="dxSelectBox"
-                                                    isRequired
                                                     editorOptions={{
-                                                        dataSource: LICENSE_PLANS,
+                                                        dataSource: [
+                                                            { id: null, name: 'Sin override' },
+                                                            { id: true, name: 'Forzar ON' },
+                                                            { id: false, name: 'Forzar OFF' },
+                                                        ],
                                                         displayExpr: 'name',
                                                         valueExpr: 'id',
-                                                        searchEnabled: true,
                                                     }}
                                                 >
-                                                    <Label text="Plan" />
+                                                    <Label text={mod.name} />
                                                 </SimpleItem>
-                                                <SimpleItem dataField="graceDays" editorType="dxNumberBox" editorOptions={{ min: 0, showSpinButtons: true }}>
-                                                    <Label text="Días de gracia" />
-                                                </SimpleItem>
-                                                <SimpleItem dataField="validFrom" editorType="dxDateBox" editorOptions={{ type: 'date', displayFormat: 'yyyy-MM-dd', dateSerializationFormat: 'yyyy-MM-dd', openOnFieldClick: true, showClearButton: true }}>
-                                                    <Label text="Válida desde (omitir = ya vigente)" />
-                                                </SimpleItem>
-                                                <SimpleItem dataField="validUntil" editorType="dxDateBox" editorOptions={{ type: 'date', displayFormat: 'yyyy-MM-dd', dateSerializationFormat: 'yyyy-MM-dd', openOnFieldClick: true, showClearButton: true }}>
-                                                    <Label text="Válida hasta (vacío = sin vencimiento)" />
-                                                </SimpleItem>
-                                            </GroupItem>
+                                            ))}
+                                        </GroupItem>
 
-                                            <GroupItem colCount={2} colSpan={2} caption="Overrides de módulos (null = sin override)">
-                                                {PRODUCT_MODULES.map((mod) => (
-                                                    <SimpleItem
-                                                        key={mod.id}
-                                                        dataField={`moduleOverrides.${mod.id}`}
-                                                        editorType="dxSelectBox"
-                                                        editorOptions={{
-                                                            dataSource: [
-                                                                { id: null, name: 'Sin override' },
-                                                                { id: true, name: 'Forzar ON' },
-                                                                { id: false, name: 'Forzar OFF' },
-                                                            ],
-                                                            displayExpr: 'name',
-                                                            valueExpr: 'id',
-                                                        }}
-                                                    >
-                                                        <Label text={mod.name} />
-                                                    </SimpleItem>
-                                                ))}
-                                            </GroupItem>
-
-                                            <GroupItem colCount={3} colSpan={2} caption="Overrides de cuotas (vacío = sin override; null = sin tope)">
-                                                {QUOTA_CODES.map((q) => (
-                                                    <SimpleItem
-                                                        key={q.id}
-                                                        dataField={`quotaOverrides.${q.id}`}
-                                                        editorType="dxNumberBox"
-                                                        editorOptions={{
-                                                            min: 0,
-                                                            showSpinButtons: true,
-                                                            showClearButton: true,
-                                                            placeholder: 'Sin override',
-                                                        }}
-                                                    >
-                                                        <Label text={q.name} />
-                                                    </SimpleItem>
-                                                ))}
-                                            </GroupItem>
-                                        </Form>
-
-                                        <div className="mt-4 flex justify-end gap-2">
-                                            <Button
-                                                text={license ? 'Reemplazar licencia' : 'Asignar licencia'}
-                                                type="default"
-                                                disabled={!canModify || saving}
-                                                onClick={() => void handleSavePut()}
-                                            />
-                                        </div>
-                                    </SysAdminPanelBody>
-                                </SysAdminPanel>
-                            ) : null}
-                        </div>
-                    )}
-                </SysAdminPanel>
+                                        <GroupItem colCount={3} colSpan={2} caption="Overrides de cuotas">
+                                            {QUOTA_CODES.map((q) => (
+                                                <SimpleItem
+                                                    key={q.id}
+                                                    dataField={`quotaOverrides.${q.id}`}
+                                                    editorType="dxNumberBox"
+                                                    editorOptions={{
+                                                        min: 0,
+                                                        showSpinButtons: true,
+                                                        showClearButton: true,
+                                                        placeholder: 'Sin override',
+                                                    }}
+                                                >
+                                                    <Label text={q.name} />
+                                                </SimpleItem>
+                                            ))}
+                                        </GroupItem>
+                                    </Form>
+                                </SysAdminPanelBody>
+                                <SysAdminPanelFooter>
+                                    {license && license.status !== 'revoked' ? (
+                                        <Button
+                                            text="Cancelar"
+                                            stylingMode="text"
+                                            disabled={saving}
+                                            onClick={() => {
+                                                setFormData(contractToForm(license));
+                                                setShowAssignForm(false);
+                                            }}
+                                        />
+                                    ) : null}
+                                    <Button
+                                        text={license ? 'Reemplazar licencia' : 'Asignar licencia'}
+                                        type="default"
+                                        disabled={!canModify || saving}
+                                        onClick={() => void handleSavePut()}
+                                    />
+                                </SysAdminPanelFooter>
+                            </SysAdminPanel>
+                        ) : null}
+                    </>
+                )}
+                </div>
             </div>
         </div>
     );
@@ -556,8 +560,10 @@ function LicensesClientInner() {
 
 export default function LicensesClient() {
     return (
-        <Suspense fallback={<SysAdminLoadingState label="Cargando…" />}>
-            <LicensesClientInner />
-        </Suspense>
+        <div className="h-full min-h-0 w-full">
+            <Suspense fallback={<SysAdminLoadingState label="Cargando…" />}>
+                <LicensesClientInner />
+            </Suspense>
+        </div>
     );
 }

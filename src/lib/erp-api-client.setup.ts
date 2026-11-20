@@ -1,5 +1,5 @@
 import { configureErpApiClient } from "@repo/erp-api-client";
-import { isPathInRecoveryWhiteList } from "@/app/lib/constants/recoveryWhiteList";
+import { isPathInRecoveryWhiteList } from "@repo/recovery";
 import { getToken } from "@/lib/utils/token.helper";
 
 configureErpApiClient({

@@ -18,6 +18,7 @@ import {
     SysAdminLoadingState,
     SysAdminPanel,
     SysAdminPanelBody,
+    SysAdminPanelFooter,
     SysAdminPanelHeader,
     SysAdminToolbar,
 } from '../components/sysAdminChrome';
@@ -216,7 +217,7 @@ function FirebirdClientInner() {
             <SectionHeader title="SysAdmin · Firebird" />
 
             <SysAdminToolbar>
-                <div className="flex flex-col gap-1 w-full min-w-[280px] max-w-md grow sm:grow-0">
+                <div className="flex flex-col gap-1.5 w-full">
                     <label className="text-[11px] uppercase tracking-wide text-main/50">Compañía</label>
                     <GenericSelectBox
                         dataSource={companies}
@@ -235,108 +236,105 @@ function FirebirdClientInner() {
                             setCompanyId(next);
                         }}
                     />
-                </div>
-                {companyId && !loadingConfig && config ? (
-                    <div className="pb-1 flex items-center min-h-9">
+                    {companyId && !loadingConfig && config ? (
                         <SysAdminBadge
                             label={config.fdbPasswordSet ? 'Password configurado' : 'Sin password'}
                             tone={config.fdbPasswordSet ? 'ok' : 'neutral'}
                         />
-                    </div>
-                ) : null}
+                    ) : null}
+                </div>
             </SysAdminToolbar>
 
-            <div className="flex-1 min-h-0 overflow-auto">
-                <SysAdminPanel className="h-full min-h-[320px] max-w-4xl">
-                    {!companyId ? (
+            <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain w-full">
+                {!companyId ? (
+                    <SysAdminPanel className="w-full min-h-[280px] shrink-0">
                         <SysAdminEmptyState
                             icon="fields"
                             title="Seleccioná una compañía"
                             description="Credenciales Firebird por compañía (syncs + API legacy). El password nunca vuelve en claro desde la API."
                         />
-                    ) : loadingConfig ? (
+                    </SysAdminPanel>
+                ) : loadingConfig ? (
+                    <SysAdminPanel className="w-full min-h-[200px] shrink-0">
                         <SysAdminLoadingState label="Cargando Firebird…" />
-                    ) : (
-                        <>
-                            <SysAdminPanelHeader
-                                title="Configuración Firebird"
+                    </SysAdminPanel>
+                ) : (
+                    <SysAdminPanel className="w-full shrink-0">
+                        <SysAdminPanelHeader title="Configuración Firebird" />
+                        <SysAdminPanelBody>
+                            <Form
+                                ref={formRef}
+                                formData={formData}
+                                onFieldDataChanged={(e) => {
+                                    if (!e.dataField) return;
+                                    setFormData((prev) => ({ ...prev, [e.dataField as string]: e.value }));
+                                    if (e.dataField === 'fdbPassword') {
+                                        setPasswordDirty(Boolean(e.value));
+                                    }
+                                }}
+                                labelLocation="top"
+                                colCount={2}
+                                disabled={!canModify}
+                            >
+                                <GroupItem colCount={2} colSpan={2} caption="Conexión">
+                                    <SimpleItem dataField="fdbDsn" colSpan={2} editorOptions={{ placeholder: 'host:/path/db.fdb' }}>
+                                        <Label text="DSN (alternativa a host+path)" />
+                                    </SimpleItem>
+                                    <SimpleItem dataField="fdbHost" editorOptions={{ placeholder: 'hostname' }}>
+                                        <Label text="Host" />
+                                    </SimpleItem>
+                                    <SimpleItem dataField="fdbPath" editorOptions={{ placeholder: '/path/db.fdb' }}>
+                                        <Label text="Path" />
+                                    </SimpleItem>
+                                    <SimpleItem dataField="fdbUser">
+                                        <Label text="Usuario" />
+                                    </SimpleItem>
+                                    <SimpleItem
+                                        dataField="fdbCharset"
+                                        editorType="dxSelectBox"
+                                        editorOptions={{
+                                            dataSource: FIREBIRD_CHARSETS,
+                                            displayExpr: 'name',
+                                            valueExpr: 'id',
+                                            searchEnabled: true,
+                                            showClearButton: true,
+                                        }}
+                                    >
+                                        <Label text="Charset" />
+                                    </SimpleItem>
+                                    <SimpleItem
+                                        dataField="fdbPassword"
+                                        editorType="dxTextBox"
+                                        editorOptions={passwordEditorOptions}
+                                    >
+                                        <Label text="Password" />
+                                    </SimpleItem>
+                                </GroupItem>
+                            </Form>
+                        </SysAdminPanelBody>
+                        <SysAdminPanelFooter>
+                            <Button
+                                text="Vaciar config"
+                                stylingMode="outlined"
+                                type="danger"
+                                disabled={!canModify || saving}
+                                onClick={() => void handleClearAll()}
                             />
-                            <SysAdminPanelBody>
-                                <Form
-                                    ref={formRef}
-                                    formData={formData}
-                                    onFieldDataChanged={(e) => {
-                                        if (!e.dataField) return;
-                                        setFormData((prev) => ({ ...prev, [e.dataField as string]: e.value }));
-                                        if (e.dataField === 'fdbPassword') {
-                                            setPasswordDirty(Boolean(e.value));
-                                        }
-                                    }}
-                                    labelLocation="top"
-                                    colCount={2}
-                                    disabled={!canModify}
-                                >
-                                    <GroupItem colCount={2} colSpan={2} caption="Conexión">
-                                        <SimpleItem dataField="fdbDsn" colSpan={2} editorOptions={{ placeholder: 'host:/path/db.fdb' }}>
-                                            <Label text="DSN (alternativa a host+path)" />
-                                        </SimpleItem>
-                                        <SimpleItem dataField="fdbHost" editorOptions={{ placeholder: 'hostname' }}>
-                                            <Label text="Host" />
-                                        </SimpleItem>
-                                        <SimpleItem dataField="fdbPath" editorOptions={{ placeholder: '/path/db.fdb' }}>
-                                            <Label text="Path" />
-                                        </SimpleItem>
-                                        <SimpleItem dataField="fdbUser">
-                                            <Label text="Usuario" />
-                                        </SimpleItem>
-                                        <SimpleItem
-                                            dataField="fdbCharset"
-                                            editorType="dxSelectBox"
-                                            editorOptions={{
-                                                dataSource: FIREBIRD_CHARSETS,
-                                                displayExpr: 'name',
-                                                valueExpr: 'id',
-                                                searchEnabled: true,
-                                                showClearButton: true,
-                                            }}
-                                        >
-                                            <Label text="Charset" />
-                                        </SimpleItem>
-                                        <SimpleItem
-                                            dataField="fdbPassword"
-                                            editorType="dxTextBox"
-                                            editorOptions={passwordEditorOptions}
-                                        >
-                                            <Label text="Password" />
-                                        </SimpleItem>
-                                    </GroupItem>
-                                </Form>
-
-                                <div className="mt-4 flex flex-wrap justify-end gap-2">
-                                    <Button
-                                        text="Vaciar config"
-                                        stylingMode="outlined"
-                                        type="danger"
-                                        disabled={!canModify || saving}
-                                        onClick={() => void handleClearAll()}
-                                    />
-                                    <Button
-                                        text="Limpiar password"
-                                        stylingMode="outlined"
-                                        disabled={!canModify || saving || !config?.fdbPasswordSet}
-                                        onClick={() => void handleClearPassword()}
-                                    />
-                                    <Button
-                                        text="Guardar"
-                                        type="default"
-                                        disabled={!canModify || saving}
-                                        onClick={() => void handleSave()}
-                                    />
-                                </div>
-                            </SysAdminPanelBody>
-                        </>
-                    )}
-                </SysAdminPanel>
+                            <Button
+                                text="Limpiar password"
+                                stylingMode="outlined"
+                                disabled={!canModify || saving || !config?.fdbPasswordSet}
+                                onClick={() => void handleClearPassword()}
+                            />
+                            <Button
+                                text="Guardar"
+                                type="default"
+                                disabled={!canModify || saving}
+                                onClick={() => void handleSave()}
+                            />
+                        </SysAdminPanelFooter>
+                    </SysAdminPanel>
+                )}
             </div>
         </div>
     );

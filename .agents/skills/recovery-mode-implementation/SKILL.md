@@ -14,7 +14,7 @@ Esta skill documenta la arquitectura, el funcionamiento global y la guía paso a
 El Modo Papelera permite inspeccionar en una misma tabla tanto los elementos **activos** como los **eliminados**, aplicando controles de permisos y estilos visuales distintivos por cada fila.
 
 ### Componentes Clave:
-1. **`RecoveryContext` (`@/contexts/RecoveryContext`)**:
+1. **`RecoveryContext` (`@repo/recovery`)**:
    - `isRecoveryMode`: Booleano del conmutador de papelera.
    - `recoveryVisibility`: Asignado a `'all'` o `'deleted'` (por defecto `'all'`, obtiene registros vivos y eliminados simultáneamente).
    - `canUseRecovery`: `true` si el usuario es `superadmin` o cuenta con el permiso/scope `admin:recovery:read`.
@@ -93,7 +93,7 @@ Todo componente cliente que renderice una tabla o grilla **DEBE OBLIGATORIAMENTE
 
 1. Desestructurar `isRecoveryMode` y `recoveryVisibility` de `useRecovery()`:
    ```typescript
-   import { useRecovery } from "@/contexts/RecoveryContext";
+   import { useRecovery } from "@repo/recovery";
    const { isRecoveryMode, recoveryVisibility } = useRecovery();
    ```
 

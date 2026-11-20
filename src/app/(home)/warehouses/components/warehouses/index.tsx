@@ -12,17 +12,17 @@ interface WarehousesSectionProps {
 }
 
 const WarehousesSection = ({ selectedWarehouseId }: WarehousesSectionProps) => {
-    const { token } = useAuth();
+    const { token, currentCompany } = useAuth();
     const [warehouses, setWarehouses] = useState<IWarehouse[]>([]);
     const [loading, setLoading] = useState(true);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [error, setError] = useState<boolean>(false);
 
     const fetchWarehouses = async () => {
-        if (!token) return;
+        if (!token || !currentCompany?.id) return;
         setIsRefreshing(true);
         try {
-            const response = await warehouseService.getAll(token);
+            const response = await warehouseService.getAll(token, currentCompany.id);
             setWarehouses(mapWarehouseList(response.items));
             setError(false);
         } catch (err) {
@@ -35,8 +35,12 @@ const WarehousesSection = ({ selectedWarehouseId }: WarehousesSectionProps) => {
     };
 
     useEffect(() => {
+        setLoading(true);
+        setWarehouses([]);
+        setError(false);
         fetchWarehouses();
-    }, [token]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- refetch al cambiar empresa / token
+    }, [token, currentCompany?.id]);
 
     if (error) {
         return <div className="p-4 text-main">No se pudieron cargar los almacenes.</div>;

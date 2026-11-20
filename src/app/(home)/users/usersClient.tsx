@@ -1,5 +1,5 @@
 'use client';
-import { useRecovery } from "@/contexts/RecoveryContext";
+import { useRecovery } from "@repo/recovery";
 import { commonService } from "@repo/erp-services/common.service";
 
 import { usersService } from '@repo/erp-services/users.service';
