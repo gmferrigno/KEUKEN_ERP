@@ -22,7 +22,7 @@ interface AddNewPriceListProps {
 }
 
 export default function AddNewPriceList({ isOpen, onClose, onHidden, onSuccess }: AddNewPriceListProps) {
-    const { token, companies, currentCompany } = useAuth();
+    const { token, currentCompany } = useAuth();
     const formRef = useRef<any>(null);
     const [loading, setLoading] = useState(false);
 
@@ -35,7 +35,7 @@ export default function AddNewPriceList({ isOpen, onClose, onHidden, onSuccess }
         companyId: currentCompany?.id || '',
         name: '',
         pricelistTypeId: '',
-        currencyId: '',
+        currencyId: currentCompany?.currencyId || '',
         state: 'draft',
         defaultMarginOverCostPct: 0,
         populateMode: 'empty',
@@ -48,7 +48,7 @@ export default function AddNewPriceList({ isOpen, onClose, onHidden, onSuccess }
                 companyId: currentCompany?.id || '',
                 name: '',
                 pricelistTypeId: '',
-                currencyId: '',
+                currencyId: currentCompany?.currencyId || '',
                 state: 'draft',
                 defaultMarginOverCostPct: 0,
                 populateMode: 'empty',
@@ -68,7 +68,7 @@ export default function AddNewPriceList({ isOpen, onClose, onHidden, onSuccess }
                 }
             }, 0);
         }
-    }, [isOpen, currentCompany?.id]);
+    }, [isOpen, currentCompany?.id, currentCompany?.currencyId]);
 
     // Cargar monedas al abrir el modal
     useEffect(() => {
@@ -184,10 +184,6 @@ export default function AddNewPriceList({ isOpen, onClose, onHidden, onSuccess }
                     formData={formData}
                     labelLocation="top"
                     onFieldDataChanged={(e) => {
-                        if (e.dataField === "companyId") {
-                            handleCompanyChange(e.value);
-                            fetchSourcePricelists(e.value);
-                        }
                         if (e.dataField === "populateMode") {
                             const isCopy = e.value === "copy_rules" || e.value === "copy_rules_remargin";
                             setShowSourceSelect(isCopy);
@@ -206,11 +202,10 @@ export default function AddNewPriceList({ isOpen, onClose, onHidden, onSuccess }
                             label={{ text: "Compañía" }}
                             editorType="dxSelectBox"
                             editorOptions={{
-                                items: companies,
+                                items: currentCompany ? [currentCompany] : [],
                                 valueExpr: "id",
                                 displayExpr: "name",
-                                placeholder: "Seleccione una compañía...",
-                                searchEnabled: true,
+                                readOnly: true,
                                 stylingMode: "filled",
                             }}
                             validationRules={[{ type: 'required', message: "La compañía es obligatoria" }]}

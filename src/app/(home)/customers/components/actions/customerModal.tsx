@@ -1,7 +1,6 @@
 import { customersService } from "@repo/erp-services/partners/customers.service";
 import { IFCustomerCreate, IFCustomerUpdate } from "@repo/api-contracts/erp";
 import { useAuth } from "@/contexts/AuthContext";
-import { useAccess } from "@repo/access";
 import { Button } from '@repo/devextreme';
 import { Popup, Position, ToolbarItem } from "devextreme-react/popup";
 import Form, { Item } from "devextreme-react/form";
@@ -13,7 +12,7 @@ import { metadataService } from "@repo/erp-services/metadata.service";
 import { countriesService } from "@repo/erp-services/location_services/countries.service";
 import { statesService } from "@repo/erp-services/location_services/states.service";
 import { citiesService } from "@repo/erp-services/location_services/cities.service";
-import { localizationService } from "@repo/erp-services/localization.service";
+import { fiscalPositionsService } from "@repo/erp-services/accountant/fiscalPositions.service";
 
 interface CustomerModalProps {
     isOpen: boolean;
@@ -24,8 +23,6 @@ interface CustomerModalProps {
 
 const CustomerModal = ({ isOpen, onClose, onSuccess, customerId }: CustomerModalProps) => {
     const { token, currentCompany } = useAuth();
-    const { canAccess } = useAccess();
-    const canUseTaxAuthoritySchemes = canAccess("billing.taxAuthoritySchemes.lookup");
     const [isLoading, setIsLoading] = useState(false);
     const [formData, setFormData] = useState<any>({});
     const formRef = useRef<any>(null);
@@ -95,11 +92,30 @@ const CustomerModal = ({ isOpen, onClose, onSuccess, customerId }: CustomerModal
 
     const initialStatesRef = useRef<any[]>([]);
     const initialCitiesRef = useRef<any[]>([]);
-    const initialIvaRef = useRef<any[]>([]);
+    const initialFiscalRef = useRef<any[]>([]);
 
     const stateEditorRef = useRef<any>(null);
     const cityEditorRef = useRef<any>(null);
-    const ivaEditorRef = useRef<any>(null);
+    const fiscalEditorRef = useRef<any>(null);
+
+    const loadFiscalPositions = useCallback(async () => {
+        if (!token || !currentCompany?.id) {
+            initialFiscalRef.current = [];
+            fiscalEditorRef.current?.option("dataSource", []);
+            fiscalEditorRef.current?.option("disabled", true);
+            return;
+        }
+        try {
+            const res = await fiscalPositionsService.getAll(token, currentCompany.id);
+            initialFiscalRef.current = (res.items || []).filter((p) => p.active);
+            fiscalEditorRef.current?.option("dataSource", initialFiscalRef.current);
+            fiscalEditorRef.current?.option("disabled", false);
+        } catch {
+            initialFiscalRef.current = [];
+            fiscalEditorRef.current?.option("dataSource", []);
+            fiscalEditorRef.current?.option("disabled", true);
+        }
+    }, [token, currentCompany?.id]);
 
     useEffect(() => {
         if (!token) return;
@@ -112,13 +128,14 @@ const CustomerModal = ({ isOpen, onClose, onSuccess, customerId }: CustomerModal
         } else if (isOpen && !customerId) {
             initialStatesRef.current = [];
             initialCitiesRef.current = [];
-            initialIvaRef.current = [];
+            initialFiscalRef.current = [];
             setFormData({
                 companyId: currentCompany?.id || "",
-                taxData: { ivaCondition: "" }
+                fiscalPositionId: "",
             });
+            loadFiscalPositions();
         }
-    }, [isOpen, customerId, token, currentCompany]);
+    }, [isOpen, customerId, token, currentCompany, loadFiscalPositions]);
 
     const fetchCustomer = async (id: string) => {
         if (!token) return;
@@ -126,21 +143,16 @@ const CustomerModal = ({ isOpen, onClose, onSuccess, customerId }: CustomerModal
         try {
             const customer = await customersService.getById(id, token);
 
-            if (customer.countryIsoCode) {
-                const [statesRes, ivaRes] = await Promise.all([
-                    statesService.getAll(token, customer.countryIsoCode).catch(() => ({ items: [] })),
-                    canUseTaxAuthoritySchemes
-                        ? localizationService
-                              .getTaxAuthoritySchemes(customer.countryIsoCode, token, undefined, "iva_condition")
-                              .catch(() => [])
-                        : Promise.resolve([]),
-                ]);
-                initialStatesRef.current = statesRes.items || [];
-                initialIvaRef.current = canUseTaxAuthoritySchemes ? (ivaRes || []) : [];
-            } else {
-                initialStatesRef.current = [];
-                initialIvaRef.current = [];
-            }
+            const [statesRes, fiscalRes] = await Promise.all([
+                customer.countryIsoCode
+                    ? statesService.getAll(token, customer.countryIsoCode).catch(() => ({ items: [] }))
+                    : Promise.resolve({ items: [] }),
+                currentCompany?.id
+                    ? fiscalPositionsService.getAll(token, currentCompany.id).catch(() => ({ items: [], total: 0 }))
+                    : Promise.resolve({ items: [], total: 0 }),
+            ]);
+            initialStatesRef.current = statesRes.items || [];
+            initialFiscalRef.current = (fiscalRes.items || []).filter((p) => p.active);
 
             if (customer.stateId) {
                 const citiesRes = await citiesService.getAll(token, customer.stateId).catch(() => ({ items: [] }));
@@ -151,7 +163,7 @@ const CustomerModal = ({ isOpen, onClose, onSuccess, customerId }: CustomerModal
 
             setFormData({
                 ...customer,
-                taxData: customer.taxData || { ivaCondition: "" }
+                fiscalPositionId: customer.fiscalPositionId || "",
             });
         } catch (error) {
             console.error("Error fetching customer:", error);
@@ -175,7 +187,6 @@ const CustomerModal = ({ isOpen, onClose, onSuccess, customerId }: CustomerModal
         setIsLoading(true);
         try {
             if (customerId) {
-                // Update
                 const updateData: IFCustomerUpdate = {
                     name: formData.name,
                     email: formData.email,
@@ -184,24 +195,25 @@ const CustomerModal = ({ isOpen, onClose, onSuccess, customerId }: CustomerModal
                     cityCode: formData.cityCode,
                     minDaysToExpiryOrder: formData.minDaysToExpiryOrder,
                     minDaysToExpiryReception: formData.minDaysToExpiryReception,
-                    taxData: formData.taxData,
+                    fiscalPositionId: formData.fiscalPositionId,
+                    taxData: formData.taxData ?? null,
                 };
                 await customersService.update(customerId, updateData, token);
                 notify("Cliente actualizado exitosamente", "success", 3000);
             } else {
-                // Create
                 const createData: IFCustomerCreate = {
                     code: formData.code,
                     companyId: formData.companyId,
                     name: formData.name,
                     email: formData.email,
                     taxId: formData.taxId,
+                    fiscalPositionId: formData.fiscalPositionId,
                     countryIsoCode: formData.countryIsoCode,
                     stateCode: formData.stateCode,
                     cityCode: formData.cityCode,
                     minDaysToExpiryOrder: formData.minDaysToExpiryOrder,
                     minDaysToExpiryReception: formData.minDaysToExpiryReception,
-                    taxData: formData.taxData,
+                    taxData: formData.taxData ?? null,
                 };
                 await customersService.create(createData, token);
                 notify("Cliente creado exitosamente", "success", 3000);
@@ -304,26 +316,17 @@ const CustomerModal = ({ isOpen, onClose, onSuccess, customerId }: CustomerModal
                                         if (e.event) {
                                             formRef.current?.instance().updateData("stateCode", "");
                                             formRef.current?.instance().updateData("cityCode", "");
-                                            formRef.current?.instance().updateData("taxData.ivaCondition", "");
 
                                             stateEditorRef.current?.option("dataSource", []);
                                             stateEditorRef.current?.option("disabled", true);
                                             cityEditorRef.current?.option("dataSource", []);
                                             cityEditorRef.current?.option("disabled", true);
-                                            ivaEditorRef.current?.option("dataSource", []);
-                                            ivaEditorRef.current?.option("disabled", true);
 
                                             if (e.value) {
-                                                statesService.getAll(token, e.value).then(res => {
+                                                statesService.getAll(token!, e.value).then(res => {
                                                     stateEditorRef.current?.option("dataSource", res.items);
                                                     stateEditorRef.current?.option("disabled", false);
                                                 });
-                                                if (canUseTaxAuthoritySchemes) {
-                                                    localizationService.getTaxAuthoritySchemes(e.value, token, undefined, "iva_condition").then(res => {
-                                                        ivaEditorRef.current?.option("dataSource", res);
-                                                        ivaEditorRef.current?.option("disabled", !formRef.current?.instance().option("formData").cityCode);
-                                                    });
-                                                }
                                             }
                                         }
                                     }
@@ -345,18 +348,16 @@ const CustomerModal = ({ isOpen, onClose, onSuccess, customerId }: CustomerModal
                                     onValueChanged: (e: any) => {
                                         if (e.event) {
                                             formRef.current?.instance().updateData("cityCode", "");
-                                            formRef.current?.instance().updateData("taxData.ivaCondition", "");
 
                                             cityEditorRef.current?.option("dataSource", []);
                                             cityEditorRef.current?.option("disabled", true);
-                                            ivaEditorRef.current?.option("disabled", true);
 
                                             if (e.value) {
                                                 const statesArray = stateEditorRef.current?.option("dataSource") || initialStatesRef.current;
                                                 const stateObj = statesArray.find((s: any) => s.code === e.value);
 
                                                 if (stateObj) {
-                                                    citiesService.getAll(token, stateObj.id).then(res => {
+                                                    citiesService.getAll(token!, stateObj.id).then(res => {
                                                         cityEditorRef.current?.option("dataSource", res.items);
                                                         cityEditorRef.current?.option("disabled", false);
                                                     });
@@ -379,32 +380,29 @@ const CustomerModal = ({ isOpen, onClose, onSuccess, customerId }: CustomerModal
                                     searchEnabled: true,
                                     placeholder: "Seleccione una ciudad...",
                                     disabled: !formData.stateCode,
-                                    onValueChanged: (e: any) => {
-                                        if (e.event) {
-                                            formRef.current?.instance().updateData("taxData.ivaCondition", "");
-
-                                            if (e.value) {
-                                                ivaEditorRef.current?.option("disabled", false);
-                                            } else {
-                                                ivaEditorRef.current?.option("disabled", true);
-                                            }
-                                        }
-                                    }
                                 }}
                             />
                             <Item
-                                dataField="taxData.ivaCondition"
+                                dataField="fiscalPositionId"
                                 editorType="dxSelectBox"
-                                visible={canUseTaxAuthoritySchemes}
+                                isRequired={true}
                                 label={{ text: "Condición IVA" }}
                                 editorOptions={{
-                                    onInitialized: (e: any) => { ivaEditorRef.current = e.component; },
-                                    dataSource: initialIvaRef.current,
-                                    valueExpr: "schemeCode",
-                                    displayExpr: "localName",
+                                    onInitialized: (e: any) => {
+                                        fiscalEditorRef.current = e.component;
+                                        if (initialFiscalRef.current.length) {
+                                            e.component.option({
+                                                dataSource: initialFiscalRef.current,
+                                                disabled: false,
+                                            });
+                                        }
+                                    },
+                                    dataSource: initialFiscalRef.current,
+                                    valueExpr: "id",
+                                    displayExpr: "name",
                                     searchEnabled: true,
                                     placeholder: "Seleccione la condición IVA...",
-                                    disabled: !formData.cityCode
+                                    disabled: !currentCompany?.id,
                                 }}
                             />
                             <Item

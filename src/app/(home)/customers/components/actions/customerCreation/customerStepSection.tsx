@@ -1,10 +1,13 @@
 "use client";
 
-import { RefObject, useEffect, useRef } from "react";
+import { RefObject, useEffect, useMemo, useRef, useState } from "react";
 import Form, { Item } from "devextreme-react/form";
+import type { IFAccount, IFOptionItem } from "@repo/api-contracts/erp";
 import { statesService } from "@repo/erp-services/location_services/states.service";
 import { citiesService } from "@repo/erp-services/location_services/cities.service";
-import { localizationService } from "@repo/erp-services/localization.service";
+import { fiscalPositionsService } from "@repo/erp-services/accountant/fiscalPositions.service";
+import { accountsService } from "@repo/erp-services/accountant/accounts.service";
+import { paymentTermsService } from "@repo/erp-services/payments_services/paymentTerms.service";
 
 export interface CustomerStepSectionProps {
     formRef: RefObject<any>;
@@ -12,11 +15,14 @@ export interface CustomerStepSectionProps {
     countries: any[];
     selectedCountryCode: string;
     setSelectedCountryCode: (code: string) => void;
-    canUseTaxAuthoritySchemes: boolean;
+    companyId?: string | null;
+    companyName?: string | null;
     token: string | null | undefined;
-    /** Cuando el paso está activo (vuelta desde dirección), rehidrata selects. */
     isActive: boolean;
 }
+
+const optionDisplay = (item: IFOptionItem | null | undefined) =>
+    item ? (item.code ? `${item.code} — ${item.label}` : item.label) : "";
 
 const CustomerStepSection = ({
     formRef,
@@ -24,7 +30,8 @@ const CustomerStepSection = ({
     countries,
     selectedCountryCode,
     setSelectedCountryCode,
-    canUseTaxAuthoritySchemes,
+    companyId,
+    companyName,
     token,
     isActive,
 }: CustomerStepSectionProps) => {
@@ -32,32 +39,61 @@ const CustomerStepSection = ({
 
     const initialStatesRef = useRef<any[]>([]);
     const initialCitiesRef = useRef<any[]>([]);
-    const initialIvaRef = useRef<any[]>([]);
+    const initialFiscalRef = useRef<any[]>([]);
     const stateEditorRef = useRef<any>(null);
     const cityEditorRef = useRef<any>(null);
-    const ivaEditorRef = useRef<any>(null);
+    const fiscalEditorRef = useRef<any>(null);
 
-    const loadIvaSchemesForCountry = (countryCode: string) => {
-        if (!token || !canUseTaxAuthoritySchemes || !countryCode) {
-            ivaEditorRef.current?.option("dataSource", []);
-            ivaEditorRef.current?.option("disabled", true);
+    const [paymentTermOptions, setPaymentTermOptions] = useState<IFOptionItem[]>([]);
+    const [glAccounts, setGlAccounts] = useState<IFAccount[]>([]);
+
+    const glAccountOptions = useMemo(
+        () =>
+            glAccounts.map((acc) => ({
+                id: acc.id,
+                displayLabel: `${acc.code} — ${acc.name}`,
+            })),
+        [glAccounts]
+    );
+
+    const loadFiscalPositions = () => {
+        if (!token || !companyId) {
+            fiscalEditorRef.current?.option("dataSource", []);
+            fiscalEditorRef.current?.option("disabled", true);
             return;
         }
-        localizationService
-            .getTaxAuthoritySchemes(countryCode, token, undefined, "iva_condition")
+        fiscalPositionsService
+            .getAll(token, companyId)
             .then((res) => {
-                initialIvaRef.current = res || [];
-                ivaEditorRef.current?.option("dataSource", initialIvaRef.current);
-                ivaEditorRef.current?.option("disabled", false);
+                initialFiscalRef.current = (res.items || []).filter((p) => p.active);
+                fiscalEditorRef.current?.option("dataSource", initialFiscalRef.current);
+                fiscalEditorRef.current?.option("disabled", false);
             })
             .catch(() => {
-                initialIvaRef.current = [];
-                ivaEditorRef.current?.option("dataSource", []);
-                ivaEditorRef.current?.option("disabled", true);
+                initialFiscalRef.current = [];
+                fiscalEditorRef.current?.option("dataSource", []);
+                fiscalEditorRef.current?.option("disabled", true);
             });
     };
 
-    // Al volver al paso Cliente, rehidratar selects de provincia/ciudad/IVA.
+    const loadContractOptionals = () => {
+        if (!token || !companyId) {
+            setPaymentTermOptions([]);
+            setGlAccounts([]);
+            return;
+        }
+
+        paymentTermsService
+            .getOptions({ companyId, limit: 200 }, token)
+            .then((res) => setPaymentTermOptions(res?.items || []))
+            .catch(() => setPaymentTermOptions([]));
+
+        accountsService
+            .getAll(token, companyId, { limit: 500, chart_status: "active" })
+            .then((res) => setGlAccounts(res?.items || []))
+            .catch(() => setGlAccounts([]));
+    };
+
     useEffect(() => {
         if (!isActive || !token || !formData.countryIsoCode) return;
 
@@ -83,14 +119,14 @@ const CustomerStepSection = ({
             });
         });
 
-        if (canUseTaxAuthoritySchemes) {
-            localizationService
-                .getTaxAuthoritySchemes(countryCode, token, undefined, "iva_condition")
+        if (companyId) {
+            fiscalPositionsService
+                .getAll(token, companyId)
                 .then((res) => {
                     if (cancelled) return;
-                    initialIvaRef.current = res || [];
-                    ivaEditorRef.current?.option("dataSource", initialIvaRef.current);
-                    ivaEditorRef.current?.option("disabled", false);
+                    initialFiscalRef.current = (res.items || []).filter((p) => p.active);
+                    fiscalEditorRef.current?.option("dataSource", initialFiscalRef.current);
+                    fiscalEditorRef.current?.option("disabled", false);
                 });
         }
 
@@ -100,11 +136,17 @@ const CustomerStepSection = ({
     }, [
         isActive,
         token,
+        companyId,
         formData.countryIsoCode,
         formData.stateCode,
-        canUseTaxAuthoritySchemes,
         setSelectedCountryCode,
     ]);
+
+    useEffect(() => {
+        if (!isActive) return;
+        loadFiscalPositions();
+        loadContractOptionals();
+    }, [isActive, token, companyId]);
 
     return (
         <Form
@@ -114,6 +156,19 @@ const CustomerStepSection = ({
             showValidationSummary={true}
             colCount={2}
         >
+            <Item
+                dataField="companyId"
+                editorType="dxTextBox"
+                isRequired={true}
+                label={{
+                    text: companyName
+                        ? `Compañía — ${companyName}`
+                        : "Compañía (ID)",
+                }}
+                editorOptions={{
+                    readOnly: true,
+                }}
+            />
             <Item
                 dataField="code"
                 editorType="dxTextBox"
@@ -129,7 +184,6 @@ const CustomerStepSection = ({
             <Item
                 dataField="email"
                 editorType="dxTextBox"
-                isRequired={true}
                 label={{ text: "Email" }}
             />
             <Item
@@ -152,16 +206,11 @@ const CustomerStepSection = ({
                         formRef.current?.instance().updateData("stateCode", "");
                         formRef.current?.instance().updateData("cityCode", "");
                         formRef.current?.instance().updateData("taxId", "");
-                        formRef.current
-                            ?.instance()
-                            .updateData("taxData.ivaCondition", "");
 
                         stateEditorRef.current?.option("dataSource", []);
                         stateEditorRef.current?.option("disabled", true);
                         cityEditorRef.current?.option("dataSource", []);
                         cityEditorRef.current?.option("disabled", true);
-                        ivaEditorRef.current?.option("dataSource", []);
-                        ivaEditorRef.current?.option("disabled", true);
 
                         if (!nextCountry) return;
 
@@ -169,7 +218,6 @@ const CustomerStepSection = ({
                             stateEditorRef.current?.option("dataSource", res.items);
                             stateEditorRef.current?.option("disabled", false);
                         });
-                        loadIvaSchemesForCountry(nextCountry);
                     },
                 }}
             />
@@ -232,6 +280,101 @@ const CustomerStepSection = ({
                 label={{ text: "Código postal" }}
             />
             <Item
+                dataField="taxId"
+                editorType="dxTextBox"
+                isRequired={hasCountry}
+                visible={hasCountry}
+                label={{ text: "Identificación Fiscal" }}
+            />
+            <Item
+                dataField="fiscalPositionId"
+                editorType="dxSelectBox"
+                isRequired={true}
+                label={{ text: "Condición IVA" }}
+                editorOptions={{
+                    onInitialized: (e: any) => {
+                        fiscalEditorRef.current = e.component;
+                        if (initialFiscalRef.current.length) {
+                            e.component.option({
+                                dataSource: initialFiscalRef.current,
+                                disabled: false,
+                            });
+                        }
+                    },
+                    dataSource: initialFiscalRef.current,
+                    valueExpr: "id",
+                    displayExpr: "name",
+                    searchEnabled: true,
+                    placeholder: "Seleccione la condición IVA...",
+                    disabled: !companyId,
+                }}
+            />
+            <Item
+                dataField="taxData.iibb"
+                editorType="dxTextBox"
+                label={{ text: "IIBB (tax_data)" }}
+                editorOptions={{
+                    placeholder: "Ej. 901-999999-9",
+                }}
+            />
+            <Item
+                dataField="creditLimit"
+                editorType="dxNumberBox"
+                label={{ text: "Límite de crédito" }}
+                editorOptions={{
+                    showClearButton: true,
+                    min: 0,
+                }}
+            />
+            <Item
+                dataField="paymentTermId"
+                editorType="dxSelectBox"
+                label={{ text: "Condición de pago" }}
+                editorOptions={{
+                    dataSource: paymentTermOptions,
+                    valueExpr: "id",
+                    displayExpr: optionDisplay,
+                    searchEnabled: true,
+                    showClearButton: true,
+                    placeholder: "Seleccione una condición de pago...",
+                    noDataText: "No hay condiciones de pago para esta compañía",
+                }}
+            />
+            <Item
+                dataField="accountDebitId"
+                editorType="dxSelectBox"
+                label={{ text: "Cuenta débito (GL)" }}
+                editorOptions={{
+                    dataSource: glAccountOptions,
+                    valueExpr: "id",
+                    displayExpr: "displayLabel",
+                    searchEnabled: true,
+                    showClearButton: true,
+                    placeholder: "Seleccionar cuenta de débito...",
+                }}
+            />
+            <Item
+                dataField="accountCreditId"
+                editorType="dxSelectBox"
+                label={{ text: "Cuenta crédito (GL)" }}
+                editorOptions={{
+                    dataSource: glAccountOptions,
+                    valueExpr: "id",
+                    displayExpr: "displayLabel",
+                    searchEnabled: true,
+                    showClearButton: true,
+                    placeholder: "Seleccionar cuenta de crédito...",
+                }}
+            />
+            <Item
+                dataField="accountId"
+                editorType="dxTextBox"
+                label={{ text: "Cuenta corriente auxiliar (ID)" }}
+                editorOptions={{
+                    placeholder: "UUID de accounting.account",
+                }}
+            />
+            <Item
                 dataField="minDaysToExpiryOrder"
                 editorType="dxNumberBox"
                 label={{ text: "Días mín. venc. Orden" }}
@@ -240,37 +383,6 @@ const CustomerStepSection = ({
                 dataField="minDaysToExpiryReception"
                 editorType="dxNumberBox"
                 label={{ text: "Días mín. venc. Recepción" }}
-            />
-            <Item
-                dataField="taxId"
-                editorType="dxTextBox"
-                isRequired={hasCountry}
-                visible={hasCountry}
-                colSpan={canUseTaxAuthoritySchemes ? 1 : 2}
-                label={{ text: "Identificación Fiscal" }}
-            />
-            <Item
-                dataField="taxData.ivaCondition"
-                editorType="dxSelectBox"
-                visible={hasCountry && canUseTaxAuthoritySchemes}
-                label={{ text: "Condición IVA" }}
-                editorOptions={{
-                    onInitialized: (e: any) => {
-                        ivaEditorRef.current = e.component;
-                        if (selectedCountryCode) {
-                            e.component.option({
-                                dataSource: initialIvaRef.current,
-                                disabled: false,
-                            });
-                        }
-                    },
-                    dataSource: initialIvaRef.current,
-                    valueExpr: "schemeCode",
-                    displayExpr: "localName",
-                    searchEnabled: true,
-                    placeholder: "Seleccione la condición IVA...",
-                    disabled: !hasCountry,
-                }}
             />
         </Form>
     );

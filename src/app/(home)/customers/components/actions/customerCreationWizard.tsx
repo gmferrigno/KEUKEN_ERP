@@ -1,7 +1,6 @@
 "use client";
 
 import { useAuth } from "@/contexts/AuthContext";
-import { useAccess } from "@repo/access";
 import { Button } from "@repo/devextreme";
 import { Popup, Position, ToolbarItem } from "devextreme-react/popup";
 import Stepper from "devextreme-react/stepper";
@@ -39,8 +38,6 @@ const CustomerCreationWizard = ({
     onSuccess,
 }: CustomerCreationWizardProps) => {
     const { token, currentCompany } = useAuth();
-    const { canAccess } = useAccess();
-    const canUseTaxAuthoritySchemes = canAccess("billing.taxAuthoritySchemes.lookup");
 
     const [currentStep, setCurrentStep] = useState(0);
     const [isLoading, setIsLoading] = useState(false);
@@ -110,7 +107,15 @@ const CustomerCreationWizard = ({
         setFormData({
             companyId: currentCompany?.id || "",
             code: "",
-            taxData: { ivaCondition: "" },
+            fiscalPositionId: "",
+            taxData: {},
+            creditLimit: null,
+            paymentTermId: null,
+            accountDebitId: null,
+            accountCreditId: null,
+            accountId: null,
+            minDaysToExpiryOrder: 0,
+            minDaysToExpiryReception: 0,
         });
 
         const loadSuggestedCode = async () => {
@@ -176,18 +181,36 @@ const CustomerCreationWizard = ({
         }
 
         const current = readCustomerForm();
+        const iibb =
+            typeof current.taxData?.iibb === "string"
+                ? current.taxData.iibb.trim()
+                : "";
+        const taxData =
+            iibb || (current.taxData && Object.keys(current.taxData).length > 0)
+                ? {
+                      ...(current.taxData || {}),
+                      ...(iibb ? { iibb } : {}),
+                  }
+                : null;
+
         const draft: IFCustomerCreate = {
             code: current.code,
             companyId: current.companyId || currentCompany?.id || "",
             name: current.name,
-            email: current.email,
+            email: current.email || "",
             taxId: current.taxId,
+            fiscalPositionId: current.fiscalPositionId,
             countryIsoCode: current.countryIsoCode,
             stateCode: current.stateCode,
             cityCode: current.cityCode,
             minDaysToExpiryOrder: current.minDaysToExpiryOrder,
             minDaysToExpiryReception: current.minDaysToExpiryReception,
-            taxData: current.taxData,
+            creditLimit: current.creditLimit ?? null,
+            paymentTermId: current.paymentTermId || null,
+            accountDebitId: current.accountDebitId || null,
+            accountCreditId: current.accountCreditId || null,
+            accountId: current.accountId || null,
+            taxData,
         };
 
         setIsLoading(true);
@@ -384,35 +407,13 @@ const CustomerCreationWizard = ({
             }
 
             onSuccess();
-
-            const { createdAddressCount, failedAddresses } = result;
-
-            if (failedAddresses.length === 0) {
-                notify(
-                    addressesToCreate.length > 1
-                        ? `Cliente creado con ${createdAddressCount} direcciones`
-                        : "Cliente y dirección creados exitosamente",
-                    "success",
-                    3000
-                );
-                resetAndClose();
-                return;
-            }
-
-            const failedNames = failedAddresses.map((item) => item.name).join(", ");
-            if (createdAddressCount > 0) {
-                notify(
-                    `Cliente creado. ${createdAddressCount} dirección(es) OK; fallaron: ${failedNames}. Complete las faltantes desde Direcciones.`,
-                    "warning",
-                    6000
-                );
-            } else {
-                notify(
-                    `Cliente creado, pero no se pudo crear ninguna dirección (${failedNames}). Agréguelas desde Direcciones.`,
-                    "error",
-                    6000
-                );
-            }
+            notify(
+                addressesToCreate.length > 1
+                    ? `Cliente creado con ${result.createdAddressCount} direcciones`
+                    : "Cliente y dirección creados exitosamente",
+                "success",
+                3000
+            );
             resetAndClose();
         } finally {
             setIsLoading(false);
@@ -428,8 +429,8 @@ const CustomerCreationWizard = ({
             showCloseButton={true}
             showTitle={true}
             title="Nuevo Cliente"
-            width={780}
-            height={720}
+            width={820}
+            height="90%"
             className="custom-popup"
             deferRendering={false}
             onShown={(e) => {
@@ -557,7 +558,8 @@ const CustomerCreationWizard = ({
                         countries={countries}
                         selectedCountryCode={selectedCountryCode}
                         setSelectedCountryCode={setSelectedCountryCode}
-                        canUseTaxAuthoritySchemes={canUseTaxAuthoritySchemes}
+                        companyId={currentCompany?.id}
+                        companyName={currentCompany?.name}
                         token={token}
                         isActive={currentStep === 0}
                     />

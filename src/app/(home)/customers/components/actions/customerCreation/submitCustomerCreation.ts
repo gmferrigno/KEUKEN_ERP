@@ -1,16 +1,38 @@
-import { customerAddressesService } from "@repo/erp-services/partners/customerAddresses.service";
 import { customersService } from "@repo/erp-services/partners/customers.service";
 import type { AddressDraft, IFCustomerCreate } from "./customerWizard.types";
 
 export type SubmitCustomerCreationResult = {
     customerId: string;
     createdAddressCount: number;
-    failedAddresses: { name: string; message: string }[];
 };
 
+function resolveDeliveryAddressId(
+    address: AddressDraft,
+    all: AddressDraft[]
+): string | null | undefined {
+    const types = address.type || [];
+    if (!types.includes("sales")) {
+        return address.deliveryAddressId ?? null;
+    }
+
+    if (types.includes("delivery") && !address.deliveryAddressId) {
+        return "self";
+    }
+
+    const ref = address.deliveryAddressId;
+    if (!ref) return null;
+
+    const target = all.find((item) => item._key === ref);
+    if (target) {
+        return `@${target._key}`;
+    }
+
+    return ref;
+}
+
 /**
- * Flujo actual: POST customer + N addresses.
- * Cuando exista create-consumer-full, este es el único lugar a reemplazar.
+ * POST /partners/customers/full — alta atómica cliente + direcciones.
+ * Si falla cualquier paso, el backend hace rollback total (no hay altas parciales).
  */
 export async function submitCustomerCreation(params: {
     customerDraft: IFCustomerCreate;
@@ -20,56 +42,24 @@ export async function submitCustomerCreation(params: {
 }): Promise<SubmitCustomerCreationResult> {
     const { customerDraft, addresses, token, companyId } = params;
 
-    const created = await customersService.create(customerDraft, token, companyId);
-
-    const failedAddresses: { name: string; message: string }[] = [];
-    let createdAddressCount = 0;
-    const pendingKeyToRealId = new Map<string, string>();
-
-    // 1) Entregas primero (para poder linkear deliveryAddressId).
-    // 2) Luego el resto, resolviendo keys temporales → ids reales.
-    const deliveryAddresses = addresses.filter((address) =>
-        address.type?.includes("delivery")
+    const created = await customersService.createFull(
+        {
+            customer: customerDraft,
+            addresses: addresses.map((address) => {
+                const { _key, ...rest } = address;
+                return {
+                    ...rest,
+                    clientKey: _key,
+                    deliveryAddressId: resolveDeliveryAddressId(address, addresses),
+                };
+            }),
+        },
+        token,
+        companyId
     );
-    const otherAddresses = addresses.filter(
-        (address) => !address.type?.includes("delivery")
-    );
-
-    const createOne = async (address: AddressDraft) => {
-        const { _key, ...payload } = address;
-        let deliveryAddressId = payload.deliveryAddressId ?? null;
-        if (deliveryAddressId && pendingKeyToRealId.has(deliveryAddressId)) {
-            deliveryAddressId = pendingKeyToRealId.get(deliveryAddressId)!;
-        }
-
-        const createdAddress = await customerAddressesService.create(
-            created.id,
-            { ...payload, deliveryAddressId },
-            token,
-            companyId
-        );
-        pendingKeyToRealId.set(_key, createdAddress.id);
-        createdAddressCount += 1;
-    };
-
-    for (const address of [...deliveryAddresses, ...otherAddresses]) {
-        try {
-            await createOne(address);
-        } catch (error) {
-            console.error("Error creating address:", address.name, error);
-            failedAddresses.push({
-                name: address.name?.trim() || "sin nombre",
-                message:
-                    error instanceof Error
-                        ? error.message
-                        : "Error al crear dirección",
-            });
-        }
-    }
 
     return {
-        customerId: created.id,
-        createdAddressCount,
-        failedAddresses,
+        customerId: created.customer.id,
+        createdAddressCount: created.addresses?.length ?? addresses.length,
     };
 }

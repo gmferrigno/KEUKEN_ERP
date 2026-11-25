@@ -7,12 +7,12 @@ export type AddressTypeRuleInput = {
 export type AddressTypeRulesMode = "strict" | "draft";
 
 /**
- * Reglas de tipos de dirección del cliente:
- * - Solo una dirección de facturación (invoice).
+ * Reglas de tipos de dirección del cliente (alineadas a POST /customers/full):
+ * - Varias addresses pueden incluir `invoice` (sin unicidad).
  * - Ventas (sales) requiere entrega: misma dirección con delivery, o deliveryAddressId.
  * - Entrega (delivery) requiere facturación: misma dirección con invoice, u otra con invoice.
  *
- * mode "draft": solo factura única (permite armar el set de a una en el wizard).
+ * mode "draft": permite armar el set de a una en el wizard (sin exigir delivery/invoice cruzados).
  * mode "strict": reglas completas (Finalizar / guardado API).
  */
 export function validateCustomerAddressTypeRules(
@@ -23,16 +23,11 @@ export function validateCustomerAddressTypeRules(
 
     const mode = options?.mode ?? "strict";
 
-    const invoiceAddresses = addresses.filter((a) => a.type?.includes("invoice"));
-    if (invoiceAddresses.length > 1) {
-        return "Solo puede haber una dirección de facturación";
-    }
-
     if (mode === "draft") {
         return null;
     }
 
-    const hasInvoice = invoiceAddresses.length > 0;
+    const hasInvoice = addresses.some((a) => a.type?.includes("invoice"));
 
     for (const address of addresses) {
         const types = address.type || [];

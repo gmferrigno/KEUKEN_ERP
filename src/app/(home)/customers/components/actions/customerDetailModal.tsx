@@ -224,7 +224,10 @@ const CustomerDetailModal = ({ isOpen, onClose, customerId }: CustomerDetailModa
                                 name: customerFull.customer.name,
                                 email: customerFull.customer.email,
                                 taxId: customerFull.customer.taxId,
-                                ivaCondition: customerFull.customer.taxData?.ivaCondition || "—",
+                                ivaCondition:
+                                    customerFull.customer.fiscalPositionName ||
+                                    customerFull.customer.fiscalPositionCode ||
+                                    "—",
                                 status: customerFull.customer.active ? "Activo" : "Inactivo",
                                 country: customerFull.customer.countryIsoCode,
                                 state: customerFull.customer.stateName || customerFull.customer.stateCode,

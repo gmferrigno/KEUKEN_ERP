@@ -6,10 +6,15 @@ import { countriesService } from "@repo/erp-services/location_services/countries
 import { statesService } from "@repo/erp-services/location_services/states.service";
 import { citiesService } from "@repo/erp-services/location_services/cities.service";
 import {
+    IFCommercialPlatform,
     IFCustomerAddress,
     IFCustomerAddressCreate,
     IFCustomerAddressUpdate,
+    IFOptionItem,
 } from "@repo/api-contracts/erp";
+import { commercialPlatformsService } from "@repo/erp-services/partners/commercialPlatforms.service";
+import { priceListsService } from "@repo/erp-services/priceLists/priceLists.service";
+import { paymentTermsService } from "@repo/erp-services/payments_services/paymentTerms.service";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@repo/devextreme";
 import { Popup, Position, ToolbarItem } from "devextreme-react/popup";
@@ -19,6 +24,7 @@ import notify from "devextreme/ui/notify";
 import CustomStore from "devextreme/data/custom_store";
 import {
     forwardRef,
+    useCallback,
     useEffect,
     useImperativeHandle,
     useMemo,
@@ -26,6 +32,7 @@ import {
     useState,
 } from "react";
 import { validateCustomerAddressTypeRules } from "../../addressTypeRules";
+import AddressLocationPicker from "./addressLocationPicker";
 
 export type AddressInitialLocation = {
     countryId?: string | null;
@@ -137,6 +144,16 @@ const AddressModal = forwardRef<AddressModalHandle, AddressModalProps>(function 
     const [isHydrated, setIsHydrated] = useState(false);
     const [formData, setFormData] = useState({ ...emptyForm });
     const [countries, setCountries] = useState<any[]>([]);
+    const [priceListOptions, setPriceListOptions] = useState<IFOptionItem[]>([]);
+    const [paymentTermOptions, setPaymentTermOptions] = useState<IFOptionItem[]>([]);
+    const [commercialPlatformOptions, setCommercialPlatformOptions] = useState<
+        IFCommercialPlatform[]
+    >([]);
+    /** Coords para el mapa (fuera del Form para no remount/scroll). */
+    const [mapCoords, setMapCoords] = useState<{
+        lat: number | null;
+        lng: number | null;
+    }>({ lat: null, lng: null });
     const formRef = useRef<any>(null);
     const countriesRef = useRef<any[]>([]);
     // Refs (no useState): setState en el cascada re-renderiza el Form con formData
@@ -317,6 +334,54 @@ const AddressModal = forwardRef<AddressModalHandle, AddressModalProps>(function 
                 setCountries([]);
             });
     }, [token]);
+
+    useEffect(() => {
+        if (!isOpen || !token || !currentCompany?.id) {
+            setPriceListOptions([]);
+            setPaymentTermOptions([]);
+            setCommercialPlatformOptions([]);
+            return;
+        }
+
+        let cancelled = false;
+
+        priceListsService
+            .getOptions({ companyId: currentCompany.id, limit: 200 }, token)
+            .then((res) => {
+                if (!cancelled) setPriceListOptions(res?.items || []);
+            })
+            .catch((error) => {
+                console.error("Error loading price lists:", error);
+                if (!cancelled) setPriceListOptions([]);
+            });
+
+        paymentTermsService
+            .getOptions({ companyId: currentCompany.id, limit: 200 }, token)
+            .then((res) => {
+                if (!cancelled) setPaymentTermOptions(res?.items || []);
+            })
+            .catch((error) => {
+                console.error("Error loading payment terms:", error);
+                if (!cancelled) setPaymentTermOptions([]);
+            });
+
+        commercialPlatformsService
+            .getAll(
+                { companyId: currentCompany.id, limit: 200, offset: 0, active: true },
+                token
+            )
+            .then((res) => {
+                if (!cancelled) setCommercialPlatformOptions(res?.items || []);
+            })
+            .catch((error) => {
+                console.error("Error loading commercial platforms:", error);
+                if (!cancelled) setCommercialPlatformOptions([]);
+            });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [isOpen, token, currentCompany?.id]);
 
     const ensureCountries = async (): Promise<any[]> => {
         if (countriesRef.current.length) return countriesRef.current;
@@ -618,7 +683,7 @@ const AddressModal = forwardRef<AddressModalHandle, AddressModalProps>(function 
 
     const getValidatedCreateData = async (): Promise<IFCustomerAddressCreate | null> => {
         const currentData = readCurrentFormData();
-        // Reglas de conjunto (facturación única / entrega↔factura) las valida el wizard.
+        // Reglas de conjunto (entrega↔factura / sales→delivery) las valida el wizard.
         // allowDeferredDeliveryLink: en el wizard se puede cargar Ventas antes que Entrega.
         return buildCreatePayload(currentData, {
             requireCustomerId: false,
@@ -691,6 +756,37 @@ const AddressModal = forwardRef<AddressModalHandle, AddressModalProps>(function 
         isBlank,
     }));
 
+    const handleLocationChange = useCallback(
+        (
+            coords: { lat: number; lng: number },
+            options?: { commit?: boolean }
+        ) => {
+            const form = formRef.current?.instance();
+            form?.updateData("geoLat", coords.lat);
+            form?.updateData("geoLon", coords.lng);
+            // El mapa está fuera del Form: setState en commit es seguro y evita
+            // que al re-mostrar el mapa el pin vuelva a la posición inicial.
+            if (options?.commit !== false) {
+                setMapCoords({ lat: coords.lat, lng: coords.lng });
+            }
+        },
+        []
+    );
+
+    const syncSecondaryFormField = useCallback((e: any) => {
+        if (!e?.dataField) return;
+        formRef.current?.instance()?.updateData(e.dataField, e.value);
+    }, []);
+
+    // Sync mapa cuando hidrata el form (seed / edit / location heredada).
+    useEffect(() => {
+        if (!isHydrated) return;
+        setMapCoords({
+            lat: formData.geoLat ?? null,
+            lng: formData.geoLon ?? null,
+        });
+    }, [isHydrated, formData.geoLat, formData.geoLon]);
+
     const formContent = (
             <div className={embedded ? "flex flex-col gap-4" : "flex flex-col gap-4 p-4 h-full overflow-y-auto custom-scrollbar"}>
                 {!isHydrated ? (
@@ -703,6 +799,7 @@ const AddressModal = forwardRef<AddressModalHandle, AddressModalProps>(function 
                         </span>
                     </div>
                 ) : (
+                    <>
                     <Form
                         ref={formRef}
                         formData={formData}
@@ -853,14 +950,63 @@ const AddressModal = forwardRef<AddressModalHandle, AddressModalProps>(function 
                                 dataField="geoLat"
                                 editorType="dxNumberBox"
                                 label={{ text: "Latitud" }}
-                                editorOptions={{ showSpinButtons: false }}
+                                editorOptions={{
+                                    showSpinButtons: false,
+                                    format: "#0.######",
+                                    step: 0,
+                                    onValueChanged: (e: any) => {
+                                        if (!e.event) return;
+                                        const formLon =
+                                            formRef.current
+                                                ?.instance()
+                                                ?.option("formData")?.geoLon ??
+                                            null;
+                                        setMapCoords({
+                                            lat: e.value ?? null,
+                                            lng: formLon,
+                                        });
+                                    },
+                                }}
                             />
                             <Item
                                 dataField="geoLon"
                                 editorType="dxNumberBox"
                                 label={{ text: "Longitud" }}
-                                editorOptions={{ showSpinButtons: false }}
+                                editorOptions={{
+                                    showSpinButtons: false,
+                                    format: "#0.######",
+                                    step: 0,
+                                    onValueChanged: (e: any) => {
+                                        if (!e.event) return;
+                                        const formLat =
+                                            formRef.current
+                                                ?.instance()
+                                                ?.option("formData")?.geoLat ??
+                                            null;
+                                        setMapCoords({
+                                            lat: formLat,
+                                            lng: e.value ?? null,
+                                        });
+                                    },
+                                }}
                             />
+                        </GroupItem>
+                    </Form>
+
+                    <AddressLocationPicker
+                        latitude={mapCoords.lat}
+                        longitude={mapCoords.lng}
+                        onChange={handleLocationChange}
+                        defaultOpen={true}
+                    />
+
+                    <Form
+                        formData={formData}
+                        labelLocation="top"
+                        colCount={2}
+                        onFieldDataChanged={syncSecondaryFormField}
+                    >
+                        <GroupItem colCount={2} colSpan={2}>
                             <Item
                                 dataField="active"
                                 editorType="dxCheckBox"
@@ -911,13 +1057,42 @@ const AddressModal = forwardRef<AddressModalHandle, AddressModalProps>(function 
                             />
                             <Item
                                 dataField="pricelistId"
-                                editorType="dxTextBox"
-                                label={{ text: "Lista de precios (ID)" }}
+                                editorType="dxSelectBox"
+                                label={{ text: "Lista de precios" }}
+                                editorOptions={{
+                                    dataSource: priceListOptions,
+                                    valueExpr: "id",
+                                    displayExpr: (item: IFOptionItem) =>
+                                        item
+                                            ? item.code
+                                                ? `${item.code} — ${item.label}`
+                                                : item.label
+                                            : "",
+                                    searchEnabled: true,
+                                    showClearButton: true,
+                                    placeholder: "Seleccione una lista de precios...",
+                                    noDataText: "No hay listas de precios para esta compañía",
+                                }}
                             />
                             <Item
                                 dataField="paymentTermId"
-                                editorType="dxTextBox"
-                                label={{ text: "Condición de pago (ID)" }}
+                                editorType="dxSelectBox"
+                                label={{ text: "Condición de pago" }}
+                                editorOptions={{
+                                    dataSource: paymentTermOptions,
+                                    valueExpr: "id",
+                                    displayExpr: (item: IFOptionItem) =>
+                                        item
+                                            ? item.code
+                                                ? `${item.code} — ${item.label}`
+                                                : item.label
+                                            : "",
+                                    searchEnabled: true,
+                                    showClearButton: true,
+                                    placeholder: "Seleccione una condición de pago...",
+                                    noDataText:
+                                        "No hay condiciones de pago para esta compañía",
+                                }}
                             />
                             <Item
                                 dataField="salesChannelId"
@@ -926,12 +1101,28 @@ const AddressModal = forwardRef<AddressModalHandle, AddressModalProps>(function 
                             />
                             <Item
                                 dataField="commercialPlatformId"
-                                editorType="dxTextBox"
+                                editorType="dxSelectBox"
                                 colSpan={2}
-                                label={{ text: "Plataforma comercial (ID)" }}
+                                label={{ text: "Plataforma comercial" }}
+                                editorOptions={{
+                                    dataSource: commercialPlatformOptions,
+                                    valueExpr: "id",
+                                    displayExpr: (item: IFCommercialPlatform) =>
+                                        item
+                                            ? item.code
+                                                ? `${item.code} — ${item.name}`
+                                                : item.name
+                                            : "",
+                                    searchEnabled: true,
+                                    showClearButton: true,
+                                    placeholder: "Seleccione una plataforma comercial...",
+                                    noDataText:
+                                        "No hay plataformas comerciales para esta compañía",
+                                }}
                             />
                         </GroupItem>
                     </Form>
+                    </>
                 )}
             </div>
     );
@@ -947,6 +1138,7 @@ const AddressModal = forwardRef<AddressModalHandle, AddressModalProps>(function 
             onHiding={onClose}
             onHidden={() => {
                 setFormData({ ...emptyForm });
+                setMapCoords({ lat: null, lng: null });
                 statesRef.current = [];
                 citiesRef.current = [];
                 deliveryAddressesRef.current = [];
