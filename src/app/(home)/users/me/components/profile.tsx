@@ -151,9 +151,9 @@ export default function Profile() {
             ?.instance()
             .getEditor('confirmPassword');
         if (!editor) return;
-        const validator = Validator.getInstance(editor.element()) as
-            | { validate: () => void }
-            | undefined;
+        const validator = Validator.getInstance(
+            editor.element()
+        ) as unknown as InstanceType<typeof Validator> | undefined;
         validator?.validate();
     }, []);
 
