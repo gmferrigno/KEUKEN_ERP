@@ -14,7 +14,7 @@ Esta skill documenta la arquitectura, el funcionamiento global y la guía paso a
 El Modo Papelera permite inspeccionar en una misma tabla tanto los elementos **activos** como los **eliminados**, aplicando controles de permisos y estilos visuales distintivos por cada fila.
 
 ### Componentes Clave:
-1. **`RecoveryContext` (`@/contexts/RecoveryContext`)**:
+1. **`RecoveryContext` (`@repo/recovery`)**:
    - `isRecoveryMode`: Booleano del conmutador de papelera.
    - `recoveryVisibility`: Asignado a `'all'` o `'deleted'` (por defecto `'all'`, obtiene registros vivos y eliminados simultáneamente).
    - `canUseRecovery`: `true` si el usuario es `superadmin` o cuenta con el permiso/scope `admin:recovery:read`.
@@ -93,7 +93,7 @@ Todo componente cliente que renderice una tabla o grilla **DEBE OBLIGATORIAMENTE
 
 1. Desestructurar `isRecoveryMode` y `recoveryVisibility` de `useRecovery()`:
    ```typescript
-   import { useRecovery } from "@/contexts/RecoveryContext";
+   import { useRecovery } from "@repo/recovery";
    const { isRecoveryMode, recoveryVisibility } = useRecovery();
    ```
 
@@ -152,7 +152,7 @@ Las acciones de la grilla varían estrictamente dependiendo de si el **Modo Recu
 1. **Modo Recuperación Activo (`isRecoveryMode === true`)**:
    - **Acciones Disponibles**: Únicamente **Ver** (`eyeopen`) y **Recuperar / Restaurar** (`revert`).
    - **Acciones Bloqueadas / Ocultas**: **Editar** (`edit`), **Eliminar** (`trash`) y **Alta / Crear** (`allowAdding: false`). No se permite crear nuevos registros ni modificar/eliminar registros existentes dentro de la papelera.
-   - **Visibilidad Restaurar**: `visible: (e: any) => isRecoveryMode && isSuperAdmin`.
+   - **Visibilidad Restaurar**: `visible: () => isRecoveryMode && canRestore` (`canRestore` = SA o scope `admin:recovery:restore`; ≠ purge).
 
 2. **Modo Normal (`isRecoveryMode === false`)**:
    - **Acciones Disponibles**: **Ver** (`eyeopen`), **Editar** (`edit`), **Eliminar** (`trash`) y **Alta / Crear** (`allowAdding: canModify`).

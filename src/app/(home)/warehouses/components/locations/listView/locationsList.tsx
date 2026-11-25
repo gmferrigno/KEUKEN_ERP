@@ -1,5 +1,6 @@
-﻿'use client';
-import { useRecovery } from "@/contexts/RecoveryContext";
+'use client';
+
+import { useRecovery } from "@repo/recovery";
 import { commonService } from "@repo/erp-services/common.service";
 
 import PERMISSIONS_CONSTANTS from "@repo/access";

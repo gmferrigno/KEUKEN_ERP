@@ -110,8 +110,8 @@ const WarehouseCreation = ({ onSuccess, disabled }: WarehouseCreationProps) => {
     return (
         <>
             <Button
-                width={60}
-                height={60}
+                width={36}
+                height={36}
                 disabled={disabled}
                 className="
                     !bg-primary-900/30 hover:!bg-primary-900/60
@@ -122,9 +122,9 @@ const WarehouseCreation = ({ onSuccess, disabled }: WarehouseCreationProps) => {
                 stylingMode="text"
                 onClick={openPopup}
             >
-                <div className="flex flex-col justify-center items-center w-full h-full">
-                    <div className="size-10 bg-primary-0/10 rounded-dx flex justify-center items-center border border-primary-0/20 group-hover:bg-focus-500 group-hover:text-variant group-hover:border-focus-300 group-hover:scale-110 group-hover:shadow-black/10 transition-all duration-300">
-                        <i className="dx-icon-plus text-2xl !text-main group-hover:!text-variant"></i>
+                <div className="flex items-center justify-center w-full h-full">
+                    <div className="size-7 bg-primary-0/10 rounded-dx flex justify-center items-center border border-primary-0/20 group-hover:bg-focus-500 group-hover:text-variant group-hover:border-focus-300 group-hover:scale-105 transition-all duration-300">
+                        <i className="dx-icon-plus text-base !text-main group-hover:!text-variant"></i>
                     </div>
                 </div>
             </Button>

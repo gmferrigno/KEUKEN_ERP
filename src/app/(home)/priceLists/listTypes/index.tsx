@@ -1,8 +1,7 @@
-﻿'use client';
-import { useRecovery } from "@/contexts/RecoveryContext";
-import { commonService } from "@repo/erp-services/common.service";
-import { RECOVERY_ENTITIES } from "@/app/lib/constants/recoveryWhiteList";
+'use client';
 
+import { useRecovery, RECOVERY_ENTITIES } from "@repo/recovery";
+import { commonService } from "@repo/erp-services/common.service";
 import { canDo } from "@repo/access";
 import { listTypesService } from "@repo/erp-services/priceLists/listTypes.service";
 import { GenericDataGrid, IGenericDataGridColumn } from '@repo/devextreme';
@@ -39,7 +38,7 @@ const STATE_STORING_CONFIG = {
 };
 
 const ListTypesClient = () => {
-    const { isRecoveryMode, recoveryVisibility } = useRecovery();
+    const { isRecoveryMode, canRestore, recoveryVisibility } = useRecovery();
     const { token, permissions, loading, currentCompany, isSuperAdmin } = useAuth();
     const gridRef = useRef<any>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -257,7 +256,7 @@ const ListTypesClient = () => {
             icon: "revert",
             hint: "Restaurar",
             onClick: (data: any) => handleRestore(data),
-            visible: (e: any) => isRecoveryMode && isSuperAdmin,
+            visible: (e: any) => isRecoveryMode && canRestore,
         }
     ], [canModify, isSuperAdmin, isRecoveryMode, handleRowRemoved, handleRestore]);
 

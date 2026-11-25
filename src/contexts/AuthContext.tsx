@@ -353,11 +353,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         void restoreSession();
     }, []);
 
-    // Guard de sesión client-side: no expulsar en login/refused (páginas de acceso/denegación).
+    // Guard de sesión client-side: no expulsar en login/activate/refused (acceso público / denegación).
     useEffect(() => {
         if (loading) return;
         const isExemptPath =
             pathname.startsWith('/login') ||
+            pathname.startsWith('/activate') ||
             pathname.startsWith('/refused');
         if (mustChangePassword && !pathname.startsWith('/login')) {
             router.replace('/login');
@@ -520,6 +521,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
 
         await authService.changePassword(authToken, currentPassword, newPassword);
+
+        // Ya autenticado (p.ej. /users/me): limpiar gate sin rehidratar ni redirigir a /.
+        if (isAuthenticated) {
+            localStorage.removeItem(MUST_CHANGE_PASSWORD_KEY);
+            setMustChangePassword(false);
+            await setMustChangePasswordCookieAction(false).catch((err) => {
+                console.error('Error clearing mustChangePassword cookie:', err);
+            });
+            return;
+        }
 
         const authUser = user || (localStorage.getItem('userData')
             ? JSON.parse(localStorage.getItem('userData') as string)

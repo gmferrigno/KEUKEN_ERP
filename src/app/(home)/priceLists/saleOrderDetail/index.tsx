@@ -9,6 +9,7 @@ import { saleOrdersService } from "@repo/erp-services/priceLists/saleOrders.serv
 import notify from "devextreme/ui/notify";
 import { useSearchParams, useRouter } from 'next/navigation';
 import { SaleOrderDetailHeader } from "./components/SaleOrderDetailHeader";
+import AdviseFacturasPanel from "./components/AdviseFacturasPanel";
 
 const SaleOrderDetailClient = () => {
     const { token, currentCompany } = useAuth();
@@ -117,6 +118,8 @@ const SaleOrderDetailClient = () => {
                     <>
                         {/* Custom order detail header */}
                         <SaleOrderDetailHeader order={saleOrderDetail} />
+
+                        <AdviseFacturasPanel saleOrderId={saleOrderDetail.id} />
 
                         {/* Grid */}
                         <div className="w-full flex-1 min-h-0">

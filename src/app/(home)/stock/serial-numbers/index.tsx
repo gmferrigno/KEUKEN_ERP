@@ -1,8 +1,8 @@
-﻿"use client";
+"use client";
 
-import { useRecovery } from "@/contexts/RecoveryContext";
+
+import { useRecovery, RECOVERY_ENTITIES } from "@repo/recovery";
 import { commonService } from "@repo/erp-services/common.service";
-import { RECOVERY_ENTITIES } from "@/app/lib/constants/recoveryWhiteList";
 import PERMISSIONS_CONSTANTS from "@repo/access";
 import { canDo } from "@repo/access";
 
@@ -19,13 +19,14 @@ import { itemsService } from "@repo/erp-services/product_services/items.service"
 import { IFOptionItem } from "@repo/api-contracts/erp";
 import { SERIAL_NUMBER_STATES } from "@/app/lib/constants/common.constants";
 import SerialNumberModal from "./components/actions/serialNumberModal";
+import { purgeWithDryRunConfirm } from "@/app/lib/utils/purgeConfirm";
 
 const { customLoad, customSave } = createGridStateStorage({
   gridId: "serial-numbers-grid",
 });
 
 const SerialNumbersClient = () => {
-  const { isRecoveryMode, recoveryVisibility } = useRecovery();
+  const { isRecoveryMode, canRestore, canPurge, recoveryVisibility } = useRecovery();
   const { token, currentCompany, permissions, loading, isSuperAdmin, includeInactive } = useAuth();
   const gridRef = useRef<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -128,6 +129,19 @@ const SerialNumbersClient = () => {
     }
   }, [token]);
 
+  const handlePurge = useCallback(async (data: any) => {
+    const ok = await purgeWithDryRunConfirm({
+      schema: RECOVERY_ENTITIES.SERIAL_NUMBER.schema,
+      table: RECOVERY_ENTITIES.SERIAL_NUMBER.table,
+      id: data.id,
+      token,
+      label: data.serialNumber || data.id,
+    });
+    if (!ok) return;
+    setRefreshVersion((prev) => prev + 1);
+    gridRef.current?.instance?.refresh?.() ?? gridRef.current?.refresh?.();
+  }, [token]);
+
   const actions = useMemo(() => [
     {
       icon: "edit",
@@ -148,9 +162,18 @@ const SerialNumbersClient = () => {
       icon: "revert",
       hint: "Restaurar",
       onClick: (data: any) => handleRestore(data),
-      visible: (e: any) => isRecoveryMode ? isSuperAdmin : (!(e.active ?? true) && isSuperAdmin),
-    }
-  ], [canModify, isSuperAdmin, isRecoveryMode, handleRestore, handleRowRemoved]);
+      visible: (e: any) =>
+        isRecoveryMode
+          ? canRestore
+          : !(e.active ?? true) && canRestore,
+    },
+    {
+      icon: "clearsquare",
+      hint: "Purge (irreversible)",
+      onClick: (data: any) => handlePurge(data),
+      visible: () => isRecoveryMode && canPurge,
+    },
+  ], [canModify, canRestore, canPurge, isRecoveryMode, handleRestore, handlePurge, handleRowRemoved]);
 
   const columns: IGenericDataGridColumn[] = useMemo(() => {
     const cols: IGenericDataGridColumn[] = [

@@ -1,8 +1,7 @@
-﻿'use client';
-import { useRecovery } from "@/contexts/RecoveryContext";
-import { commonService } from "@repo/erp-services/common.service";
-import { RECOVERY_ENTITIES } from "@/app/lib/constants/recoveryWhiteList";
+'use client';
 
+import { useRecovery, RECOVERY_ENTITIES } from "@repo/recovery";
+import { commonService } from "@repo/erp-services/common.service";
 import PERMISSIONS_CONSTANTS from "@repo/access";
 import { canDo } from "@repo/access";
 import { deliveryRoutes } from "@/app/lib/utils/prittier";
@@ -23,7 +22,7 @@ const { customLoad, customSave } = createGridStateStorage({ gridId: 'delivery-ro
 const statusLookupDataSource = Object.entries(deliveryRoutes).map(([id, name]) => ({ id, name }));
 
 const RoutesClient = () => {
-    const { isRecoveryMode, recoveryVisibility } = useRecovery();
+    const { isRecoveryMode, canRestore, recoveryVisibility } = useRecovery();
     const { token, currentCompany, permissions, loading, isSuperAdmin } = useAuth();
     const gridRef = useRef<any>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -151,7 +150,7 @@ const RoutesClient = () => {
             icon: "revert",
             hint: "Restaurar",
             onClick: (data: any) => handleRestore(data),
-            visible: (e: any) => isRecoveryMode && isSuperAdmin,
+            visible: (e: any) => isRecoveryMode && canRestore,
         }
     ], [canModify, isSuperAdmin, isRecoveryMode, token, currentCompany?.id]);
 

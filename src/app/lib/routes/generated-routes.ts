@@ -1,6 +1,12 @@
 // ESTE ARCHIVO ES GENERADO AUTOMÁTICAMENTE. NO EDITAR.
 export const ROUTES = [
   {
+    "id": "(account)/activate",
+    "parentId": "(account)",
+    "path": "/activate",
+    "routeKey": "activate"
+  },
+  {
     "id": "accounting",
     "path": "/accounting",
     "routeKey": "accounting"
@@ -18,6 +24,12 @@ export const ROUTES = [
     "routeKey": "documents"
   },
   {
+    "id": "accounting/issuance-config",
+    "parentId": "accounting",
+    "path": "/accounting/issuance-config",
+    "routeKey": "issuance-config"
+  },
+  {
     "id": "accounting/periods",
     "parentId": "accounting",
     "path": "/accounting/periods",
@@ -33,11 +45,6 @@ export const ROUTES = [
     "id": "audiences",
     "path": "/audiences",
     "routeKey": "audiences"
-  },
-  {
-    "id": "companies",
-    "path": "/companies",
-    "routeKey": "companies"
   },
   {
     "id": "customers",
@@ -242,6 +249,12 @@ export const ROUTES = [
     "routeKey": "articlehandling"
   },
   {
+    "id": "providers/inbound-receipts",
+    "parentId": "providers",
+    "path": "/providers/inbound-receipts",
+    "routeKey": "inbound-receipts"
+  },
+  {
     "id": "providers/metadata",
     "parentId": "providers",
     "path": "/providers/metadata",
@@ -288,6 +301,29 @@ export const ROUTES = [
     "routeKey": "logisticcenters"
   },
   {
+    "id": "sysAdmin",
+    "path": "/sysAdmin",
+    "routeKey": "sysadmin"
+  },
+  {
+    "id": "sysAdmin/companies",
+    "parentId": "sysAdmin",
+    "path": "/sysAdmin/companies",
+    "routeKey": "companies"
+  },
+  {
+    "id": "sysAdmin/firebird",
+    "parentId": "sysAdmin",
+    "path": "/sysAdmin/firebird",
+    "routeKey": "firebird"
+  },
+  {
+    "id": "sysAdmin/licenses",
+    "parentId": "sysAdmin",
+    "path": "/sysAdmin/licenses",
+    "routeKey": "licenses"
+  },
+  {
     "id": "system",
     "path": "/system",
     "routeKey": "system"
@@ -325,6 +361,12 @@ export const ROUTES = [
     "id": "warehouses",
     "path": "/warehouses",
     "routeKey": "warehouses"
+  },
+  {
+    "id": "warehouses/packages",
+    "parentId": "warehouses",
+    "path": "/warehouses/packages",
+    "routeKey": "packages"
   }
 ];
 export const FIRST_LEVEL_ROUTES = [
@@ -337,11 +379,6 @@ export const FIRST_LEVEL_ROUTES = [
     "id": "audiences",
     "path": "/audiences",
     "routeKey": "audiences"
-  },
-  {
-    "id": "companies",
-    "path": "/companies",
-    "routeKey": "companies"
   },
   {
     "id": "customers",
@@ -392,6 +429,11 @@ export const FIRST_LEVEL_ROUTES = [
     "id": "structure",
     "path": "/structure",
     "routeKey": "structure"
+  },
+  {
+    "id": "sysAdmin",
+    "path": "/sysAdmin",
+    "routeKey": "sysadmin"
   },
   {
     "id": "system",

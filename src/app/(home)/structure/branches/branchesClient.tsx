@@ -1,10 +1,10 @@
-﻿'use client';
+'use client';
 
-import { useRecovery } from "@/contexts/RecoveryContext";
+
+import { useRecovery, RECOVERY_ENTITIES } from "@repo/recovery";
 import PERMISSIONS_CONSTANTS from "@repo/access";
 import { canDo, useGridColumns, type IAccessGridColumn } from "@repo/access";
 import { commonService } from "@repo/erp-services/common.service";
-import { RECOVERY_ENTITIES } from "@/app/lib/constants/recoveryWhiteList";
 import { GenericDataGrid } from '@repo/devextreme';
 import { useAuth } from "@/contexts/AuthContext";
 import { createGridStateStorage } from "@/lib/storage/gridStateStorage";
@@ -18,7 +18,7 @@ import { branchesService } from "@repo/erp-services/userContext/branches.service
 const { customLoad, customSave } = createGridStateStorage({ gridId: 'branches-grid' });
 
 const BranchesClient = () => {
-    const { isRecoveryMode, recoveryVisibility, canUseRecovery } = useRecovery();
+    const { isRecoveryMode, recoveryVisibility, canUseRecovery, canRestore } = useRecovery();
     const { token, user, permissions, loading, includeInactive, currentCompany, isSuperAdmin: authIsSuperAdmin } = useAuth();
     const gridRef = useRef<any>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -284,9 +284,9 @@ const BranchesClient = () => {
             icon: "revert",
             hint: "Restaurar",
             onClick: (data: any) => handleRestore(data),
-            visible: (data: any) => isRecoveryMode && (isSuperAdmin || canUseRecovery),
+            visible: () => isRecoveryMode && canRestore,
         }
-    ], [isRecoveryMode, canModify, isSuperAdmin, canUseRecovery, token]);
+    ], [isRecoveryMode, canModify, canRestore, token]);
 
     if (loading) {
         return null;

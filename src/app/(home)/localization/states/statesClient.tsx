@@ -1,16 +1,16 @@
-﻿'use client';
+'use client';
 
+
+import { useRecovery, RECOVERY_ENTITIES } from "@repo/recovery";
 import PERMISSIONS_CONSTANTS from "@repo/access";
 import { canDo } from "@repo/access";
 import { commonService } from "@repo/erp-services/common.service";
-import { RECOVERY_ENTITIES } from "@/app/lib/constants/recoveryWhiteList";
 import { countriesService } from "@repo/erp-services/location_services/countries.service";
 import { statesService } from "@repo/erp-services/location_services/states.service";
 import { IFCountry } from "@repo/api-contracts/erp";
 import { GenericDataGrid, IGenericDataGridColumn, SelectBox } from '@repo/devextreme';
 import GenericEmpty from "@/components/GenericEmpty";
 import { useAuth } from "@/contexts/AuthContext";
-import { useRecovery } from "@/contexts/RecoveryContext";
 import { createGridStateStorage } from "@/lib/storage/gridStateStorage";
 import CustomStore from "devextreme/data/custom_store";
 import { CheckBox } from 'devextreme-react/check-box';
@@ -22,7 +22,7 @@ const { customLoad, customSave } = createGridStateStorage({ gridId: 'states-grid
 
 const StatesClient = () => {
     const { token, permissions, loading, includeInactive, isSuperAdmin } = useAuth();
-    const { isRecoveryMode, recoveryVisibility } = useRecovery();
+    const { isRecoveryMode, canRestore, recoveryVisibility } = useRecovery();
     const gridRef = useRef<any>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedState, setSelectedState] = useState<any>(null);
@@ -176,7 +176,7 @@ const StatesClient = () => {
             icon: "revert",
             hint: "Restaurar",
             onClick: (data: any) => handleRestore(data),
-            visible: (e: any) => isRecoveryMode && isSuperAdmin,
+            visible: (e: any) => isRecoveryMode && canRestore,
         }
     ], [isRecoveryMode, canModify, isSuperAdmin, token]);
 

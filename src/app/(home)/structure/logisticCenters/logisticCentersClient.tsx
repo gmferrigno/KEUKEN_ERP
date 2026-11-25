@@ -1,14 +1,14 @@
-﻿'use client';
+'use client';
 
+
+import { useRecovery, RECOVERY_ENTITIES } from "@repo/recovery";
 import PERMISSIONS_CONSTANTS from "@repo/access";
 import { canDo } from "@repo/access";
 import { commonService } from "@repo/erp-services/common.service";
-import { RECOVERY_ENTITIES } from "@/app/lib/constants/recoveryWhiteList";
 import { logisticsCentersService } from "@repo/erp-services/userContext/logisticsCenters.service";
 import { IFLogisticsCenter } from "@repo/api-contracts/erp";
 import { GenericDataGrid, IGenericDataGridColumn } from '@repo/devextreme';
 import { useAuth } from "@/contexts/AuthContext";
-import { useRecovery } from "@/contexts/RecoveryContext";
 import { createGridStateStorage } from "@/lib/storage/gridStateStorage";
 import CustomStore from "devextreme/data/custom_store";
 import { CheckBox } from 'devextreme-react/check-box';
@@ -20,7 +20,7 @@ const { customLoad, customSave } = createGridStateStorage({ gridId: 'logistics-c
 
 const LogisticCentersClient = () => {
     const { token, user, permissions, loading, includeInactive, currentCompany, isSuperAdmin } = useAuth();
-    const { isRecoveryMode, recoveryVisibility } = useRecovery();
+    const { isRecoveryMode, canRestore, recoveryVisibility } = useRecovery();
     const gridRef = useRef<any>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedCenter, setSelectedCenter] = useState<IFLogisticsCenter | null>(null);
@@ -193,9 +193,9 @@ const LogisticCentersClient = () => {
             icon: "revert",
             hint: "Restaurar",
             onClick: (data: any) => handleRestore(data),
-            visible: (e: any) => isRecoveryMode && (isSuperAdmin || canModify),
+            visible: () => isRecoveryMode && canRestore,
         }
-    ], [isRecoveryMode, canModify, isSuperAdmin, token]);
+    ], [isRecoveryMode, canModify, canRestore, token]);
 
     if (loading) {
         return null;

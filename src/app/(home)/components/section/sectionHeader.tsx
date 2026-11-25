@@ -1,7 +1,6 @@
 "use client";
+import { useRecovery } from "@repo/recovery";
 import React from "react";
-import { useRecovery } from "@/contexts/RecoveryContext";
-
 interface SectionHeaderProps {
     title: string;
     children?: React.ReactNode;

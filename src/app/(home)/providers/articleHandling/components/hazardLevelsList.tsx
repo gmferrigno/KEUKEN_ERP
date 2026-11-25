@@ -1,7 +1,7 @@
-﻿'use client';
-import { useRecovery } from "@/contexts/RecoveryContext";
+'use client';
+
+import { useRecovery, RECOVERY_ENTITIES } from "@repo/recovery";
 import { commonService } from "@repo/erp-services/common.service";
-import { RECOVERY_ENTITIES } from "@/app/lib/constants/recoveryWhiteList";
 import PERMISSIONS_CONSTANTS from "@repo/access";
 import { canDo } from "@repo/access";
 
@@ -15,7 +15,7 @@ import { hazardService } from "@repo/erp-services/product_services/hazard.servic
 import HazardModal from "./actions/hazardModal";
 
 const HazardLevelsList = () => {
-    const { isRecoveryMode, recoveryVisibility } = useRecovery();
+    const { isRecoveryMode, canRestore, recoveryVisibility } = useRecovery();
     const { currentCompany, token, permissions, isSuperAdmin } = useAuth();
     const gridRef = useRef<any>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -110,7 +110,7 @@ const HazardLevelsList = () => {
             icon: "revert",
             hint: "Restaurar",
             onClick: (data: any) => handleRestore(data),
-            visible: (e: any) => isRecoveryMode && isSuperAdmin,
+            visible: (e: any) => isRecoveryMode && canRestore,
         }
     ], [canModify, isSuperAdmin, isRecoveryMode, token, currentCompany?.id]);
 

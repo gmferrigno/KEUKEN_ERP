@@ -1,7 +1,6 @@
 'use client';
-import { useRecovery } from "@/contexts/RecoveryContext";
-import { commonService } from "@repo/erp-services/common.service";
-
+import { useRecovery } from "@repo/recovery";
+import { hasScope } from '@repo/access';
 import { usersService } from '@repo/erp-services/users.service';
 import { GenericDataGrid, IGenericDataGridColumn } from '@repo/devextreme';
 import { useAuth } from '@/contexts/AuthContext';
@@ -35,8 +34,22 @@ const USERS_COLUMNS: IGenericDataGridColumn[] = [
     },
     {
         dataField: 'login',
-        caption: 'Usuario (Login)',
+        caption: 'Email (Login)',
         visible: true,
+    },
+    {
+        dataField: 'phoneE164',
+        caption: 'Teléfono',
+        visible: true,
+        width: 160,
+    },
+    {
+        dataField: 'activationPending',
+        caption: 'Activación',
+        visible: true,
+        width: 140,
+        calculateCellValue: (row: { activationPending?: boolean }) =>
+            row.activationPending ? 'Pendiente' : 'OK',
     },
 ];
 
@@ -50,8 +63,10 @@ export default function UsersClient() {
     const [selectedUserForPermissions, setSelectedUserForPermissions] = useState<any>(null);
     const [isPermissionsModalOpen, setIsPermissionsModalOpen] = useState(false);
 
-    const { token, currentCompany, isSuperAdmin } = useAuth();
+    const { token, currentCompany, isSuperAdmin, effectiveScopes } = useAuth();
     const companyId = currentCompany?.id ?? '0';
+    const canEditPhone =
+        isSuperAdmin || hasScope(effectiveScopes, 'users:abm:write');
 
     const [refreshVersion, setRefreshVersion] = useState(0);
 
@@ -184,6 +199,7 @@ export default function UsersClient() {
                     <UserModal
                         selectedUser={selectedUser}
                         mode={modalMode}
+                        canEditPhone={canEditPhone}
                         onSave={async (values) => {
                             if (modalMode === 'create') {
                                 try {
@@ -191,7 +207,7 @@ export default function UsersClient() {
                                     const payload = {
                                         name: values.name,
                                         login: values.login,
-                                        password: values.password,
+                                        phoneE164: values.phoneE164?.trim() || null,
                                         roles: [selectedRole],
                                         roleAssignments: [
                                             {
@@ -201,15 +217,47 @@ export default function UsersClient() {
                                             }
                                         ],
                                         companyIds: [companyId],
-                                        active: values.active !== undefined ? values.active : true
                                     };
                                     await usersService.create(payload, token);
-                                    notify('Usuario creado exitosamente', 'success', 3000);
+                                    notify(
+                                        'Usuario invitado. Se envió el mail de activación.',
+                                        'success',
+                                        3500
+                                    );
                                     setRefreshVersion(v => v + 1);
                                     setIsModalOpen(false);
                                 } catch (error: any) {
                                     console.error('Error creating user:', error);
                                     notify(mapUsersAbmError(error, 'Error al crear usuario'), 'error', 3000);
+                                }
+                                return;
+                            }
+
+                            if (modalMode === 'view' && selectedUser?.id) {
+                                try {
+                                    await usersService.update(
+                                        selectedUser.id,
+                                        {
+                                            phoneE164:
+                                                values.phoneE164?.trim() || null,
+                                        },
+                                        token
+                                    );
+                                    notify('Teléfono actualizado', 'success', 3000);
+                                    setSelectedUser({
+                                        ...selectedUser,
+                                        phoneE164: values.phoneE164?.trim() || null,
+                                    });
+                                    setRefreshVersion((v) => v + 1);
+                                } catch (error: any) {
+                                    notify(
+                                        mapUsersAbmError(
+                                            error,
+                                            'No se pudo actualizar el teléfono'
+                                        ),
+                                        'error',
+                                        3500
+                                    );
                                 }
                             }
                         }}
@@ -218,6 +266,18 @@ export default function UsersClient() {
                             setIsModalOpen(false);
                             setSelectedUserForPermissions(selectedUser);
                             setIsPermissionsModalOpen(true);
+                        }}
+                        onResendActivation={async () => {
+                            try {
+                                await usersService.resendActivation(selectedUser.id, token);
+                                notify('Activación reenviada', 'success', 3000);
+                            } catch (error: any) {
+                                notify(
+                                    mapUsersAbmError(error, 'No se pudo reenviar la activación'),
+                                    'error',
+                                    3500
+                                );
+                            }
                         }}
                     />
                 ) : null}

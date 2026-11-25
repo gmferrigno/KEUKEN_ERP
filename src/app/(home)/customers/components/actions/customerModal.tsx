@@ -193,6 +193,7 @@ const CustomerModal = ({ isOpen, onClose, onSuccess, customerId }: CustomerModal
                     countryIsoCode: formData.countryIsoCode,
                     stateCode: formData.stateCode,
                     cityCode: formData.cityCode,
+                    cityId: formData.cityId || null,
                     minDaysToExpiryOrder: formData.minDaysToExpiryOrder,
                     minDaysToExpiryReception: formData.minDaysToExpiryReception,
                     fiscalPositionId: formData.fiscalPositionId,
@@ -211,6 +212,7 @@ const CustomerModal = ({ isOpen, onClose, onSuccess, customerId }: CustomerModal
                     countryIsoCode: formData.countryIsoCode,
                     stateCode: formData.stateCode,
                     cityCode: formData.cityCode,
+                    cityId: formData.cityId || null,
                     minDaysToExpiryOrder: formData.minDaysToExpiryOrder,
                     minDaysToExpiryReception: formData.minDaysToExpiryReception,
                     taxData: formData.taxData ?? null,
@@ -316,6 +318,7 @@ const CustomerModal = ({ isOpen, onClose, onSuccess, customerId }: CustomerModal
                                         if (e.event) {
                                             formRef.current?.instance().updateData("stateCode", "");
                                             formRef.current?.instance().updateData("cityCode", "");
+                                            formRef.current?.instance().updateData("cityId", null);
 
                                             stateEditorRef.current?.option("dataSource", []);
                                             stateEditorRef.current?.option("disabled", true);
@@ -348,6 +351,7 @@ const CustomerModal = ({ isOpen, onClose, onSuccess, customerId }: CustomerModal
                                     onValueChanged: (e: any) => {
                                         if (e.event) {
                                             formRef.current?.instance().updateData("cityCode", "");
+                                            formRef.current?.instance().updateData("cityId", null);
 
                                             cityEditorRef.current?.option("dataSource", []);
                                             cityEditorRef.current?.option("disabled", true);
@@ -380,6 +384,29 @@ const CustomerModal = ({ isOpen, onClose, onSuccess, customerId }: CustomerModal
                                     searchEnabled: true,
                                     placeholder: "Seleccione una ciudad...",
                                     disabled: !formData.stateCode,
+                                    onValueChanged: (e: any) => {
+                                        if (e.event) {
+                                            if (e.value) {
+                                                const cities =
+                                                    cityEditorRef.current?.option("dataSource") ||
+                                                    initialCitiesRef.current ||
+                                                    [];
+                                                const cityObj = cities.find(
+                                                    (c: any) => c.code === e.value
+                                                );
+                                                formRef.current
+                                                    ?.instance()
+                                                    .updateData(
+                                                        "cityId",
+                                                        cityObj?.id ?? null
+                                                    );
+                                            } else {
+                                                formRef.current
+                                                    ?.instance()
+                                                    .updateData("cityId", null);
+                                            }
+                                        }
+                                    },
                                 }}
                             />
                             <Item

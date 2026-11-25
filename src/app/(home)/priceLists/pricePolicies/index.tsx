@@ -1,5 +1,6 @@
-﻿"use client";
+"use client";
 
+import { useRecovery } from "@repo/recovery";
 import { canDo } from "@repo/access";
 import { pricePoliciesService } from "@repo/erp-services/priceLists/pricePolicies.service";
 import { salesChannelsService } from "@repo/erp-services/salesChannels.service";
@@ -35,6 +36,7 @@ const EXTERNAL_PRICE_LABELS: Record<string, string> = {
 };
 
 const PricePoliciesClient = () => {
+    const { recoveryVisibility } = useRecovery();
     const { token, permissions, loading, currentCompany, isSuperAdmin } = useAuth();
     const gridRef = useRef<any>(null);
     const [refreshVersion, setRefreshVersion] = useState(0);
@@ -255,6 +257,7 @@ const PricePoliciesClient = () => {
     return (
         <div className="flex flex-col w-full h-full rounded-dx">
             <GenericDataGrid
+                recoveryVisibility={recoveryVisibility}
                 ref={gridRef}
                 gridId="pricepolicies-grid"
                 keyExpr="id"

@@ -6,7 +6,7 @@ import { canRenderRoute } from "@repo/access";
 import { useAuth } from '@/contexts/AuthContext';
 import TextBox from 'devextreme-react/text-box';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type MouseEvent } from 'react';
 
 
 import { BrandLogo, useBrand } from '@repo/ui/brand';
@@ -230,6 +230,17 @@ const NavSidebar = ({ initialRoutes }: { initialRoutes: IAppRoute[] }) => {
     router.push('/')
   }
 
+  const handleLogoMiddleMouseDown = (e: MouseEvent) => {
+    if (e.button !== 1) return
+    e.preventDefault() 
+  }
+
+  const handleLogoMiddleClick = (e: MouseEvent) => {
+    if (e.button !== 1) return
+    e.preventDefault()
+    window.open(window.location.href, '_blank', 'noopener,noreferrer')
+  }
+
   const renderMenuItems = (items: any[], level: number = 0) => {
     const filteredItems = items
       .filter(route => {
@@ -304,7 +315,12 @@ const NavSidebar = ({ initialRoutes }: { initialRoutes: IAppRoute[] }) => {
     <aside className={`flex flex-col h-screen max-h-screen bg-linear-to-b from-primary-500 to-primary-900 transition-[width] shadow-r-lg z-60 duration-300 ease-in-out overflow-hidden ${isCollapsed ? 'w-16' : 'w-60'}`} >
       {/* HEADER */}
       <div className={`flex items-center justify-between border-b border-main/10 min-h-14 shrink-0 ${isCollapsed ? 'px-1 py-3' : 'py-3 px-4'}`}>
-        <div className="flex items-center cursor-pointer w-full min-w-0" onClick={handleLogoClick}>
+        <div
+          className="flex items-center cursor-pointer w-full min-w-0"
+          onClick={handleLogoClick}
+          onMouseDown={handleLogoMiddleMouseDown}
+          onAuxClick={handleLogoMiddleClick}
+        >
           {isCollapsed ? (
             <div className="w-full flex items-center justify-center">
               <BrandLogo

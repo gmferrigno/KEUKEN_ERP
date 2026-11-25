@@ -49,6 +49,9 @@ export function mapUsersAbmError(error: unknown, fallback = 'Error al actualizar
     if (detail.includes('privileged_scope_demotion_forbidden')) {
         return 'No podés quitar un scope de plataforma a este usuario.';
     }
+    if (detail.includes('user_already_activated')) {
+        return 'El usuario ya está activado.';
+    }
 
     return err?.message || fallback;
 }

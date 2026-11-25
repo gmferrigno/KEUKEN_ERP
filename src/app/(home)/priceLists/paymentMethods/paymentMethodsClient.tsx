@@ -1,8 +1,8 @@
-﻿'use client';
+'use client';
 
-import { useRecovery } from "@/contexts/RecoveryContext";
+
+import { useRecovery, RECOVERY_ENTITIES } from "@repo/recovery";
 import { commonService } from "@repo/erp-services/common.service";
-import { RECOVERY_ENTITIES } from "@/app/lib/constants/recoveryWhiteList";
 import PERMISSIONS_CONSTANTS from "@repo/access";
 import { canDo } from "@repo/access";
 import { paymentMethodsService } from "@repo/erp-services/payments_services/paymentMethods.service";
@@ -19,7 +19,7 @@ import PaymentMethodCreationModal from "../components/actions/paymentMethodCreat
 const { customLoad, customSave } = createGridStateStorage({ gridId: 'payment-methods-grid' });
 
 const PaymentMethodsClient = () => {
-    const { isRecoveryMode, recoveryVisibility } = useRecovery();
+    const { isRecoveryMode, canRestore, recoveryVisibility } = useRecovery();
     const { token, currentCompany, permissions, loading, isSuperAdmin } = useAuth();
     const gridRef = useRef<any>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -129,7 +129,7 @@ const PaymentMethodsClient = () => {
             icon: "revert",
             hint: "Restaurar",
             onClick: (data: any) => handleRestore(data),
-            visible: (e: any) => isRecoveryMode && isSuperAdmin,
+            visible: (e: any) => isRecoveryMode && canRestore,
         }
     ], [canModify, isSuperAdmin, isRecoveryMode, token, currentCompany?.id]);
 

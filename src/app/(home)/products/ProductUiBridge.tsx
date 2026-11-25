@@ -1,13 +1,13 @@
-﻿"use client";
+"use client";
 
+
+import { useRecovery, RECOVERY_ENTITIES } from "@repo/recovery";
 import { useMemo, type ReactNode } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useRecovery } from "@/contexts/RecoveryContext";
 import { ProductUiProvider } from "@repo/product-ui/runtime";
 import type { ProductUiRuntimeConfig } from "@repo/product-ui/runtime";
 import PERMISSIONS_CONSTANTS from "@repo/access";
 import { canDo } from "@repo/access";
-import { RECOVERY_ENTITIES } from "@/app/lib/constants/recoveryWhiteList";
 import MetadataFieldsClient from "@/components/metadata/MetadataFieldsClient";
 import { ClusterManagerModal } from "@/app/(home)/audiences/components";
 

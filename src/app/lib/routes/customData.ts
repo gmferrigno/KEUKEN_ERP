@@ -18,19 +18,38 @@ export type TRouteKey =
     'salebillingmodes' | 'uom-categories' | 'sales-channels' | 'price-segments' | 'productdetail' | 'taxes' |
     'serial-numbers' | 'consignments' | 'partners' | 'customers' | 'addresses' | 'commercial-platforms' |
     'articlehandling' | 'metadata' | 'pricelistdetail' | 'saleorderdetail' | 'system' |
-    'audit' | 'localization' | 'structure' | 'branches' | 'establishments' | 'logisticcenters' | 'audiences' | 'details' | 'mapa' | 'companies' | 'combos';
+    'audit' | 'localization' | 'structure' | 'branches' | 'establishments' | 'logisticcenters' | 'audiences' | 'details' | 'mapa' | 'companies' | 'combos' |
+    'sysadmin' | 'licenses' | 'firebird' |
+    'inbound-receipts' | 'packages' | 'issuance-config';
 
 export type TCustomDataRoutes = Record<TRouteKey, ICustomDataRoute>;
 
 
 export const CustomDataRoutes: TCustomDataRoutes = {
 
+    sysadmin: {
+        icon: 'preferences',
+        text: 'SysAdmin',
+        position: 45,
+        hideMainSubRoute: true,
+        parentSubText: 'Empresas'
+    },
     companies: {
         icon: 'home',
         text: 'Empresas',
-        position: 50,
-        parentSubText: 'Gestión de Empresas'
+        position: 5
     },
+    licenses: {
+        icon: 'key',
+        text: 'Licencias',
+        position: 10
+    },
+    firebird: {
+        icon: 'fields',
+        text: 'Firebird',
+        position: 20
+    },
+
 
     structure: {
         icon: 'hierarchy',
@@ -258,6 +277,11 @@ export const CustomDataRoutes: TCustomDataRoutes = {
         text: 'Documentos',
         position: 225
     },
+    'issuance-config': {
+        icon: 'preferences',
+        text: 'Reglas de Emisión',
+        position: 230
+    },
     pricelists: {
         icon: 'money',
         text: 'Comercial',
@@ -328,6 +352,16 @@ export const CustomDataRoutes: TCustomDataRoutes = {
         icon: 'box',
         text: 'Consignaciones',
         position: 90
+    },
+    'inbound-receipts': {
+        icon: 'product',
+        text: 'Recepciones de Entrada',
+        position: 72
+    },
+    packages: {
+        icon: 'box',
+        text: 'Bultos WMS',
+        position: 5
     },
     'commercial-platforms': {
         icon: 'globe',

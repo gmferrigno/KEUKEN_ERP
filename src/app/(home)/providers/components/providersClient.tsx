@@ -1,5 +1,7 @@
-﻿'use client';
+'use client';
 
+
+import { useRecovery, RECOVERY_ENTITIES } from "@repo/recovery";
 import PERMISSIONS_CONSTANTS from "@repo/access";
 import { canDo } from "@repo/access";
 import { GenericDataGrid, IGenericDataGridColumn } from '@repo/devextreme';
@@ -9,12 +11,10 @@ import notify from "devextreme/ui/notify";
 import { useMemo, useRef, useState, useEffect } from "react";
 
 import { commonService } from "@repo/erp-services/common.service";
-import { RECOVERY_ENTITIES } from "@/app/lib/constants/recoveryWhiteList";
 import { providerService } from "@repo/erp-services/location_services/provider.service";
 import { IFListBasicParams } from "@repo/api-contracts/erp";
 import { IFProvider } from "@repo/api-contracts/erp";
 import { useAuth } from "@/contexts/AuthContext";
-import { useRecovery } from "@/contexts/RecoveryContext";
 import ProviderCreationModal from "./actions/creation";
 import ProviderDetailModal from "./actions/detail";
 
@@ -22,7 +22,7 @@ const { customLoad, customSave } = createGridStateStorage({ gridId: 'providers-g
 
 const ProvidersClient = () => {
     const { token, currentCompany, permissions, loading, isSuperAdmin } = useAuth();
-    const { isRecoveryMode, recoveryVisibility } = useRecovery();
+    const { isRecoveryMode, canRestore, recoveryVisibility } = useRecovery();
     const gridRef = useRef<any>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedProvider, setSelectedProvider] = useState<IFProvider | null>(null);
@@ -117,7 +117,7 @@ const ProvidersClient = () => {
             icon: "revert",
             hint: "Restaurar",
             onClick: (data: IFProvider) => handleRestore(data),
-            visible: (e: any) => isRecoveryMode && isSuperAdmin,
+            visible: (e: any) => isRecoveryMode && canRestore,
         }
     ], [canModify, canView, isSuperAdmin, isRecoveryMode, token, currentCompany?.id]);
 

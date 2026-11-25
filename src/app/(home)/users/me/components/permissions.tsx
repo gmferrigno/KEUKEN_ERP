@@ -3,15 +3,12 @@
 import {
     permissionsConfig,
     TFPermissionsConfig,
-    TPermissionAction
-} from "@repo/access";
-import { mapPermissionsToFrontend } from "@repo/access";
-import { useAuth } from "@/contexts/AuthContext";
-import { CheckBox } from "devextreme-react/check-box";
-import { ScrollView } from "devextreme-react/scroll-view";
-import { useEffect, useState } from "react";
+    TPermissionAction,
+} from '@repo/access';
+import { useAuth } from '@/contexts/AuthContext';
+import { CheckBox } from 'devextreme-react/check-box';
+import { ScrollView } from 'devextreme-react/scroll-view';
 
-// Hoisted outside component — static data, never changes between renders
 const ACTION_HEADERS: { key: TPermissionAction; label: string }[] = [
     { key: 'view', label: 'Ver' },
     { key: 'modify', label: 'Modificar' },
@@ -19,13 +16,9 @@ const ACTION_HEADERS: { key: TPermissionAction; label: string }[] = [
 ];
 
 const Permissions = () => {
-    const { user } = useAuth();
-    const [permissions, setPermissions] = useState<TFPermissionsConfig>(permissionsConfig);
-
-    useEffect(() => {
-        if (!user) return;
-        setPermissions(mapPermissionsToFrontend(user.roles));
-    }, [user?.roles]);
+    const { permissions } = useAuth();
+    const effectivePermissions: TFPermissionsConfig =
+        permissions ?? permissionsConfig;
 
     return (
         <div className="w-full h-full flex flex-col relative overflow-hidden bg-primary-900/50 rounded-dx border border-main/5 shadow-inner-lg">
@@ -36,13 +29,16 @@ const Permissions = () => {
                 </div>
                 <div className="grid grid-cols-12 gap-2">
                     <div className="col-span-6">
-                        <div className="text-main/60 text-xs  uppercase pl-2">
+                        <div className="text-main/60 text-xs uppercase pl-2">
                             Módulo / Sección
                         </div>
                     </div>
                     <div className="col-span-6 flex justify-end gap-12 pr-6">
-                        {ACTION_HEADERS.map(header => (
-                            <div key={header.key} className="text-main/60 text-xs  uppercase w-20 text-center font-semibold tracking-wider">
+                        {ACTION_HEADERS.map((header) => (
+                            <div
+                                key={header.key}
+                                className="text-main/60 text-xs uppercase w-20 text-center font-semibold tracking-wider"
+                            >
                                 {header.label}
                             </div>
                         ))}
@@ -55,27 +51,45 @@ const Permissions = () => {
                         {Object.entries(permissionsConfig)
                             .filter(([, config]) => !!config)
                             .map(([key, config]) => {
-
-                                const routePermissions = permissions[key as keyof TFPermissionsConfig]?.actions || {};
+                                const routePermissions =
+                                    effectivePermissions[
+                                        key as keyof TFPermissionsConfig
+                                    ]?.actions || {};
 
                                 return (
-                                    <div key={key} className="grid grid-cols-12 gap-2 items-center p-3 rounded-dx bg-primary-500/30 border border-main/5 hover:bg-main/5 transition-all group">
+                                    <div
+                                        key={key}
+                                        className="grid grid-cols-12 gap-2 items-center p-3 rounded-dx bg-primary-500/30 border border-main/5 hover:bg-main/5 transition-all group"
+                                    >
                                         <div className="col-span-6">
-                                            <p className="text-sm  font-medium group-hover:text-focus-500 transition-colors">
+                                            <p className="text-sm font-medium group-hover:text-focus-500 transition-colors">
                                                 {config.label}
                                             </p>
                                         </div>
                                         <div className="col-span-6 flex justify-end gap-12 pr-6">
-                                            {ACTION_HEADERS.map(action => {
-                                                const actionValue = routePermissions[action.key];
-                                                const isActionDisabled = actionValue === null;
+                                            {ACTION_HEADERS.map((action) => {
+                                                const actionValue =
+                                                    routePermissions[action.key];
+                                                const isActionDisabled =
+                                                    actionValue === null;
 
                                                 return (
-                                                    <div key={action.key} className="w-20 flex justify-center">
+                                                    <div
+                                                        key={action.key}
+                                                        className="w-20 flex justify-center"
+                                                    >
                                                         <CheckBox
                                                             disabled={true}
-                                                            value={actionValue === null ? false : actionValue}
-                                                            className={isActionDisabled ? 'opacity-10' : ''}
+                                                            value={
+                                                                actionValue === null
+                                                                    ? false
+                                                                    : actionValue
+                                                            }
+                                                            className={
+                                                                isActionDisabled
+                                                                    ? 'opacity-10'
+                                                                    : ''
+                                                            }
                                                         />
                                                     </div>
                                                 );

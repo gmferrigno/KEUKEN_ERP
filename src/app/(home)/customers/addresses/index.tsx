@@ -6,7 +6,7 @@ import { customerAddressesService } from "@repo/erp-services/partners/customerAd
 import { customersService } from "@repo/erp-services/partners/customers.service";
 import { confirmDelete, GenericDataGrid, IGenericDataGridColumn } from "@repo/devextreme";
 import { useAuth } from "@/contexts/AuthContext";
-import { useRecovery } from "@/contexts/RecoveryContext";
+import { useRecovery } from "@repo/recovery";
 import { createGridStateStorage } from "@/lib/storage/gridStateStorage";
 import CustomStore from "devextreme/data/custom_store";
 import notify from "devextreme/ui/notify";
