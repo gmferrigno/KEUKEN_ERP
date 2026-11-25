@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import PERMISSIONS_CONSTANTS from "@repo/access";
 import { canDo } from "@repo/access";
@@ -86,11 +86,32 @@ const KeysManagerPage = () => {
         setIsEditing(false);
     };
 
-    const handleNewKey = (name: string) => {
+    const handleNewKey = (payload: { name: string; scopes?: string[]; expiresInDays?: number | null }) => {
         if (token && currentCompany) {
-            roleService.create(name, token, currentCompany.id).then((res) => {
-                setKeys((prevKeys) => [...prevKeys, res]);
-                notify('Clave creada con éxito', 'success', 3000);
+            roleService.create(
+                {
+                    name: payload.name,
+                    scopes: payload.scopes || [],
+                    expiresInDays: payload.expiresInDays,
+                },
+                token,
+                currentCompany.id
+            ).then((res) => {
+                const { key, ...role } = res;
+                setKeys((prevKeys) => [...prevKeys, role]);
+                if (key) {
+                    // Secreto one-shot: copiar al portapapeles si se puede
+                    if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+                        navigator.clipboard.writeText(key).catch(() => undefined);
+                    }
+                    notify(
+                        `Clave creada. Secreto (solo una vez, copiado si el browser lo permite): ${key}`,
+                        'success',
+                        10000
+                    );
+                } else {
+                    notify('Clave creada con éxito', 'success', 3000);
+                }
             }).catch((error: any) => {
                 console.error("Error al crear la clave:", error);
                 const errorMessage = error instanceof Error && error.message ? error.message : "Error al crear la clave";
@@ -166,7 +187,7 @@ const KeysManagerPage = () => {
             <RoleCreationModal
                 visible={isModalVisible}
                 onHiding={() => setIsModalVisible(false)}
-                onSave={(name) => handleNewKey(name)}
+                onSave={(payload) => handleNewKey(payload)}
             />
         </div>
     );

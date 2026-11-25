@@ -4,7 +4,7 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 /** Rutas que no deben pasar por chequeo de módulos/permisos ni exigir sesión. */
-const publicPaths = ['/login'];
+const publicPaths = ['/login', '/activate'];
 
 /** Rutas autenticadas exentas del filtro canRenderRoute (no expulsar / no redirigir en loop). */
 const accessExemptPaths = ['/refused'];

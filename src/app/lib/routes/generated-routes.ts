@@ -1,6 +1,12 @@
 // ESTE ARCHIVO ES GENERADO AUTOMÁTICAMENTE. NO EDITAR.
 export const ROUTES = [
   {
+    "id": "(account)/activate",
+    "parentId": "(account)",
+    "path": "/activate",
+    "routeKey": "activate"
+  },
+  {
     "id": "accounting",
     "path": "/accounting",
     "routeKey": "accounting"
@@ -16,6 +22,12 @@ export const ROUTES = [
     "parentId": "accounting",
     "path": "/accounting/documents",
     "routeKey": "documents"
+  },
+  {
+    "id": "accounting/issuance-config",
+    "parentId": "accounting",
+    "path": "/accounting/issuance-config",
+    "routeKey": "issuance-config"
   },
   {
     "id": "accounting/periods",
@@ -225,6 +237,12 @@ export const ROUTES = [
     "routeKey": "articlehandling"
   },
   {
+    "id": "providers/inbound-receipts",
+    "parentId": "providers",
+    "path": "/providers/inbound-receipts",
+    "routeKey": "inbound-receipts"
+  },
+  {
     "id": "providers/metadata",
     "parentId": "providers",
     "path": "/providers/metadata",
@@ -331,6 +349,12 @@ export const ROUTES = [
     "id": "warehouses",
     "path": "/warehouses",
     "routeKey": "warehouses"
+  },
+  {
+    "id": "warehouses/packages",
+    "parentId": "warehouses",
+    "path": "/warehouses/packages",
+    "routeKey": "packages"
   }
 ];
 export const FIRST_LEVEL_ROUTES = [

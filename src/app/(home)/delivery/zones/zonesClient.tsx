@@ -20,7 +20,7 @@ const { customLoad, customSave } = createGridStateStorage({ gridId: 'delivery-zo
 const zoneTypeLookupDataSource = Object.entries(deliveryZones).map(([id, name]) => ({ id, name }));
 
 const ZonesClient = () => {
-    const { isRecoveryMode, recoveryVisibility } = useRecovery();
+    const { isRecoveryMode, canRestore, recoveryVisibility } = useRecovery();
     const { token, currentCompany, permissions, isSuperAdmin } = useAuth();
     const gridRef = useRef<any>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -124,7 +124,7 @@ const ZonesClient = () => {
             icon: "revert",
             hint: "Restaurar",
             onClick: (data: any) => handleRestore(data),
-            visible: (e: any) => isRecoveryMode && isSuperAdmin,
+            visible: (e: any) => isRecoveryMode && canRestore,
         }
     ], [canModify, isSuperAdmin, isRecoveryMode, token, currentCompany?.id]);
 

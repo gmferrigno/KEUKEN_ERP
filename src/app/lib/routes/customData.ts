@@ -19,7 +19,8 @@ export type TRouteKey =
     'serial-numbers' | 'consignments' | 'partners' | 'customers' | 'commercial-platforms' |
     'articlehandling' | 'metadata' | 'pricelistdetail' | 'saleorderdetail' | 'system' |
     'audit' | 'localization' | 'structure' | 'branches' | 'establishments' | 'logisticcenters' | 'audiences' | 'details' | 'mapa' | 'companies' | 'combos' |
-    'sysadmin' | 'licenses' | 'firebird';
+    'sysadmin' | 'licenses' | 'firebird' |
+    'inbound-receipts' | 'packages' | 'issuance-config';
 
 export type TCustomDataRoutes = Record<TRouteKey, ICustomDataRoute>;
 
@@ -270,6 +271,11 @@ export const CustomDataRoutes: TCustomDataRoutes = {
         text: 'Documentos',
         position: 225
     },
+    'issuance-config': {
+        icon: 'preferences',
+        text: 'Reglas de Emisión',
+        position: 230
+    },
     pricelists: {
         icon: 'money',
         text: 'Comercial',
@@ -335,6 +341,16 @@ export const CustomDataRoutes: TCustomDataRoutes = {
         icon: 'box',
         text: 'Consignaciones',
         position: 90
+    },
+    'inbound-receipts': {
+        icon: 'product',
+        text: 'Recepciones de Entrada',
+        position: 72
+    },
+    packages: {
+        icon: 'box',
+        text: 'Bultos WMS',
+        position: 5
     },
     'commercial-platforms': {
         icon: 'globe',

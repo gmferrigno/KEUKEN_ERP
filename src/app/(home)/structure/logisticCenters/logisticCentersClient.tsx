@@ -20,7 +20,7 @@ const { customLoad, customSave } = createGridStateStorage({ gridId: 'logistics-c
 
 const LogisticCentersClient = () => {
     const { token, user, permissions, loading, includeInactive, currentCompany, isSuperAdmin } = useAuth();
-    const { isRecoveryMode, recoveryVisibility } = useRecovery();
+    const { isRecoveryMode, canRestore, recoveryVisibility } = useRecovery();
     const gridRef = useRef<any>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedCenter, setSelectedCenter] = useState<IFLogisticsCenter | null>(null);
@@ -193,9 +193,9 @@ const LogisticCentersClient = () => {
             icon: "revert",
             hint: "Restaurar",
             onClick: (data: any) => handleRestore(data),
-            visible: (e: any) => isRecoveryMode && (isSuperAdmin || canModify),
+            visible: () => isRecoveryMode && canRestore,
         }
-    ], [isRecoveryMode, canModify, isSuperAdmin, token]);
+    ], [isRecoveryMode, canModify, canRestore, token]);
 
     if (loading) {
         return null;

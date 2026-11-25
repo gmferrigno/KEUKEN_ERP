@@ -353,11 +353,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         void restoreSession();
     }, []);
 
-    // Guard de sesión client-side: no expulsar en login/refused (páginas de acceso/denegación).
+    // Guard de sesión client-side: no expulsar en login/activate/refused (acceso público / denegación).
     useEffect(() => {
         if (loading) return;
         const isExemptPath =
             pathname.startsWith('/login') ||
+            pathname.startsWith('/activate') ||
             pathname.startsWith('/refused');
         if (mustChangePassword && !pathname.startsWith('/login')) {
             router.replace('/login');

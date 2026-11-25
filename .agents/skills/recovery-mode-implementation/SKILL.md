@@ -152,7 +152,7 @@ Las acciones de la grilla varían estrictamente dependiendo de si el **Modo Recu
 1. **Modo Recuperación Activo (`isRecoveryMode === true`)**:
    - **Acciones Disponibles**: Únicamente **Ver** (`eyeopen`) y **Recuperar / Restaurar** (`revert`).
    - **Acciones Bloqueadas / Ocultas**: **Editar** (`edit`), **Eliminar** (`trash`) y **Alta / Crear** (`allowAdding: false`). No se permite crear nuevos registros ni modificar/eliminar registros existentes dentro de la papelera.
-   - **Visibilidad Restaurar**: `visible: (e: any) => isRecoveryMode && isSuperAdmin`.
+   - **Visibilidad Restaurar**: `visible: () => isRecoveryMode && canRestore` (`canRestore` = SA o scope `admin:recovery:restore`; ≠ purge).
 
 2. **Modo Normal (`isRecoveryMode === false`)**:
    - **Acciones Disponibles**: **Ver** (`eyeopen`), **Editar** (`edit`), **Eliminar** (`trash`) y **Alta / Crear** (`allowAdding: canModify`).

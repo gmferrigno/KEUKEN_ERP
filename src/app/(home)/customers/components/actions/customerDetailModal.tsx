@@ -8,6 +8,7 @@ import React from "react";
 import notify from "devextreme/ui/notify";
 import MetadataFieldsClient from "@/components/metadata/MetadataFieldsClient";
 import { metadataService } from "@repo/erp-services/metadata.service";
+import CustomerPaymentTermsEffective from "./CustomerPaymentTermsEffective";
 
 interface CustomerDetailModalProps {
     isOpen: boolean;
@@ -224,7 +225,11 @@ const CustomerDetailModal = ({ isOpen, onClose, customerId }: CustomerDetailModa
                                 status: customerFull.customer.active ? "Activo" : "Inactivo",
                                 country: customerFull.customer.countryIsoCode,
                                 state: customerFull.customer.stateName || customerFull.customer.stateCode,
-                                city: customerFull.customer.cityName || customerFull.customer.cityCode || "—"
+                                // cityLabel: display-only (BE city name/code); never written back
+                                cityLabel:
+                                    customerFull.customer.cityName ||
+                                    customerFull.customer.cityCode ||
+                                    "—",
                             }}
                             readOnly={true}
                             colCount={2}
@@ -284,7 +289,7 @@ const CustomerDetailModal = ({ isOpen, onClose, customerId }: CustomerDetailModa
 
                                 <SimpleItem dataField="country" label={{ text: "País" }} editorOptions={{ stylingMode: "filled" }} />
                                 <SimpleItem dataField="state" label={{ text: "Estado/Provincia" }} editorOptions={{ stylingMode: "filled" }} />
-                                <SimpleItem dataField="city" label={{ text: "Ciudad" }} editorOptions={{ stylingMode: "filled" }} />
+                                <SimpleItem dataField="cityLabel" label={{ text: "Ciudad" }} editorOptions={{ stylingMode: "filled", readOnly: true }} />
                             </GroupItem>
 
                             {/* Card 4: Direcciones (Lista) */}
@@ -309,7 +314,7 @@ const CustomerDetailModal = ({ isOpen, onClose, customerId }: CustomerDetailModa
                             {/* Card 5: Exenciones (Lista) */}
                             <GroupItem
                                 colSpan={2}
-                                cssClass="!p-5 !rounded-dx !bg-primary-0/40 !border !border-focus-100/40 !shadow-sm"
+                                cssClass="!p-5 !rounded-dx !bg-primary-0/40 !border !border-focus-100/40 !shadow-sm !mb-6"
                             >
                                 <SimpleItem colSpan={2} cssClass="!p-0" label={{ visible: false }}>
                                     <div className="mb-2 border-b border-main/10 pb-3">
@@ -319,6 +324,27 @@ const CustomerDetailModal = ({ isOpen, onClose, customerId }: CustomerDetailModa
 
                                 <SimpleItem colSpan={2} label={{ visible: false }}>
                                     {renderTaxExemptions()}
+                                </SimpleItem>
+                            </GroupItem>
+
+                            <GroupItem
+                                colSpan={2}
+                                cssClass="!p-5 !rounded-dx !bg-primary-0/40 !border !border-focus-100/40 !shadow-sm"
+                            >
+                                <SimpleItem colSpan={2} label={{ visible: false }}>
+                                    {customerFull?.id && (
+                                        <CustomerPaymentTermsEffective
+                                            customerId={customerFull.id}
+                                            addresses={(customerFull.addresses || []).map((a: any) => ({
+                                                id: a.id,
+                                                label:
+                                                    a.name ||
+                                                    a.street ||
+                                                    a.label ||
+                                                    a.id,
+                                            }))}
+                                        />
+                                    )}
                                 </SimpleItem>
                             </GroupItem>
                         </Form>

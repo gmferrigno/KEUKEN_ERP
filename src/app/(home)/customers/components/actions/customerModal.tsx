@@ -181,6 +181,7 @@ const CustomerModal = ({ isOpen, onClose, onSuccess, customerId }: CustomerModal
                     countryIsoCode: formData.countryIsoCode,
                     stateCode: formData.stateCode,
                     cityCode: formData.cityCode,
+                    cityId: formData.cityId || null,
                     minDaysToExpiryOrder: formData.minDaysToExpiryOrder,
                     minDaysToExpiryReception: formData.minDaysToExpiryReception,
                     taxData: formData.taxData,
@@ -198,6 +199,7 @@ const CustomerModal = ({ isOpen, onClose, onSuccess, customerId }: CustomerModal
                     countryIsoCode: formData.countryIsoCode,
                     stateCode: formData.stateCode,
                     cityCode: formData.cityCode,
+                    cityId: formData.cityId || null,
                     minDaysToExpiryOrder: formData.minDaysToExpiryOrder,
                     minDaysToExpiryReception: formData.minDaysToExpiryReception,
                     taxData: formData.taxData,
@@ -298,6 +300,7 @@ const CustomerModal = ({ isOpen, onClose, onSuccess, customerId }: CustomerModal
                                         if (e.event) {
                                             formRef.current?.instance().updateData("stateCode", "");
                                             formRef.current?.instance().updateData("cityCode", "");
+                                            formRef.current?.instance().updateData("cityId", null);
                                             formRef.current?.instance().updateData("taxData.ivaCondition", "");
 
                                             stateEditorRef.current?.option("dataSource", []);
@@ -339,6 +342,7 @@ const CustomerModal = ({ isOpen, onClose, onSuccess, customerId }: CustomerModal
                                     onValueChanged: (e: any) => {
                                         if (e.event) {
                                             formRef.current?.instance().updateData("cityCode", "");
+                                            formRef.current?.instance().updateData("cityId", null);
                                             formRef.current?.instance().updateData("taxData.ivaCondition", "");
 
                                             cityEditorRef.current?.option("dataSource", []);
@@ -378,8 +382,24 @@ const CustomerModal = ({ isOpen, onClose, onSuccess, customerId }: CustomerModal
                                             formRef.current?.instance().updateData("taxData.ivaCondition", "");
 
                                             if (e.value) {
+                                                const cities =
+                                                    cityEditorRef.current?.option("dataSource") ||
+                                                    initialCitiesRef.current ||
+                                                    [];
+                                                const cityObj = cities.find(
+                                                    (c: any) => c.code === e.value
+                                                );
+                                                formRef.current
+                                                    ?.instance()
+                                                    .updateData(
+                                                        "cityId",
+                                                        cityObj?.id ?? null
+                                                    );
                                                 ivaEditorRef.current?.option("disabled", false);
                                             } else {
+                                                formRef.current
+                                                    ?.instance()
+                                                    .updateData("cityId", null);
                                                 ivaEditorRef.current?.option("disabled", true);
                                             }
                                         }

@@ -24,7 +24,7 @@ const { customLoad, customSave } = createGridStateStorage({
 });
 
 const CashRegistersClient = () => {
-  const { isRecoveryMode, recoveryVisibility } = useRecovery();
+  const { isRecoveryMode, canRestore, recoveryVisibility } = useRecovery();
   const { token, currentCompany, isSuperAdmin } = useAuth();
   const { canAccess } = useAccess();
 
@@ -177,7 +177,7 @@ const CashRegistersClient = () => {
         icon: "revert",
         hint: "Restaurar",
         onClick: (data: any) => handleRestore(data),
-        visible: (e: any) => isRecoveryMode && isSuperAdmin,
+        visible: (e: any) => isRecoveryMode && canRestore,
       },
     ],
     [canModify, canSettle, isSuperAdmin, isRecoveryMode, token, currentCompany?.id]

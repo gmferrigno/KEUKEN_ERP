@@ -22,7 +22,7 @@ const { customLoad, customSave } = createGridStateStorage({ gridId: 'states-grid
 
 const StatesClient = () => {
     const { token, permissions, loading, includeInactive, isSuperAdmin } = useAuth();
-    const { isRecoveryMode, recoveryVisibility } = useRecovery();
+    const { isRecoveryMode, canRestore, recoveryVisibility } = useRecovery();
     const gridRef = useRef<any>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedState, setSelectedState] = useState<any>(null);
@@ -176,7 +176,7 @@ const StatesClient = () => {
             icon: "revert",
             hint: "Restaurar",
             onClick: (data: any) => handleRestore(data),
-            visible: (e: any) => isRecoveryMode && isSuperAdmin,
+            visible: (e: any) => isRecoveryMode && canRestore,
         }
     ], [isRecoveryMode, canModify, isSuperAdmin, token]);
 

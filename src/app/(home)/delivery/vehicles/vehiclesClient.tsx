@@ -17,7 +17,7 @@ import VehicleCreationModal from "./components/actions/vehicleCreation";
 const { customLoad, customSave } = createGridStateStorage({ gridId: 'delivery-vehicles-grid' });
 
 const VehiclesClient = () => {
-    const { isRecoveryMode, recoveryVisibility } = useRecovery();
+    const { isRecoveryMode, canRestore, recoveryVisibility } = useRecovery();
     const { token, currentCompany, permissions, isSuperAdmin } = useAuth();
     const gridRef = useRef<any>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -119,7 +119,7 @@ const VehiclesClient = () => {
             icon: "revert",
             hint: "Restaurar",
             onClick: (data: any) => handleRestore(data),
-            visible: (e: any) => isRecoveryMode && isSuperAdmin,
+            visible: (e: any) => isRecoveryMode && canRestore,
         }
     ], [canModify, isSuperAdmin, isRecoveryMode, token, currentCompany?.id]);
 

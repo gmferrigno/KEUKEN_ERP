@@ -2,12 +2,13 @@
 
 import { mapUsersAbmError } from '@/app/lib/constants/users.constants';
 import { useAuth } from '@/contexts/AuthContext';
+import { hasScope } from '@repo/access';
 import { Button } from '@repo/devextreme';
 import { usersService } from '@repo/erp-services/users.service';
 import type { ITextBoxOptions } from 'devextreme-react/cjs/text-box';
 import Form, {
     type FormRef,
-    CustomRule,
+    CompareRule,
     GroupItem,
     Label,
     RequiredRule,
@@ -16,6 +17,7 @@ import Form, {
 } from 'devextreme-react/form';
 import ScrollView from 'devextreme-react/scroll-view';
 import notify from 'devextreme/ui/notify';
+import Validator from 'devextreme/ui/validator';
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 
 const E164_PATTERN = /^\+[1-9]\d{6,14}$/;
@@ -27,7 +29,8 @@ export default function Profile() {
         companies,
         currentCompany,
         changePassword,
-        canAccess,
+        isSuperAdmin,
+        effectiveScopes,
         token,
         refreshProfileContext,
     } = useAuth();
@@ -44,9 +47,9 @@ export default function Profile() {
         confirmPassword: '',
     });
 
-    const canEditPhone = canAccess({
-        permission: { action: 'modify', keys: ['users'] },
-    });
+    // Contrato: no hay PATCH self /auth/me — phone solo con users:abm:write (o SA).
+    const canEditPhone =
+        isSuperAdmin || hasScope(effectiveScopes, 'users:abm:write');
 
     const userId = profileContext?.id ?? user?.id;
     const displayName = profileContext?.name ?? user?.name ?? '';
@@ -137,6 +140,32 @@ export default function Profile() {
         [changePasswordMode]
     );
 
+    const newPasswordComparisonTarget = useCallback(
+        () => passwordFormData.current.newPassword,
+        []
+    );
+
+    /** CompareRule solo corre al validar confirm; hay que revalidarlo si cambia newPassword. */
+    const revalidateConfirmPassword = useCallback(() => {
+        const editor = passwordFormRef.current
+            ?.instance()
+            .getEditor('confirmPassword');
+        if (!editor) return;
+        const validator = Validator.getInstance(editor.element()) as
+            | { validate: () => void }
+            | undefined;
+        validator?.validate();
+    }, []);
+
+    const handlePasswordFieldDataChanged = useCallback(
+        (e: { dataField?: string }) => {
+            if (e.dataField === 'newPassword') {
+                revalidateConfirmPassword();
+            }
+        },
+        [revalidateConfirmPassword]
+    );
+
     const handleStartEditPhone = useCallback(() => {
         profileFormData.current.phoneE164 = storedPhone;
         profileFormRef.current
@@ -209,7 +238,8 @@ export default function Profile() {
                 passwordFormData.current.currentPassword = '';
                 passwordFormData.current.newPassword = '';
                 passwordFormData.current.confirmPassword = '';
-                passwordFormRef.current?.instance().resetValues();
+                // resetValues() was removed in DX 25 — use clear()
+                passwordFormRef.current?.instance().clear();
                 notify('Contraseña actualizada', 'success', 3000);
             } catch (error: any) {
                 notify(
@@ -231,7 +261,7 @@ export default function Profile() {
 
     return (
         <ScrollView className="w-full h-full overflow-hidden" showScrollbar="always">
-            <div className="w-full h-full grid grid-cols-1 gap-4 max-w-6xl mx-auto p-1">
+            <div className="w-full h-full grid grid-cols-1 gap-4 max-w-6xl mx-auto">
                 <div className="bg-primary-500 rounded-dx shadow-sm p-8 flex flex-col md:flex-row items-center gap-10">
                     <div className="shrink-0">
                         <div className="w-40 h-40 rounded-full bg-linear-to-tr from-focus-100 to-focus-500 flex items-center justify-center text-5xl font-extrabold shadow-xl ring-4 ring-primary-900">
@@ -367,6 +397,7 @@ export default function Profile() {
                             formData={passwordFormData.current}
                             labelLocation="top"
                             colCount={1}
+                            onFieldDataChanged={handlePasswordFieldDataChanged}
                         >
                             <GroupItem>
                                 <SimpleItem
@@ -405,13 +436,10 @@ export default function Profile() {
                                     )}
                                 >
                                     <RequiredRule message="Debes confirmar la nueva contraseña" />
-                                    <CustomRule
+                                    <CompareRule
                                         message="Las contraseñas no coinciden"
-                                        validationCallback={(args) =>
-                                            args.value ===
-                                            passwordFormData.current.newPassword
-                                        }
-                                        reevaluate
+                                        comparisonTarget={newPasswordComparisonTarget}
+                                        ignoreEmptyValue
                                     />
                                 </SimpleItem>
                             </GroupItem>

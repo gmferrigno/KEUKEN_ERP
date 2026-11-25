@@ -19,7 +19,7 @@ import PaymentTermCreationModal from "../components/actions/paymentTermCreation"
 const { customLoad, customSave } = createGridStateStorage({ gridId: 'payment-terms-grid' });
 
 const PaymentTermsClient = () => {
-    const { isRecoveryMode, recoveryVisibility } = useRecovery();
+    const { isRecoveryMode, canRestore, recoveryVisibility } = useRecovery();
     const { token, currentCompany, permissions, loading, isSuperAdmin } = useAuth();
     const gridRef = useRef<any>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -129,7 +129,7 @@ const PaymentTermsClient = () => {
             icon: "revert",
             hint: "Restaurar",
             onClick: (data: any) => handleRestore(data),
-            visible: (e: any) => isRecoveryMode && isSuperAdmin,
+            visible: (e: any) => isRecoveryMode && canRestore,
         }
     ], [canModify, isSuperAdmin, isRecoveryMode, token, currentCompany?.id]);
 

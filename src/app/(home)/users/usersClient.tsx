@@ -1,7 +1,6 @@
 'use client';
 import { useRecovery } from "@repo/recovery";
-import { commonService } from "@repo/erp-services/common.service";
-
+import { hasScope } from '@repo/access';
 import { usersService } from '@repo/erp-services/users.service';
 import { GenericDataGrid, IGenericDataGridColumn } from '@repo/devextreme';
 import { useAuth } from '@/contexts/AuthContext';
@@ -64,8 +63,10 @@ export default function UsersClient() {
     const [selectedUserForPermissions, setSelectedUserForPermissions] = useState<any>(null);
     const [isPermissionsModalOpen, setIsPermissionsModalOpen] = useState(false);
 
-    const { token, currentCompany, isSuperAdmin } = useAuth();
+    const { token, currentCompany, isSuperAdmin, effectiveScopes } = useAuth();
     const companyId = currentCompany?.id ?? '0';
+    const canEditPhone =
+        isSuperAdmin || hasScope(effectiveScopes, 'users:abm:write');
 
     const [refreshVersion, setRefreshVersion] = useState(0);
 
@@ -198,6 +199,7 @@ export default function UsersClient() {
                     <UserModal
                         selectedUser={selectedUser}
                         mode={modalMode}
+                        canEditPhone={canEditPhone}
                         onSave={async (values) => {
                             if (modalMode === 'create') {
                                 try {
@@ -227,6 +229,35 @@ export default function UsersClient() {
                                 } catch (error: any) {
                                     console.error('Error creating user:', error);
                                     notify(mapUsersAbmError(error, 'Error al crear usuario'), 'error', 3000);
+                                }
+                                return;
+                            }
+
+                            if (modalMode === 'view' && selectedUser?.id) {
+                                try {
+                                    await usersService.update(
+                                        selectedUser.id,
+                                        {
+                                            phoneE164:
+                                                values.phoneE164?.trim() || null,
+                                        },
+                                        token
+                                    );
+                                    notify('Teléfono actualizado', 'success', 3000);
+                                    setSelectedUser({
+                                        ...selectedUser,
+                                        phoneE164: values.phoneE164?.trim() || null,
+                                    });
+                                    setRefreshVersion((v) => v + 1);
+                                } catch (error: any) {
+                                    notify(
+                                        mapUsersAbmError(
+                                            error,
+                                            'No se pudo actualizar el teléfono'
+                                        ),
+                                        'error',
+                                        3500
+                                    );
                                 }
                             }
                         }}

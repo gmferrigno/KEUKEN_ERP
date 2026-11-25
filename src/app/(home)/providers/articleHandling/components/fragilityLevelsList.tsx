@@ -16,7 +16,7 @@ import FragilityModal from "./actions/fragilityModal";
 const { customLoad, customSave } = createGridStateStorage({ gridId: 'fragility-classes-grid' });
 
 const FragilityLevelsList = () => {
-    const { isRecoveryMode, recoveryVisibility, canUseRecovery } = useRecovery();
+    const { isRecoveryMode, recoveryVisibility, canRestore } = useRecovery();
     const { currentCompany, token, isSuperAdmin, permissions, includeInactive } = useAuth();
     const gridRef = useRef<any>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -160,9 +160,9 @@ const FragilityLevelsList = () => {
             icon: "revert",
             hint: "Restaurar",
             onClick: (data: any) => handleRestore(data),
-            visible: (e: any) => isRecoveryMode && (isSuperAdmin || canUseRecovery || canModify),
+            visible: () => isRecoveryMode && canRestore,
         }
-    ], [isRecoveryMode, canModify, isSuperAdmin, canUseRecovery]);
+    ], [isRecoveryMode, canModify, canRestore]);
 
     return (
         <div className="flex flex-col w-full min-w-full h-full bg-dx-primary/10 rounded-dx font-sans overflow-hidden">
