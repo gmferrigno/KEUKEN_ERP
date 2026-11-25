@@ -15,7 +15,7 @@ export type TRouteKey =
     'taxcategories' | 'currencies' | 'paymentmethods' | 'paymentterms' | 'periods' |
     'cashregisters' | 'delivery' | 'routes' | 'zones' | 'vehicles' | 'documents' |
     'pricelists' | 'listtypes' | 'pricepolicies' | 'saleorders' | 'salesroutes' |
-    'salebillingmodes' | 'uom-categories' | 'sales-channels' | 'productdetail' | 'taxes' |
+    'salebillingmodes' | 'uom-categories' | 'sales-channels' | 'price-segments' | 'productdetail' | 'taxes' |
     'serial-numbers' | 'consignments' | 'partners' | 'customers' | 'addresses' | 'commercial-platforms' |
     'articlehandling' | 'metadata' | 'pricelistdetail' | 'saleorderdetail' | 'system' |
     'audit' | 'localization' | 'structure' | 'branches' | 'establishments' | 'logisticcenters' | 'audiences' | 'details' | 'mapa' | 'companies' | 'combos';
@@ -313,6 +313,11 @@ export const CustomDataRoutes: TCustomDataRoutes = {
         icon: 'share',
         text: 'Canales de Venta',
         position: 75
+    },
+    'price-segments': {
+        icon: 'hierarchy',
+        text: 'Segmentos de Precio',
+        position: 76
     },
     'serial-numbers': {
         icon: 'barcode',

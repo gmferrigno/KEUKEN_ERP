@@ -137,6 +137,12 @@ export const ROUTES = [
     "routeKey": "paymentterms"
   },
   {
+    "id": "priceLists/price-segments",
+    "parentId": "priceLists",
+    "path": "/priceLists/price-segments",
+    "routeKey": "price-segments"
+  },
+  {
     "id": "priceLists/priceListDetail",
     "parentId": "priceLists",
     "path": "/priceLists/priceListDetail",

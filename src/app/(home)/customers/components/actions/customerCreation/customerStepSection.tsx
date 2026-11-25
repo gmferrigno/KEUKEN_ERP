@@ -16,7 +16,6 @@ export interface CustomerStepSectionProps {
     selectedCountryCode: string;
     setSelectedCountryCode: (code: string) => void;
     companyId?: string | null;
-    companyName?: string | null;
     token: string | null | undefined;
     isActive: boolean;
 }
@@ -31,7 +30,6 @@ const CustomerStepSection = ({
     selectedCountryCode,
     setSelectedCountryCode,
     companyId,
-    companyName,
     token,
     isActive,
 }: CustomerStepSectionProps) => {
@@ -156,19 +154,6 @@ const CustomerStepSection = ({
             showValidationSummary={true}
             colCount={2}
         >
-            <Item
-                dataField="companyId"
-                editorType="dxTextBox"
-                isRequired={true}
-                label={{
-                    text: companyName
-                        ? `Compañía — ${companyName}`
-                        : "Compañía (ID)",
-                }}
-                editorOptions={{
-                    readOnly: true,
-                }}
-            />
             <Item
                 dataField="code"
                 editorType="dxTextBox"

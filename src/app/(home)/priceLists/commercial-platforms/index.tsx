@@ -10,6 +10,7 @@ import { createGridStateStorage } from "@/lib/storage/gridStateStorage";
 import { commercialPlatformsService } from "@repo/erp-services/partners/commercialPlatforms.service";
 import CommercialPlatformModal from "./components/actions/commercialPlatformModal";
 import { canDo } from "@repo/access";
+import { mapCommercialCatalogError } from "@repo/erp-api-client";
 
 const { customLoad, customSave } = createGridStateStorage({
   gridId: "commercial-platforms-grid",
@@ -41,7 +42,7 @@ const CommercialPlatformsClient = () => {
             limit: loadOptions.take || 20,
             offset: loadOptions.skip || 0,
             companyId: currentCompany?.id || undefined,
-            includeInactive,
+            active: includeInactive ? undefined : true,
           };
           const response = await commercialPlatformsService.getAll(params, token);
           return {
@@ -63,7 +64,11 @@ const CommercialPlatformsClient = () => {
   const handleRowRemoved = async (e: any) => {
     try {
       const data = e.data || e;
-      await commercialPlatformsService.delete(data.id, token);
+      await commercialPlatformsService.delete(
+        data.id,
+        token,
+        currentCompany?.id
+      );
       setRefreshVersion((prev) => prev + 1);
       if (gridRef.current?.instance?.refresh) {
         gridRef.current.instance.refresh();
@@ -73,10 +78,7 @@ const CommercialPlatformsClient = () => {
       notify("Plataforma comercial eliminada exitosamente", "success", 3000);
     } catch (error: any) {
       console.error("Error deleting commercial platform:", error);
-      const errorMessage = error instanceof Error && error.message 
-        ? error.message 
-        : "Error al eliminar la plataforma comercial";
-      notify(errorMessage, "error", 3000);
+      notify(mapCommercialCatalogError(error), "error", 4500);
     }
   };
 

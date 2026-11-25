@@ -559,7 +559,6 @@ const CustomerCreationWizard = ({
                         selectedCountryCode={selectedCountryCode}
                         setSelectedCountryCode={setSelectedCountryCode}
                         companyId={currentCompany?.id}
-                        companyName={currentCompany?.name}
                         token={token}
                         isActive={currentStep === 0}
                     />

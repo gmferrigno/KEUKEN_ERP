@@ -6,6 +6,7 @@ import { Button } from '@repo/devextreme';
 import Form, { SimpleItem } from "devextreme-react/form";
 import notify from "devextreme/ui/notify";
 import { commercialPlatformsService } from "@repo/erp-services/partners/commercialPlatforms.service";
+import { mapCommercialCatalogError } from "@repo/erp-api-client";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface CommercialPlatformModalProps {
@@ -94,7 +95,17 @@ export default function CommercialPlatformModal({
         setLoading(true);
         try {
             if (initialData?.id) {
-                await commercialPlatformsService.update(initialData.id, currentFormData, token);
+                await commercialPlatformsService.update(
+                    initialData.id,
+                    {
+                        code: currentFormData.code,
+                        name: currentFormData.name,
+                        active: currentFormData.active,
+                        includeInDefaultPopulate: currentFormData.includeInDefaultPopulate,
+                    },
+                    token,
+                    currentFormData.companyId
+                );
                 notify("Actualizado exitosamente", "success", 3000);
             } else {
                 await commercialPlatformsService.create(currentFormData, token);
@@ -104,10 +115,7 @@ export default function CommercialPlatformModal({
             onClose();
         } catch (error: any) {
             console.error("Error saving commercial platform:", error);
-            const errorMessage = error instanceof Error && error.message
-                ? error.message
-                : "Error al guardar";
-            notify(errorMessage, "error", 3000);
+            notify(mapCommercialCatalogError(error), "error", 4500);
         } finally {
             setLoading(false);
         }
