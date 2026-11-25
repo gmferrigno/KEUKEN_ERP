@@ -5,9 +5,6 @@
       "@/*": [
         "./src/*"
       ],
-      "@repo/product-ui/*": [
-        "../../packages/product-ui/src/*"
-      ],
       "@repo/erp-services/*": [
         "../../packages/erp-services/src/*"
       ],
@@ -16,10 +13,15 @@
       ],
       "@repo/erp-api-client/*": [
         "../../packages/erp-api-client/src/*"
+      ],
+      "@repo/domain-ui/products/*": [
+        "../../packages/domain-ui/src/products/*"
+      ],
+      "@repo/domain-ui/users/*": [
+        "../../packages/domain-ui/src/users/*"
       ]
     }
   },
-
   "include": [
     "next-env.d.ts",
     "**/*.ts",

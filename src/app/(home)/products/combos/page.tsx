@@ -1,5 +1,5 @@
 import SectionHeader from "../../components/section/sectionHeader";
-import CombosClient from "@repo/product-ui/combos/index";
+import CombosClient from "@repo/domain-ui/products/combos/index";
 
 const CombosPage = () => {
     return (

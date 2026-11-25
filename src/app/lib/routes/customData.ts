@@ -9,7 +9,7 @@ export interface ICustomDataRoute {
 }
 
 export type TRouteKey =
-    'default' | 'users' | 'me' | 'sales' | 'groups' | 'stock' | 'warehouses' |
+    'default' | 'users' | 'me' | 'sales' | 'groups' | 'by-role' | 'stock' | 'warehouses' |
     'products' | 'uoms' | 'categories' | 'providers' | 'keysmanager' | 'refused' |
     'accounting' | 'brands' | 'countries' | 'states' | 'cities' |
     'taxcategories' | 'currencies' | 'paymentmethods' | 'paymentterms' | 'periods' |
@@ -88,6 +88,11 @@ export const CustomDataRoutes: TCustomDataRoutes = {
         icon: 'group',
         text: 'Grupos',
         position: 110
+    },
+    'by-role': {
+        icon: 'card',
+        text: 'Por Rol',
+        position: 115
     },
     me: {
         icon: 'accountbox',

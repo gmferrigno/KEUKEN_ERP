@@ -1,5 +1,5 @@
 import SectionHeader from "../../components/section/sectionHeader";
-import UomsClient from "@repo/product-ui/uoms/uomsClient";
+import UomsClient from "@repo/domain-ui/products/uoms/uomsClient";
 
 const UomsPage = () => {
     return (

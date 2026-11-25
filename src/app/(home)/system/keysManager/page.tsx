@@ -10,11 +10,11 @@ import notify from 'devextreme/ui/notify';
 import { useEffect, useMemo, useState } from 'react';
 import SectionHeader from '../../components/section/sectionHeader';
 import RoleCreationModal from './components/actions/creation';
-import PermissionsSelector from './components/permissionsSelector';
+import PermissionsSelector from '@repo/domain-ui/users/components/permissionsSelector';
 import RoleList from './components/roleList';
 
 const KeysManagerPage = () => {
-    const { token, currentCompany, permissions } = useAuth();
+    const { token, currentCompany, permissions, isSuperAdmin } = useAuth();
     const [keys, setKeys] = useState<TFRoles>([]);
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [selectedRoleId, setSelectedRoleId] = useState<string | null>(null);
@@ -166,6 +166,7 @@ const KeysManagerPage = () => {
                                     isReadOnly={!isEditing}
                                     onCancel={handleCancel}
                                     onSave={handleSave}
+                                    showExtractColumn={Boolean(isSuperAdmin)}
                                 />
                             ) : (
                                 <div key="no-selection" className="h-full w-full flex flex-col items-center justify-center p-8 text-center animate-fade-in transition-all">

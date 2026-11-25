@@ -21,7 +21,7 @@ const CIRCUITS: { value: TFIssuanceCircuit; label: string }[] = [
 ];
 
 const ON_EXCEED = [
-    { value: "split", label: "Partir (split)" },
+    { value: "split", label: "Partir" },
     { value: "block", label: "Bloquear" },
     { value: "require_identity", label: "Requiere identidad" },
 ];
@@ -156,17 +156,25 @@ const IssuanceConfigClient = () => {
 
     return (
         <div className="flex flex-col w-full h-full overflow-auto gap-4 p-1">
-            <section className="rounded-dx border border-black/10 p-4 bg-white/40">
-                <div className="flex items-center justify-between mb-3">
+            <section className="rounded-dx border border-main/10 p-4 bg-primary-900/40">
+                <div className="flex items-center justify-between mb-3 gap-3">
                     <div>
-                        <h2 className="text-base font-semibold">Configuración de emisión</h2>
-                        <p className="text-xs opacity-60">
-                            Cascada: address → customer → company → default prep_remito
+                        <h2 className="text-base font-semibold text-main">
+                            Configuración de emisión
+                        </h2>
+                        <p className="text-xs text-main/60">
                             {config.source ? ` · efectiva: ${config.source}` : ""}
                             {config.scope ? ` (${config.scope})` : ""}
                         </p>
                     </div>
-                    <Button text="Resolver" stylingMode="outlined" onClick={loadResolve} disabled={loading} />
+                    <Button
+                        text="Resolver"
+                        stylingMode="contained"
+                        type="default"
+                        onClick={loadResolve}
+                        disabled={loading}
+                        className="bg-focus-300! rounded-dx! text-variant!"
+                    />
                 </div>
                 <Form
                     formData={{ ...scope, ...config }}
@@ -182,7 +190,7 @@ const IssuanceConfigClient = () => {
                     labelLocation="top"
                     colCount={2}
                 >
-                    <GroupItem caption="Scope (override opcional)" colCount={2} colSpan={2}>
+                    <GroupItem caption="Contexto" colCount={2} colSpan={2}>
                         <SimpleItem dataField="customerId" label={{ text: "Customer ID" }} />
                         <SimpleItem
                             dataField="customerAddressId"
@@ -262,25 +270,40 @@ const IssuanceConfigClient = () => {
                         colSpan={2}
                         buttonOptions={{
                             text: loading ? "Guardando…" : "Guardar config",
-                            type: "success",
+                            type: "default",
+                            stylingMode: "contained",
                             onClick: handleSaveConfig,
                             disabled: loading,
+                            elementAttr: {
+                                class: "bg-focus-300! rounded-dx! text-variant!",
+                            },
                         }}
                     />
                 </Form>
             </section>
 
-            <section className="rounded-dx border border-black/10 p-4 bg-white/40">
-                <h2 className="text-base font-semibold mb-1">Reglas de tope fiscal</h2>
-                <p className="text-xs opacity-60 mb-3">
+            <section className="rounded-dx border border-main/10 p-4 bg-primary-900/40">
+                <h2 className="text-base font-semibold text-main mb-1">
+                    Reglas de tope fiscal
+                </h2>
+                <p className="text-xs text-main/60 mb-3">
                     Match por condición IVA del customer (p. ej. consumidor_final)
                 </p>
-                <div className="mb-4 max-h-48 overflow-auto border border-black/5 rounded-dx p-2 text-sm">
-                    {rules.length === 0 && <p className="opacity-60">Sin reglas</p>}
+                <div className="mb-4 max-h-48 overflow-auto border border-main/10 rounded-dx p-2 text-sm text-main bg-primary-950/30">
+                    {rules.length === 0 && (
+                        <p className="text-main/60">Sin reglas</p>
+                    )}
                     {rules.map((r, idx) => (
-                        <div key={r.id || idx} className="py-1 border-b border-black/5 last:border-0">
-                            <strong>{r.ivaCondition}</strong> — max {r.maxTotal} · onExceed{" "}
-                            {r.onExceed || "split"} · prio {r.priority ?? 100}
+                        <div
+                            key={r.id || idx}
+                            className="py-1 border-b border-main/10 last:border-0"
+                        >
+                            <strong className="text-main">{r.ivaCondition}</strong>
+                            <span className="text-main/70">
+                                {" "}
+                                — max {r.maxTotal} · onExceed {r.onExceed || "split"} ·
+                                prio {r.priority ?? 100}
+                            </span>
                         </div>
                     ))}
                 </div>
@@ -324,7 +347,11 @@ const IssuanceConfigClient = () => {
                         buttonOptions={{
                             text: "Upsert regla",
                             type: "default",
+                            stylingMode: "contained",
                             onClick: handleSaveRule,
+                            elementAttr: {
+                                class: "bg-focus-300! rounded-dx! text-variant!",
+                            },
                         }}
                     />
                 </Form>

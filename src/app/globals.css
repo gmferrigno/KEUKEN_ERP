@@ -3,7 +3,7 @@
 @source "../../../../packages/ui/src";
 @source "../../../../packages/custom-components/src";
 @source "../../../../packages/devextreme/src";
-@source "../../../../packages/product-ui/src";
+@source "../../../../packages/domain-ui/src";
 @source "../../../../packages/login/src";
 
 /* Company & Branch Dropdown Menu Styling */

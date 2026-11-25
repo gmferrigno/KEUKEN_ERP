@@ -1,7 +1,7 @@
 import Splitter, { Item as SplitterItem } from 'devextreme-react/splitter';
 import SectionHeader from '../../components/section/sectionHeader';
-import UsersList from './Components/usersList';
-import GroupsClient from './groupsClient';
+import UsersList from '@repo/domain-ui/users/groups/usersList';
+import GroupsClient from '@repo/domain-ui/users/groups/groupsClient';
 
 export default function Groups() {
     return (

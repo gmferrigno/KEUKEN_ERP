@@ -334,6 +334,12 @@ export const ROUTES = [
     "routeKey": "users"
   },
   {
+    "id": "users/by-role",
+    "parentId": "users",
+    "path": "/users/by-role",
+    "routeKey": "by-role"
+  },
+  {
     "id": "users/groups",
     "parentId": "users",
     "path": "/users/groups",

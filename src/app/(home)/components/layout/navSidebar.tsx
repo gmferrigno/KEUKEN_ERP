@@ -257,7 +257,7 @@ const NavSidebar = ({ initialRoutes }: { initialRoutes: IAppRoute[] }) => {
     {/* Mensaje no encontrado */ }
     if (filteredRouteIds && filteredItems.length === 0) {
       return (
-        <div className="px-4 py-6 text-center select-none">
+        <div className="px-4 py-6 text-center text-variant/50 select-none">
           No se encontraron resultados
         </div>
       )
@@ -276,10 +276,10 @@ const NavSidebar = ({ initialRoutes }: { initialRoutes: IAppRoute[] }) => {
             className={`
               flex items-center gap-2.5 w-full text-left transition-all duration-200 ease-in-out cursor-pointer
               ${isCollapsed
-                ? `justify-center py-2.5 px-2 text-base hover:bg-variant/10 ${isActive ? 'bg-main/15 text-main font-semibold' : 'text-main/80'}`
+                ? `justify-center py-2.5 px-2 text-base hover:bg-variant/10 ${isActive ? 'bg-main/15 text-variant font-semibold' : 'text-variant/80'}`
                 : `${level > 0 ? 'py-1.5 text-[13px]' : 'py-2 text-sm'} pr-4 ${isActive || isExpanded
-                  ? 'bg-main/15 font-semibold text-main'
-                  : 'hover:bg-variant/10 text-main/80'
+                  ? 'bg-main/15 font-semibold text-variant'
+                  : 'hover:bg-variant/10 text-variant/80'
                 } ${level > 0 && !isActive
                   ? 'opacity-90 text-focus-500'
                   : ''
@@ -289,7 +289,7 @@ const NavSidebar = ({ initialRoutes }: { initialRoutes: IAppRoute[] }) => {
             style={!isCollapsed ? { paddingLeft: `${level * 16 + 16}px` } : undefined}
           >
             {route.icon && level === 0 && isCollapsed && (
-              <i className={`dx-icon dx-icon-${route.icon} text-lg ${isActive ? 'text-main font-semibold' : ''}`} />
+              <i className={`dx-icon dx-icon-${route.icon} text-lg ${isActive ? 'text-variant font-semibold' : ''}`} />
             )}
             {!isCollapsed && <span className="flex-1 whitespace-nowrap overflow-hidden text-ellipsis">{route.text}</span>}
             {hasChildren && !isCollapsed && (
@@ -312,7 +312,7 @@ const NavSidebar = ({ initialRoutes }: { initialRoutes: IAppRoute[] }) => {
   }
 
   return (
-    <aside className={`flex flex-col h-screen max-h-screen bg-linear-to-b from-primary-500 to-primary-900 transition-[width] shadow-r-lg z-60 duration-300 ease-in-out overflow-hidden ${isCollapsed ? 'w-16' : 'w-60'}`} >
+    <aside className={`flex flex-col h-screen max-h-screen bg-linear-to-b from-secondary-500 to-secondary-900 transition-[width] shadow-r-lg z-60 duration-300 ease-in-out overflow-hidden text-variant ${isCollapsed ? 'w-16' : 'w-60'}`} >
       {/* HEADER */}
       <div className={`flex items-center justify-between border-b border-main/10 min-h-14 shrink-0 ${isCollapsed ? 'px-1 py-3' : 'py-3 px-4'}`}>
         <div
@@ -326,7 +326,7 @@ const NavSidebar = ({ initialRoutes }: { initialRoutes: IAppRoute[] }) => {
               <BrandLogo
                 size={32}
                 variant="icon"
-                className="w-8 h-8 flex items-center justify-center p-0 text-main"
+                className="w-8 h-8 flex items-center justify-center p-0 text-variant"
               />
             </div>
           ) : (
@@ -336,9 +336,9 @@ const NavSidebar = ({ initialRoutes }: { initialRoutes: IAppRoute[] }) => {
                   <BrandLogo
                     size={28}
                     variant="logo"
-                    className="h-7 w-auto shrink-0 text-main"
+                    className="h-7 w-auto shrink-0 text-variant"
                   />
-                  <p className="text-[15px] text-left font-semibold tracking-[2px] whitespace-nowrap text-main">
+                  <p className="text-[15px] text-left font-semibold tracking-[2px] whitespace-nowrap text-variant">
                     {brand.shortName}
                   </p>
                 </div>
@@ -347,7 +347,7 @@ const NavSidebar = ({ initialRoutes }: { initialRoutes: IAppRoute[] }) => {
                   variant="logo"
                   width="100%"
                   height="auto"
-                  className="w-full h-auto max-h-9 object-contain text-main"
+                  className="w-full h-auto max-h-9 object-contain text-variant"
                 />
               )}
             </div>
@@ -357,7 +357,7 @@ const NavSidebar = ({ initialRoutes }: { initialRoutes: IAppRoute[] }) => {
         {!isCollapsed && (
           <div className="ml-2 shrink-0">
             <button onClick={toggleSidebar} className="transition-colors p-1.5 hover:bg-main/10 rounded-dx" aria-label="Colapsar menú">
-              <i className="dx-icon dx-icon-hidepanel text-xl text-main" />
+              <i className="dx-icon dx-icon-hidepanel text-xl text-variant" />
             </button>
           </div>
         )}
@@ -367,7 +367,7 @@ const NavSidebar = ({ initialRoutes }: { initialRoutes: IAppRoute[] }) => {
       {isCollapsed && (
         <div className="flex justify-center py-1.5">
           <button onClick={toggleSidebar} className="p-1.5 rounded-dx hover:bg-main/10 transition-colors">
-            <i className="dx-icon dx-icon-menu text-xl" />
+            <i className="dx-icon dx-icon-menu text-xl text-variant" />
           </button>
         </div>
       )}
