@@ -17,7 +17,7 @@ const SectionContainer: React.FC<ISectionContainerProps> = ({
     iconRight,
     childrenClassName = "",
 }) => (
-    <div className="bg-primary-500/40 backdrop-blur-xl border border-main/5 rounded-dx p-6 shadow-md w-full h-full">
+    <div className="bg-primary-500/70 backdrop-blur-xl border border-main/5 rounded-dx p-6 shadow-md w-full h-full">
         <div className="flex items-center justify-between mb-2">
             <span className="text-2xl font-normal text-main">{title}</span>
             {iconRight}

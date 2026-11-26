@@ -4,8 +4,8 @@
 import { useRecovery, RECOVERY_ENTITIES } from "@repo/recovery";
 import { useMemo, type ReactNode } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { ProductUiProvider } from "@repo/product-ui/runtime";
-import type { ProductUiRuntimeConfig } from "@repo/product-ui/runtime";
+import { ProductUiProvider } from "@repo/domain-ui/products/runtime";
+import type { ProductUiRuntimeConfig } from "@repo/domain-ui/products/runtime";
 import PERMISSIONS_CONSTANTS from "@repo/access";
 import { canDo } from "@repo/access";
 import MetadataFieldsClient from "@/components/metadata/MetadataFieldsClient";

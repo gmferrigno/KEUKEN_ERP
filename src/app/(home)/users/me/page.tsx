@@ -1,6 +1,6 @@
 import SectionHeader from '../../components/section/sectionHeader';
-import Permissions from './components/permissions';
-import MeClient from './components/profile';
+import Permissions from '@repo/domain-ui/users/me/permissions';
+import MeClient from '@repo/domain-ui/users/me/profile';
 
 export default function Me() {
   return (

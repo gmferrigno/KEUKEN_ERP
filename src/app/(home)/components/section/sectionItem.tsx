@@ -7,7 +7,7 @@ interface ISectionItemProps {
 }
 
 const SectionItem: React.FC<ISectionItemProps> = ({ label, path }) => (
-    <div className="flex items-center justify-between bg-primary-500 rounded-dx px-6 py-4 min-w-0">
+    <div className="flex items-center justify-between bg-primary-900 rounded-dx px-6 py-4 min-w-0">
         <span className="text-lg truncate min-w-0 flex-1 mr-2 text-main" title={label}>
             {label}
         </span>

@@ -14,19 +14,13 @@
     "@repo/api-contracts": "workspace:*",
     "@repo/erp-api-client": "workspace:*",
     "@repo/erp-services": "workspace:*",
-    "@repo/product-ui": "workspace:*",
     "@repo/recovery": "workspace:*",
     "@repo/custom-components": "workspace:*",
-
-
-
-
     "@repo/devextreme": "workspace:*",
     "@repo/icons": "workspace:*",
     "@repo/map-core": "workspace:*",
     "@repo/login": "workspace:*",
     "@repo/ui": "workspace:*",
-
     "@hookform/resolvers": "5.2.2",
     "@react-pdf/renderer": "4.3.2",
     "dayjs": "1.11.20",
@@ -43,7 +37,8 @@
     "react-hook-form": "7.71.1",
     "react-konva": "19.2.3",
     "server-only": "0.0.1",
-    "yup": "1.7.1"
+    "yup": "1.7.1",
+    "@repo/domain-ui": "workspace:*"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",

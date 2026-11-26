@@ -1,5 +1,5 @@
 import SectionHeader from "../../components/section/sectionHeader";
-import UomCategoriesClient from "@repo/product-ui/uom-categories/uomCategoriesClient";
+import UomCategoriesClient from "@repo/domain-ui/products/uom-categories/uomCategoriesClient";
 
 const UomCategoriesPage = () => {
     return (

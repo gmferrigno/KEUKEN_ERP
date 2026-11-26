@@ -1,5 +1,5 @@
 import SectionHeader from "../../components/section/sectionHeader";
-import SaleBillingModesClient from "@repo/product-ui/saleBillingModes/saleBillingModesClient";
+import SaleBillingModesClient from "@repo/domain-ui/products/saleBillingModes/saleBillingModesClient";
 
 const SaleBillingModesPage = () => {
     return (

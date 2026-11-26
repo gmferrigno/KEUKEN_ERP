@@ -1,5 +1,5 @@
 import SectionHeader from "../../components/section/sectionHeader";
-import BrandsClient from "@repo/product-ui/brands/brandsClient";
+import BrandsClient from "@repo/domain-ui/products/brands/brandsClient";
 
 const BrandsPage = () => {
     return (

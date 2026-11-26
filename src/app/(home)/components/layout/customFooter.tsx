@@ -9,18 +9,18 @@ export default function CustomFooter() {
   const { isRecoveryMode, recoveryVisibility, canUseRecovery, toggleRecoveryMode, setRecoveryVisibility } = useRecovery();
 
   return (
-    <footer className="w-full h-8 bg-linear-to-r from-primary-900 to-primary-950 border-t border-main/10 flex items-center justify-between px-2 z-50 sticky bottom-0 left-0 relative">
+    <footer className="w-full h-8 bg-linear-to-r from-secondary-900 to-secondary-950 border-t border-main/10 flex items-center justify-between px-2 z-50 sticky bottom-0 left-0 relative text-variant">
       <div className="flex items-center gap-2 h-full z-10">
         {canUseRecovery && (
           <div className="flex items-center gap-2">
             <div
               className={`flex items-center gap-1.5 px-1.5 py-0.5 rounded border transition-all text-xs ${isRecoveryMode
                 ? 'bg-focus-500/10 border-focus-500/30 text-focus-300 font-medium'
-                : 'bg-main/5 border-main/10 text-main/40'
+                : 'bg-main/5 border-main/10 text-variant/40'
                 }`}
               title={isRecoveryMode ? 'Modo papelera activo' : 'Modo papelera inactivo'}
             >
-              <i className={`dx-icon-trash text-xs ${isRecoveryMode ? 'text-focus-300' : 'text-main/40'}`} />
+              <i className={`dx-icon-trash text-xs ${isRecoveryMode ? 'text-focus-300' : 'text-variant/40'}`} />
               <span className="text-[10px] select-none">Modo recuperación</span>
               <Switch
                 value={isRecoveryMode}

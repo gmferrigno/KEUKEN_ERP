@@ -1,5 +1,5 @@
 import SectionHeader from "../components/section/sectionHeader";
-import UsersClient from "./usersClient";
+import UsersClient from "@repo/domain-ui/users/usersClient";
 
 export default function Users() {
   return (

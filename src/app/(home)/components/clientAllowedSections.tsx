@@ -5,7 +5,6 @@ import { getFirstLevelRoutes, IAppRoute } from "@/app/lib/routes/getRoutes";
 import { canRenderRoute } from "@repo/access";
 import SectionContainer from "./section/sectionContainer";
 import { useEffect, useState } from "react";
-import { getCustomData } from "@/app/lib/routes/customData";
 
 export function SectionsFallback() {
     return (

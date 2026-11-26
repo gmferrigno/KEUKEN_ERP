@@ -8,9 +8,12 @@ import notify from 'devextreme/ui/notify';
 import { IFCompany, IFUser, IFRoleAssignment, IFOptionItem } from '@repo/api-contracts/erp';
 import { usersService } from '@repo/erp-services/users.service';
 import { useAuth } from '@/contexts/AuthContext';
-import { OPERATIONAL_ROLES } from '@/app/lib/constants/users.constants';
-
-const DEFAULT_ROLE = 'user';
+import {
+    getFallbackRoleSelectOptions,
+    mapRoleOptionsToSelect,
+    pickDefaultRoleCode,
+    type IRoleSelectOption,
+} from '@/app/lib/constants/users.constants';
 
 interface CompanyUsersModalProps {
     isOpen: boolean;
@@ -23,6 +26,7 @@ interface CompanyUsersModalProps {
 interface UserRowItemProps {
     user: IFUser;
     companyId: string;
+    roleOptions: IRoleSelectOption[];
     actionLoading: boolean;
     onUpdateRole: (user: IFUser, newRole: string) => void;
     onRemoveUser: (user: IFUser) => void;
@@ -31,6 +35,7 @@ interface UserRowItemProps {
 const UserRowItem = React.memo(function UserRowItem({
     user,
     companyId,
+    roleOptions,
     actionLoading,
     onUpdateRole,
     onRemoveUser,
@@ -38,7 +43,9 @@ const UserRowItem = React.memo(function UserRowItem({
     const userAssignment = user.roleAssignments?.find(
         (ra) => ra.companyId === companyId
     );
-    const currentRole = userAssignment?.roles?.[0] || DEFAULT_ROLE;
+    const currentRole =
+        userAssignment?.roles?.[0] ||
+        pickDefaultRoleCode(roleOptions.map((o) => o.id));
 
     const handleRoleChanged = useCallback(
         (e: any) => {
@@ -72,14 +79,14 @@ const UserRowItem = React.memo(function UserRowItem({
             {/* Role selector for this company */}
             <div className="flex-1 max-w-[340px]">
                 <SelectBox
-                    dataSource={OPERATIONAL_ROLES}
+                    dataSource={roleOptions}
                     valueExpr="id"
-                    displayExpr="name"
+                    displayExpr="label"
                     value={currentRole}
                     onValueChanged={handleRoleChanged}
                     searchEnabled={true}
                     stylingMode="filled"
-                    disabled={actionLoading}
+                    disabled={actionLoading || roleOptions.length === 0}
                 />
             </div>
 
@@ -100,6 +107,7 @@ const UserRowItem = React.memo(function UserRowItem({
 
 interface AddUserSectionProps {
     availableUsers: IFOptionItem[];
+    roleOptions: IRoleSelectOption[];
     selectedUserId: string;
     onUserIdChange: (id: string) => void;
     selectedRole: string;
@@ -111,6 +119,7 @@ interface AddUserSectionProps {
 
 const AddUserSection = React.memo(function AddUserSection({
     availableUsers,
+    roleOptions,
     selectedUserId,
     onUserIdChange,
     selectedRole,
@@ -154,9 +163,9 @@ const AddUserSection = React.memo(function AddUserSection({
                 <div className="col-span-12 md:col-span-5 flex flex-col gap-1">
                     <label className="text-xs text-main/70">Rol Operativo</label>
                     <SelectBox
-                        dataSource={OPERATIONAL_ROLES}
+                        dataSource={roleOptions}
                         valueExpr="id"
-                        displayExpr="name"
+                        displayExpr="label"
                         value={selectedRole}
                         onValueChanged={(e) => {
                             if (e.value) onRoleChange(e.value);
@@ -164,7 +173,7 @@ const AddUserSection = React.memo(function AddUserSection({
                         placeholder="Seleccionar rol..."
                         searchEnabled={true}
                         stylingMode="filled"
-                        disabled={disabled || loading}
+                        disabled={disabled || loading || roleOptions.length === 0}
                     />
                 </div>
 
@@ -191,47 +200,68 @@ function CompanyUsersModal({
     company,
     onSuccess,
 }: CompanyUsersModalProps) {
-    const { token } = useAuth();
+    const { token, isSuperAdmin } = useAuth();
     const [assignedUsers, setAssignedUsers] = useState<IFUser[]>([]);
     const [userOptions, setUserOptions] = useState<IFOptionItem[]>([]);
+    const [roleOptions, setRoleOptions] = useState<IRoleSelectOption[]>(() =>
+        getFallbackRoleSelectOptions(false)
+    );
     const [loading, setLoading] = useState(false);
     const [actionLoading, setActionLoading] = useState(false);
 
     // New assignment form state
     const [selectedUserIdToAdd, setSelectedUserIdToAdd] = useState<string>('');
-    const [selectedRoleToAdd, setSelectedRoleToAdd] = useState<string>(DEFAULT_ROLE);
+    const [selectedRoleToAdd, setSelectedRoleToAdd] = useState<string>('user');
 
     const fetchUsers = useCallback(async () => {
         if (!token || !company?.id) return;
         setLoading(true);
         try {
-            const [companyUsers, userOptionsRes] = await Promise.all([
+            const [companyUsers, userOptionsRes, rolesRes] = await Promise.all([
                 usersService.getAll(token, company.id),
                 usersService.getUserOptions({ limit: 200 }, token),
+                usersService.getRolesOptions(token).catch((err) => {
+                    console.warn(
+                        'No se pudieron obtener roles desde /users/roles/options, usando fallback local:',
+                        err
+                    );
+                    return null;
+                }),
             ]);
             setAssignedUsers(companyUsers || []);
             setUserOptions(userOptionsRes?.items || []);
+
+            const nextRoles =
+                rolesRes?.items?.length
+                    ? mapRoleOptionsToSelect(rolesRes.items)
+                    : getFallbackRoleSelectOptions(Boolean(isSuperAdmin));
+            setRoleOptions(nextRoles);
+            setSelectedRoleToAdd((prev) =>
+                nextRoles.some((r) => r.id === prev)
+                    ? prev
+                    : pickDefaultRoleCode(nextRoles.map((r) => r.id))
+            );
         } catch (error: any) {
             console.error('Error fetching users:', error);
             notify('Error al cargar la lista de usuarios', 'error', 3000);
         } finally {
             setLoading(false);
         }
-    }, [token, company?.id]);
+    }, [token, company?.id, isSuperAdmin]);
 
     useEffect(() => {
         if (isOpen && company?.id) {
             fetchUsers();
             setSelectedUserIdToAdd('');
-            setSelectedRoleToAdd(DEFAULT_ROLE);
         }
     }, [isOpen, company?.id, fetchUsers]);
 
     const handleHidden = useCallback(() => {
         setAssignedUsers([]);
         setUserOptions([]);
+        setRoleOptions(getFallbackRoleSelectOptions(false));
         setSelectedUserIdToAdd('');
-        setSelectedRoleToAdd(DEFAULT_ROLE);
+        setSelectedRoleToAdd('user');
         setLoading(false);
         setActionLoading(false);
         onHidden?.();
@@ -285,7 +315,7 @@ function CompanyUsersModal({
 
             notify(`Usuario ${targetUser.name} asignado correctamente`, 'success', 3000);
             setSelectedUserIdToAdd('');
-            setSelectedRoleToAdd(DEFAULT_ROLE);
+            setSelectedRoleToAdd(pickDefaultRoleCode(roleOptions.map((r) => r.id)));
             await fetchUsers();
             onSuccess?.();
         } catch (error: any) {
@@ -404,6 +434,7 @@ function CompanyUsersModal({
                 {/* Add User Section (Memoized to prevent list re-renders) */}
                 <AddUserSection
                     availableUsers={availableUsers}
+                    roleOptions={roleOptions}
                     selectedUserId={selectedUserIdToAdd}
                     onUserIdChange={setSelectedUserIdToAdd}
                     selectedRole={selectedRoleToAdd}
@@ -433,6 +464,7 @@ function CompanyUsersModal({
                                 key={user.id}
                                 user={user}
                                 companyId={company?.id || ''}
+                                roleOptions={roleOptions}
                                 actionLoading={actionLoading}
                                 onUpdateRole={handleUpdateUserRole}
                                 onRemoveUser={handleRemoveUser}
