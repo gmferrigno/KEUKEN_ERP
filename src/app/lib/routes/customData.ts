@@ -121,9 +121,9 @@ export const CustomDataRoutes: TCustomDataRoutes = {
         position: 220
     },
     sales: {
-        icon: 'money',
-        text: 'Ventas',
-        position: 10
+        icon: 'cart',
+        text: 'Punto de Venta',
+        position: 8
     },
     stock: {
         icon: 'packagebox',

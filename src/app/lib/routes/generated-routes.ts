@@ -261,6 +261,11 @@ export const ROUTES = [
     "routeKey": "metadata"
   },
   {
+    "id": "sales",
+    "path": "/sales",
+    "routeKey": "sales"
+  },
+  {
     "id": "stock",
     "path": "/stock",
     "routeKey": "stock"
@@ -425,6 +430,11 @@ export const FIRST_LEVEL_ROUTES = [
     "id": "providers",
     "path": "/providers",
     "routeKey": "providers"
+  },
+  {
+    "id": "sales",
+    "path": "/sales",
+    "routeKey": "sales"
   },
   {
     "id": "stock",
