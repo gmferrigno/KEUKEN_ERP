@@ -10,12 +10,17 @@ import { useEffect, useMemo, useRef, useState, type MouseEvent } from 'react';
 
 
 import { BrandLogo, useBrand } from '@repo/ui/brand';
+import { SupportIcon } from '@repo/icons';
 
 const NavSidebar = ({ initialRoutes }: { initialRoutes: IAppRoute[] }) => {
   const [isCollapsed, setIsCollapsed] = useState<boolean>(true);
+  const [supportPeek, setSupportPeek] = useState(false);
   const [expandedKeys, setExpandedKeys] = useState<Set<string>>(new Set())
   const [searchValue, setSearchValue] = useState<string>('')
   const searchRef = useRef(null)
+
+  const isSidebarExpanded = !isCollapsed || supportPeek;
+  const showCollapsedUi = !isSidebarExpanded;
 
   const { effectiveScopes, companyLicense } = useAuth();
   const { brand } = useBrand();
@@ -23,6 +28,9 @@ const NavSidebar = ({ initialRoutes }: { initialRoutes: IAppRoute[] }) => {
 
   const pathname = usePathname();
   const router = useRouter();
+
+  const supportNumber =
+    process.env.NEXT_PUBLIC_SUPPORT_CONTACT_NUMBER?.trim() || '';
 
   const routes = useMemo(() => {
     const routeById = new Map(initialRoutes.map(route => [route.id, route]));
@@ -38,9 +46,6 @@ const NavSidebar = ({ initialRoutes }: { initialRoutes: IAppRoute[] }) => {
         return { ...route, ...custom };
       });
 
-    // Si un hijo sobrevive al filtro de módulo pero el padre no (ej. brands=core,
-    // products=catalog), reinsertar el padre como shell para no perder el submenú.
-    // hideMainSubRoute evita el link virtual al path del padre (que sigue denegado).
     const allowedIds = new Set(filtered.map(route => route.id));
     const shells: typeof filtered = [];
 
@@ -275,7 +280,7 @@ const NavSidebar = ({ initialRoutes }: { initialRoutes: IAppRoute[] }) => {
             onClick={() => handleNavigation(route)}
             className={`
               flex items-center gap-2.5 w-full text-left transition-all duration-200 ease-in-out cursor-pointer
-              ${isCollapsed
+              ${showCollapsedUi
                 ? `justify-center py-2.5 px-2 text-base hover:bg-variant/10 ${isActive ? 'bg-main/15 text-variant font-semibold' : 'text-variant/80'}`
                 : `${level > 0 ? 'py-1.5 text-[13px]' : 'py-2 text-sm'} pr-4 ${isActive || isExpanded
                   ? 'bg-main/15 font-semibold text-variant'
@@ -286,13 +291,13 @@ const NavSidebar = ({ initialRoutes }: { initialRoutes: IAppRoute[] }) => {
                 }`
               }
             `}
-            style={!isCollapsed ? { paddingLeft: `${level * 16 + 16}px` } : undefined}
+            style={!showCollapsedUi ? { paddingLeft: `${level * 16 + 16}px` } : undefined}
           >
-            {route.icon && level === 0 && isCollapsed && (
+            {route.icon && level === 0 && showCollapsedUi && (
               <i className={`dx-icon dx-icon-${route.icon} text-lg ${isActive ? 'text-variant font-semibold' : ''}`} />
             )}
-            {!isCollapsed && <span className="flex-1 whitespace-nowrap overflow-hidden text-ellipsis">{route.text}</span>}
-            {hasChildren && !isCollapsed && (
+            {!showCollapsedUi && <span className="flex-1 whitespace-nowrap overflow-hidden text-ellipsis">{route.text}</span>}
+            {hasChildren && !showCollapsedUi && (
               <i
                 className={`dx-icon dx-icon-${isExpanded ? 'chevrondown' : 'chevronright'} ml-auto text-[10px] opacity-60 transition-colors`}
                 onClick={(e) => {
@@ -303,7 +308,7 @@ const NavSidebar = ({ initialRoutes }: { initialRoutes: IAppRoute[] }) => {
             )}
           </button>
 
-          {hasChildren && isExpanded && !isCollapsed && (
+          {hasChildren && isExpanded && !showCollapsedUi && (
             <div className="bg-main/5 border-l border-main/20 ml-4">{renderMenuItems(route.items, level + 1)}</div>
           )}
         </div>
@@ -312,16 +317,16 @@ const NavSidebar = ({ initialRoutes }: { initialRoutes: IAppRoute[] }) => {
   }
 
   return (
-    <aside className={`flex flex-col h-screen max-h-screen bg-linear-to-b from-secondary-500 to-secondary-900 transition-[width] shadow-r-lg z-60 duration-300 ease-in-out overflow-hidden text-variant ${isCollapsed ? 'w-16' : 'w-60'}`} >
+    <aside className={`flex flex-col h-screen max-h-screen bg-linear-to-b from-secondary-500 to-secondary-900 transition-[width] shadow-r-lg z-60 duration-300 ease-in-out overflow-hidden text-variant ${showCollapsedUi ? 'w-16' : 'w-60'}`} >
       {/* HEADER */}
-      <div className={`flex items-center justify-between border-b border-main/10 min-h-14 shrink-0 ${isCollapsed ? 'px-1 py-3' : 'py-3 px-4'}`}>
+      <div className={`flex items-center justify-between border-b border-main/10 min-h-14 shrink-0 ${showCollapsedUi ? 'px-1 py-3' : 'py-3 px-4'}`}>
         <div
           className="flex items-center cursor-pointer w-full min-w-0"
           onClick={handleLogoClick}
           onMouseDown={handleLogoMiddleMouseDown}
           onAuxClick={handleLogoMiddleClick}
         >
-          {isCollapsed ? (
+          {showCollapsedUi ? (
             <div className="w-full flex items-center justify-center">
               <BrandLogo
                 size={32}
@@ -354,7 +359,7 @@ const NavSidebar = ({ initialRoutes }: { initialRoutes: IAppRoute[] }) => {
           )}
         </div>
 
-        {!isCollapsed && (
+        {!showCollapsedUi && (
           <div className="ml-2 shrink-0">
             <button onClick={toggleSidebar} className="transition-colors p-1.5 hover:bg-main/10 rounded-dx" aria-label="Colapsar menú">
               <i className="dx-icon dx-icon-hidepanel text-xl text-variant" />
@@ -364,7 +369,7 @@ const NavSidebar = ({ initialRoutes }: { initialRoutes: IAppRoute[] }) => {
       </div>
 
       {/* HAMBURGER BUTTON CUANDO ESTÁ COLAPSADO */}
-      {isCollapsed && (
+      {showCollapsedUi && (
         <div className="flex justify-center py-1.5">
           <button onClick={toggleSidebar} className="p-1.5 rounded-dx hover:bg-main/10 transition-colors">
             <i className="dx-icon dx-icon-menu text-xl text-variant" />
@@ -373,7 +378,7 @@ const NavSidebar = ({ initialRoutes }: { initialRoutes: IAppRoute[] }) => {
       )}
 
       {/* SEARCH (solo cuando está expandido) */}
-      {!isCollapsed && (
+      {!showCollapsedUi && (
         <div className="py-2 px-3 border-b border-main/10 shrink-0">
           <TextBox
             ref={searchRef}
@@ -395,9 +400,44 @@ const NavSidebar = ({ initialRoutes }: { initialRoutes: IAppRoute[] }) => {
       <nav className="flex-1 overflow-y-auto overflow-x-hidden py-2 min-h-0">{renderMenuItems(routeTree)}</nav>
 
 
-      <div className={`p-2 border-t border-main/10 shrink-0 ${isCollapsed ? 'flex justify-center' : 'p-3'}`}>
-        <div className={`w-8 h-8 bg-linear-to-br from-focus-100 to-focus-500 flex items-center justify-center cursor-pointer transition-all duration-200 ease-in-out hover:scale-110 ${isCollapsed ? 'rounded-full' : 'rounded-tl-[16px] rounded-tr-[16px] rounded-bl-sm rounded-br-[16px]'}`}>
-          <i className="dx-icon dx-icon-user text-lg text-(--color-variant)!" />
+      <div
+        className={`border-t border-main/10 shrink-0 ${
+          showCollapsedUi ? 'p-2 flex justify-center' : 'p-3'
+        }`}
+        onMouseEnter={() => {
+          if (isCollapsed) setSupportPeek(true);
+        }}
+        onMouseLeave={() => setSupportPeek(false)}
+      >
+        <div
+          title={
+            supportNumber
+              ? `Soporte: ${supportNumber}`
+              : 'Soporte fuera de servicio temporalmente'
+          }
+          aria-label={
+            supportNumber
+              ? `Soporte ${supportNumber}`
+              : 'Soporte fuera de servicio temporalmente'
+          }
+          className={`flex items-stretch h-8 gap-1 select-none transition-all duration-300 ease-out ${
+            showCollapsedUi ? 'w-8' : 'w-full'
+          }`}
+        >
+          <span className="flex w-8 h-8 shrink-0 items-center justify-center bg-linear-to-br from-focus-100 to-focus-500 text-variant rounded-dx rounded-br-none shadow-sm">
+            <SupportIcon size={16} className="text-variant" />
+          </span>
+          {!showCollapsedUi ? (
+            <span
+              className={`flex flex-1 min-w-0 items-center px-3 bg-secondary-950 border border-main/20 rounded-dx rounded-bl-none ${
+                supportNumber
+                  ? 'text-xs font-semibold tabular-nums whitespace-nowrap text-variant'
+                  : 'text-[10px] italic leading-tight text-variant/40'
+              }`}
+            >
+              {supportNumber || 'Soporte fuera de servicio temporalmente'}
+            </span>
+          ) : null}
         </div>
       </div>
     </aside>
