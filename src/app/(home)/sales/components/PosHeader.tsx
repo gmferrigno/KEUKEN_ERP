@@ -1,10 +1,19 @@
 'use client';
 
-import type { IFCustomerFull, IFOptionItem } from '@repo/api-contracts/erp';
+import type {
+    IFCustomerAddress,
+    IFCustomerFull,
+    IFOptionItem,
+} from '@repo/api-contracts/erp';
 import { SelectBox } from '@repo/devextreme';
 import DateBox from 'devextreme-react/date-box';
+import { useMemo } from 'react';
 import type { PosOrderDestination } from '../types';
-import { formatMissingList, startOfToday } from '../utils';
+import {
+    formatCustomerAddress,
+    formatMissingList,
+    startOfToday,
+} from '../utils';
 
 type PosHeaderProps = {
     customersStore: unknown;
@@ -12,6 +21,9 @@ type PosHeaderProps = {
     customerLabel: string;
     customerFull: IFCustomerFull | null;
     addressId: string | null;
+    selectedAddress: IFCustomerAddress | null;
+    deliveryAddresses: IFCustomerAddress[];
+    onAddressChange: (id: string | null) => void;
     onCustomerChange: (id: string | null, label: string) => void;
     pricelistOptions: IFOptionItem[];
     defaultPricelistId: string | null;
@@ -30,6 +42,9 @@ const PosHeader = ({
     customerLabel,
     customerFull,
     addressId,
+    selectedAddress,
+    deliveryAddresses,
+    onAddressChange,
     onCustomerChange,
     pricelistOptions,
     defaultPricelistId,
@@ -41,6 +56,19 @@ const PosHeader = ({
     canStartSale,
     missingSaleSetup,
 }: PosHeaderProps) => {
+    const deliveryAddressLabel = formatCustomerAddress(selectedAddress);
+    const isDeliveryType = selectedAddress?.type?.includes('delivery');
+    const hasMultipleDeliveries = deliveryAddresses.length > 1;
+
+    const deliveryAddressOptions = useMemo(
+        () =>
+            deliveryAddresses.map((address) => ({
+                id: address.id,
+                label: formatCustomerAddress(address),
+            })),
+        [deliveryAddresses]
+    );
+
     return (
         <>
             <div
@@ -72,7 +100,7 @@ const PosHeader = ({
                         stylingMode="filled"
                         elementAttr={{ class: 'rounded-dx' }}
                     />
-                    {customerLabel && customerFull && (
+                    {customerLabel && customerFull && orderDestination !== 'reparto' && (
                         <p className="text-[11px] text-main/55 truncate">
                             {customerFull.addresses?.length
                                 ? `${customerFull.addresses.length} dirección(es)`
@@ -168,6 +196,50 @@ const PosHeader = ({
                     </p>
                 </div>
             </div>
+
+            {orderDestination === 'reparto' && customerId && (
+                <div className="shrink-0 px-3 py-2 rounded-dx border border-main/10 bg-variant/30 text-sm flex flex-col gap-1.5">
+                    <p className="text-[11px] font-medium text-main/60">
+                        Dirección de entrega
+                        {hasMultipleDeliveries
+                            ? ` (${deliveryAddresses.length})`
+                            : ''}
+                    </p>
+
+                    {hasMultipleDeliveries ? (
+                        <SelectBox
+                            dataSource={deliveryAddressOptions}
+                            valueExpr="id"
+                            displayExpr="label"
+                            value={addressId}
+                            onValueChanged={(e) =>
+                                onAddressChange(e.value || null)
+                            }
+                            placeholder="Seleccioná dirección de entrega..."
+                            searchEnabled
+                            searchExpr={['label']}
+                            stylingMode="filled"
+                            elementAttr={{ class: 'rounded-dx' }}
+                        />
+                    ) : deliveryAddressLabel ? (
+                        <p
+                            className="text-sm text-main truncate"
+                            title={deliveryAddressLabel}
+                        >
+                            {deliveryAddressLabel}
+                            {!isDeliveryType && (
+                                <span className="text-main/45 text-[11px] ml-1">
+                                    (sin dirección delivery; usando alternativa)
+                                </span>
+                            )}
+                        </p>
+                    ) : (
+                        <p className="text-sm text-focus-400">
+                            Este cliente no tiene dirección de entrega cargada
+                        </p>
+                    )}
+                </div>
+            )}
 
             {!canStartSale && (
                 <div className="shrink-0 px-3 py-2 rounded-dx border border-focus-500/30 bg-focus-500/10 text-sm text-main">

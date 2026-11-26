@@ -37,6 +37,9 @@ const PosClient = () => {
         setCustomerLabel,
         customerFull,
         addressId,
+        selectedAddress,
+        deliveryAddresses,
+        selectAddressById,
         defaultPricelistId,
         setDefaultPricelistId,
         pricelistOptions,
@@ -183,7 +186,7 @@ const PosClient = () => {
                     deliveryDate:
                         orderDestination === 'reparto'
                             ? toIsoDate(deliveryDate)
-                            : null,
+                            : toIsoDate(new Date()),
                     taxData: {
                         order_destination: orderDestination,
                         order_destination_label:
@@ -218,6 +221,7 @@ const PosClient = () => {
                             itemId: line.itemId,
                             name: line.productDescription || line.productCode,
                             productUomQty: line.quantity,
+                            productUomId: line.productUomId,
                             pricelistId: line.pricelistId,
                             presentationId: line.presentationId,
                             priceUnitRegular:
@@ -225,6 +229,15 @@ const PosClient = () => {
                             discountData: discountData.length
                                 ? discountData
                                 : null,
+                            ...(line.isDualUom
+                                ? {
+                                      secUomQty: line.secQuantity,
+                                      secUomId: line.secUomId,
+                                  }
+                                : {
+                                      secUomQty: null,
+                                      secUomId: null,
+                                  }),
                         };
                     }),
                 },
@@ -272,6 +285,9 @@ const PosClient = () => {
                 customerLabel={customerLabel}
                 customerFull={customerFull}
                 addressId={addressId}
+                selectedAddress={selectedAddress}
+                deliveryAddresses={deliveryAddresses}
+                onAddressChange={selectAddressById}
                 onCustomerChange={handleCustomerChange}
                 pricelistOptions={pricelistOptions}
                 defaultPricelistId={defaultPricelistId}

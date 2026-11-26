@@ -63,6 +63,10 @@ const PosPresentationsList = ({
                                             pres.uomName
                                                 ? `UdM: ${pres.uomName}`
                                                 : null,
+                                            pres.uomRatio != null &&
+                                            Number(pres.uomRatio) > 0
+                                                ? `Ratio: ${pres.uomRatio}`
+                                                : null,
                                             pres.packagingLevelName ||
                                                 pres.packagingLevelCode,
                                         ]

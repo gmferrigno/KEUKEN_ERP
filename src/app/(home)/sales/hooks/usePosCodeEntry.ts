@@ -1,11 +1,13 @@
 'use client';
 
 import { useAuth } from '@/contexts/AuthContext';
-import type { IFItem, IFPresentation } from '@repo/api-contracts/erp';
+import type { IFItem, IFPresentation, IFProduct } from '@repo/api-contracts/erp';
 import { itemsService } from '@repo/erp-services/product_services/items.service';
+import { productsService } from '@repo/erp-services/product_services/products.service';
 import notify from 'devextreme/ui/notify';
 import { useCallback, useRef, useState } from 'react';
 import type { CartAddInput, PosCodeLookupMode } from '../types';
+import { itemStubFromPresentations, resolvePosDualUom } from '../utils';
 
 type UsePosCodeEntryArgs = {
     ensureSaleSetup: () => boolean;
@@ -30,6 +32,7 @@ export function usePosCodeEntry({
         IFPresentation[]
     >([]);
     const codeInputRef = useRef<any>(null);
+    const productCacheRef = useRef<Map<string, IFProduct>>(new Map());
 
     const clearPending = useCallback(() => {
         setPendingItem(null);
@@ -41,6 +44,95 @@ export function usePosCodeEntry({
         setCodeQty(1);
         clearPending();
     }, [clearPending]);
+
+    const loadProduct = useCallback(
+        async (productId: string | null | undefined): Promise<IFProduct | null> => {
+            if (!token || !productId) return null;
+            const cached = productCacheRef.current.get(productId);
+            if (cached) return cached;
+            try {
+                const product = await productsService.getById(
+                    productId,
+                    token,
+                    currentCompany?.id
+                );
+                productCacheRef.current.set(productId, product);
+                return product;
+            } catch (error) {
+                console.error('Error loading product for POS dual UoM:', error);
+                return null;
+            }
+        },
+        [token, currentCompany?.id]
+    );
+
+    const buildCartInput = useCallback(
+        async ({
+            item,
+            presentation,
+            quantity,
+            discountPct,
+            fallbackCode,
+        }: {
+            item?: IFItem | null;
+            presentation?: IFPresentation | null;
+            quantity: number;
+            discountPct?: number;
+            fallbackCode?: string;
+        }): Promise<CartAddInput | null> => {
+            const itemId = presentation?.itemId || item?.id;
+            if (!itemId) {
+                notify('No se pudo identificar el ítem', 'error', 3000);
+                return null;
+            }
+
+            const productId = presentation?.productId || item?.productId || null;
+            const product = await loadProduct(productId);
+            const dual = resolvePosDualUom({ item, presentation, product });
+
+            if (dual.isDualUom && !dual.uomRatio) {
+                notify(
+                    'Ítem catch-weight sin ratio pieza→kg; configurá uom_ratio en la presentación',
+                    'warning',
+                    4000
+                );
+            }
+
+            return {
+                itemId,
+                productId,
+                productCode:
+                    presentation?.itemSku ||
+                    presentation?.productCode ||
+                    item?.sku ||
+                    presentation?.barcode ||
+                    fallbackCode ||
+                    '',
+                productDescription:
+                    presentation?.itemDisplayName ||
+                    presentation?.itemName ||
+                    presentation?.productName ||
+                    presentation?.name ||
+                    item?.itemDisplayName ||
+                    item?.itemName ||
+                    item?.productName ||
+                    item?.sku ||
+                    'Producto',
+                presentationId: presentation?.id || null,
+                presentationName: presentation?.name || null,
+                barcode: presentation?.barcode || null,
+                quantity,
+                discountPct,
+                isDualUom: dual.isDualUom,
+                productUomId: dual.productUomId,
+                productUomName: dual.productUomName,
+                secUomId: dual.secUomId,
+                secUomName: dual.secUomName,
+                uomRatio: dual.uomRatio,
+            };
+        },
+        [loadProduct]
+    );
 
     const addFromPresentation = useCallback(
         async (
@@ -54,35 +146,27 @@ export function usePosCodeEntry({
                 notify('La presentación no tiene ítem asociado', 'error', 3000);
                 return;
             }
-            await addCartEntry({
-                itemId: presentation.itemId,
-                productId: presentation.productId || item?.productId,
-                productCode:
-                    presentation.itemSku ||
-                    presentation.productCode ||
-                    item?.sku ||
-                    presentation.barcode ||
-                    '',
-                productDescription:
-                    presentation.itemDisplayName ||
-                    presentation.itemName ||
-                    presentation.productName ||
-                    presentation.name ||
-                    item?.itemName ||
-                    'Producto',
-                presentationId: presentation.id,
-                presentationName: presentation.name,
-                barcode: presentation.barcode,
+            const input = await buildCartInput({
+                item,
+                presentation,
                 quantity,
                 discountPct,
             });
+            if (!input) return;
+            await addCartEntry(input);
             clearPending();
             setCodeInput('');
             setCodeQty(1);
-            notify('Producto agregado', 'success', 1200);
+            notify(
+                input.isDualUom
+                    ? 'Producto catch-weight agregado (piezas + kg teóricos)'
+                    : 'Producto agregado',
+                'success',
+                1200
+            );
             setTimeout(() => codeInputRef.current?.instance?.()?.focus?.(), 50);
         },
-        [addCartEntry, ensureSaleSetup, clearPending]
+        [addCartEntry, ensureSaleSetup, clearPending, buildCartInput]
     );
 
     const addItemFromCatalog = useCallback(
@@ -104,18 +188,13 @@ export function usePosCodeEntry({
                 );
 
                 if (!presentations.length) {
-                    await addCartEntry({
-                        itemId: item.id,
-                        productId: item.productId,
-                        productCode: item.sku || '',
-                        productDescription:
-                            item.itemDisplayName ||
-                            item.itemName ||
-                            item.productName ||
-                            item.sku,
+                    const input = await buildCartInput({
+                        item,
                         quantity: 1,
                         discountPct: entryDiscountPct,
                     });
+                    if (!input) return;
+                    await addCartEntry(input);
                     notify('Producto agregado (sin presentaciones)', 'success', 1200);
                     return;
                 }
@@ -153,6 +232,7 @@ export function usePosCodeEntry({
             addFromPresentation,
             entryDiscountPct,
             clearPending,
+            buildCartInput,
         ]
     );
 
@@ -199,13 +279,9 @@ export function usePosCodeEntry({
                     return;
                 }
 
-                const item = await itemsService.getItembySku(
-                    code,
-                    token,
-                    currentCompany.id
-                );
+                // El path acepta id o SKU: no hace falta item-by-sku antes.
                 const presentationsRes = await itemsService.getPresentations(
-                    item.id,
+                    code,
                     token,
                     currentCompany.id
                 );
@@ -214,18 +290,20 @@ export function usePosCodeEntry({
                 );
 
                 if (!presentations.length) {
-                    await addCartEntry({
-                        itemId: item.id,
-                        productId: item.productId,
-                        productCode: item.sku || code,
-                        productDescription:
-                            item.itemDisplayName ||
-                            item.itemName ||
-                            item.productName ||
-                            item.sku,
+                    // Sin presentaciones: fallback al ítem para poder cargarlo igual.
+                    const item = await itemsService.getItembySku(
+                        code,
+                        token,
+                        currentCompany.id
+                    );
+                    const input = await buildCartInput({
+                        item,
                         quantity: qty,
                         discountPct: entryDiscountPct,
+                        fallbackCode: code,
                     });
+                    if (!input) return;
+                    await addCartEntry(input);
                     setCodeInput('');
                     setCodeQty(1);
                     notify('Producto agregado (sin presentaciones)', 'success', 1500);
@@ -236,13 +314,13 @@ export function usePosCodeEntry({
                     await addFromPresentation(
                         presentations[0],
                         qty,
-                        item,
+                        null,
                         entryDiscountPct
                     );
                     return;
                 }
 
-                setPendingItem(item);
+                setPendingItem(itemStubFromPresentations(presentations, code));
                 setPendingPresentations(presentations);
             } catch (error) {
                 console.error('Error searching code in POS:', error);
@@ -270,6 +348,7 @@ export function usePosCodeEntry({
             addFromPresentation,
             addCartEntry,
             clearPending,
+            buildCartInput,
         ]
     );
 

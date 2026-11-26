@@ -104,8 +104,11 @@ const PosCodeEntryPanel = ({
                     />
                 </div>
                 <div className="flex flex-col gap-1">
-                    <label className="text-[10px] uppercase tracking-wide text-main/45">
-                        Cantidad
+                    <label
+                        className="text-[10px] uppercase tracking-wide text-main/45"
+                        title="En catch-weight son piezas; el kg teórico se deriva del ratio"
+                    >
+                        Cant. / piezas
                     </label>
                     <NumberBox
                         value={codeQty}

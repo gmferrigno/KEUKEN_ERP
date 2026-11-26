@@ -89,12 +89,17 @@ const PosCartPanel = ({
                                     </span>
                                     {line.productDescription}
                                 </div>
-                                {(line.presentationName || line.barcode) && (
+                                {(line.presentationName ||
+                                    line.barcode ||
+                                    line.isDualUom) && (
                                     <div className="text-[10px] text-main/45 truncate">
                                         {[
                                             line.presentationName,
                                             line.barcode
                                                 ? `CB: ${line.barcode}`
+                                                : null,
+                                            line.isDualUom
+                                                ? 'Catch-weight'
                                                 : null,
                                         ]
                                             .filter(Boolean)
@@ -115,69 +120,160 @@ const PosCartPanel = ({
                             </button>
                         </div>
 
-                        <div className="grid grid-cols-[minmax(0,1.4fr)_64px_78px_58px] gap-1 items-center">
-                            <SelectBox
-                                dataSource={pricelistOptions}
-                                valueExpr="id"
-                                displayExpr="label"
-                                value={line.pricelistId}
-                                onValueChanged={(e) =>
-                                    onChangeLinePricelist(
-                                        line.key,
-                                        line.itemId,
-                                        e.value || null
-                                    )
-                                }
-                                placeholder="Lista"
-                                searchEnabled
-                                showClearButton
-                                stylingMode="filled"
-                                height={28}
-                                elementAttr={{ class: 'rounded-dx text-xs' }}
-                            />
-                            <NumberBox
-                                value={line.quantity}
-                                min={1}
-                                step={1}
-                                showSpinButtons
-                                stylingMode="filled"
-                                height={28}
-                                onValueChanged={(e) =>
-                                    onUpdateLine(line.key, {
-                                        quantity: Number(e.value) || 0,
-                                    })
-                                }
-                                elementAttr={{ class: 'rounded-dx' }}
-                            />
-                            <NumberBox
-                                value={line.unitPrice}
-                                min={0}
-                                format="#,##0.00"
-                                stylingMode="filled"
-                                height={28}
-                                onValueChanged={(e) =>
-                                    onUpdateLine(line.key, {
-                                        unitPrice: Number(e.value) || 0,
-                                    })
-                                }
-                                elementAttr={{ class: 'rounded-dx' }}
-                            />
-                            <NumberBox
-                                value={line.discountPct}
-                                min={0}
-                                max={100}
-                                format="#0'%'"
-                                stylingMode="filled"
-                                height={28}
-                                hint="Corregir descuento de la línea"
-                                onValueChanged={(e) =>
-                                    onUpdateLine(line.key, {
-                                        discountPct: Number(e.value) || 0,
-                                    })
-                                }
-                                elementAttr={{ class: 'rounded-dx' }}
-                            />
-                        </div>
+                        {line.isDualUom ? (
+                            <div className="grid grid-cols-[minmax(0,1.2fr)_56px_72px_72px_52px] gap-1 items-center">
+                                <SelectBox
+                                    dataSource={pricelistOptions}
+                                    valueExpr="id"
+                                    displayExpr="label"
+                                    value={line.pricelistId}
+                                    onValueChanged={(e) =>
+                                        onChangeLinePricelist(
+                                            line.key,
+                                            line.itemId,
+                                            e.value || null
+                                        )
+                                    }
+                                    placeholder="Lista"
+                                    searchEnabled
+                                    showClearButton
+                                    stylingMode="filled"
+                                    height={28}
+                                    elementAttr={{ class: 'rounded-dx text-xs' }}
+                                />
+                                <NumberBox
+                                    value={line.secQuantity ?? 1}
+                                    min={1}
+                                    step={1}
+                                    showSpinButtons
+                                    stylingMode="filled"
+                                    height={28}
+                                    hint={
+                                        line.secUomName
+                                            ? `Piezas (${line.secUomName})`
+                                            : 'Piezas'
+                                    }
+                                    onValueChanged={(e) =>
+                                        onUpdateLine(line.key, {
+                                            secQuantity: Number(e.value) || 0,
+                                        })
+                                    }
+                                    elementAttr={{ class: 'rounded-dx' }}
+                                />
+                                <NumberBox
+                                    value={line.quantity}
+                                    min={0.0001}
+                                    step={0.01}
+                                    format="#,##0.####"
+                                    stylingMode="filled"
+                                    height={28}
+                                    hint={
+                                        line.productUomName
+                                            ? `Kg facturables (${line.productUomName})`
+                                            : 'Kg facturables'
+                                    }
+                                    onValueChanged={(e) =>
+                                        onUpdateLine(line.key, {
+                                            quantity: Number(e.value) || 0,
+                                        })
+                                    }
+                                    elementAttr={{ class: 'rounded-dx' }}
+                                />
+                                <NumberBox
+                                    value={line.unitPrice}
+                                    min={0}
+                                    format="#,##0.00"
+                                    stylingMode="filled"
+                                    height={28}
+                                    hint="Precio por UoM de facturación"
+                                    onValueChanged={(e) =>
+                                        onUpdateLine(line.key, {
+                                            unitPrice: Number(e.value) || 0,
+                                        })
+                                    }
+                                    elementAttr={{ class: 'rounded-dx' }}
+                                />
+                                <NumberBox
+                                    value={line.discountPct}
+                                    min={0}
+                                    max={100}
+                                    format="#0'%'"
+                                    stylingMode="filled"
+                                    height={28}
+                                    hint="Corregir descuento de la línea"
+                                    onValueChanged={(e) =>
+                                        onUpdateLine(line.key, {
+                                            discountPct: Number(e.value) || 0,
+                                        })
+                                    }
+                                    elementAttr={{ class: 'rounded-dx' }}
+                                />
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-[minmax(0,1.4fr)_64px_78px_58px] gap-1 items-center">
+                                <SelectBox
+                                    dataSource={pricelistOptions}
+                                    valueExpr="id"
+                                    displayExpr="label"
+                                    value={line.pricelistId}
+                                    onValueChanged={(e) =>
+                                        onChangeLinePricelist(
+                                            line.key,
+                                            line.itemId,
+                                            e.value || null
+                                        )
+                                    }
+                                    placeholder="Lista"
+                                    searchEnabled
+                                    showClearButton
+                                    stylingMode="filled"
+                                    height={28}
+                                    elementAttr={{ class: 'rounded-dx text-xs' }}
+                                />
+                                <NumberBox
+                                    value={line.quantity}
+                                    min={1}
+                                    step={1}
+                                    showSpinButtons
+                                    stylingMode="filled"
+                                    height={28}
+                                    onValueChanged={(e) =>
+                                        onUpdateLine(line.key, {
+                                            quantity: Number(e.value) || 0,
+                                        })
+                                    }
+                                    elementAttr={{ class: 'rounded-dx' }}
+                                />
+                                <NumberBox
+                                    value={line.unitPrice}
+                                    min={0}
+                                    format="#,##0.00"
+                                    stylingMode="filled"
+                                    height={28}
+                                    onValueChanged={(e) =>
+                                        onUpdateLine(line.key, {
+                                            unitPrice: Number(e.value) || 0,
+                                        })
+                                    }
+                                    elementAttr={{ class: 'rounded-dx' }}
+                                />
+                                <NumberBox
+                                    value={line.discountPct}
+                                    min={0}
+                                    max={100}
+                                    format="#0'%'"
+                                    stylingMode="filled"
+                                    height={28}
+                                    hint="Corregir descuento de la línea"
+                                    onValueChanged={(e) =>
+                                        onUpdateLine(line.key, {
+                                            discountPct: Number(e.value) || 0,
+                                        })
+                                    }
+                                    elementAttr={{ class: 'rounded-dx' }}
+                                />
+                            </div>
+                        )}
                     </div>
                 ))}
             </div>

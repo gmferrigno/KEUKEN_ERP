@@ -8,9 +8,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { CartAddInput, PosCartLine } from '../types';
 import {
     PAGE_SIZE,
+    cartDisplayQty,
     cartLineKey,
     clampPct,
     lineNet,
+    theoreticalBillingQty,
 } from '../utils';
 
 type UsePosCartArgs = {
@@ -113,14 +115,17 @@ export function usePosCart({
     );
 
     const cartCount = useMemo(
-        () => cart.reduce((sum, line) => sum + line.quantity, 0),
+        () => cart.reduce((sum, line) => sum + cartDisplayQty(line), 0),
         [cart]
     );
 
     const cartQtyByItemId = useMemo(() => {
         const map = new Map<string, number>();
         for (const line of cart) {
-            map.set(line.itemId, (map.get(line.itemId) || 0) + line.quantity);
+            map.set(
+                line.itemId,
+                (map.get(line.itemId) || 0) + cartDisplayQty(line)
+            );
         }
         return map;
     }, [cart]);
@@ -131,7 +136,7 @@ export function usePosCart({
             if (!line.presentationId) continue;
             map.set(
                 line.presentationId,
-                (map.get(line.presentationId) || 0) + line.quantity
+                (map.get(line.presentationId) || 0) + cartDisplayQty(line)
             );
         }
         return map;
@@ -145,7 +150,18 @@ export function usePosCart({
             }
 
             const listId = defaultPricelistId;
-            const qty = Math.max(1, input.quantity || 1);
+            const isDual = Boolean(input.isDualUom);
+            const entryQty = Math.max(1, input.quantity || 1);
+            const ratio =
+                input.uomRatio != null && Number(input.uomRatio) > 0
+                    ? Number(input.uomRatio)
+                    : null;
+            const secQty = isDual ? entryQty : null;
+            const billingQty = isDual
+                ? input.productUomQty != null && Number(input.productUomQty) > 0
+                    ? Number(input.productUomQty)
+                    : theoreticalBillingQty(entryQty, ratio)
+                : entryQty;
             const key = cartLineKey(input.itemId, input.presentationId);
 
             let unitPrice = 0;
@@ -163,11 +179,41 @@ export function usePosCart({
             setCart((prev) => {
                 const existing = prev.find((line) => line.key === key);
                 if (existing) {
-                    return prev.map((line) =>
-                        line.key === key
-                            ? { ...line, quantity: line.quantity + qty }
-                            : line
-                    );
+                    return prev.map((line) => {
+                        if (line.key !== key) return line;
+                        if (line.isDualUom || isDual) {
+                            const nextSec =
+                                (Number(line.secQuantity) || 0) +
+                                (secQty || entryQty);
+                            const nextBilling =
+                                line.quantity +
+                                (isDual
+                                    ? billingQty
+                                    : theoreticalBillingQty(
+                                          entryQty,
+                                          line.uomRatio ?? ratio
+                                      ));
+                            return {
+                                ...line,
+                                isDualUom: true,
+                                secQuantity: nextSec,
+                                quantity: nextBilling,
+                                secUomId: line.secUomId || input.secUomId || null,
+                                secUomName:
+                                    line.secUomName || input.secUomName || null,
+                                productUomId:
+                                    line.productUomId ||
+                                    input.productUomId ||
+                                    null,
+                                productUomName:
+                                    line.productUomName ||
+                                    input.productUomName ||
+                                    null,
+                                uomRatio: line.uomRatio ?? ratio,
+                            };
+                        }
+                        return { ...line, quantity: line.quantity + entryQty };
+                    });
                 }
                 return [
                     ...prev,
@@ -183,7 +229,14 @@ export function usePosCart({
                         pricelistId: listId,
                         unitPrice,
                         discountPct,
-                        quantity: qty,
+                        quantity: billingQty,
+                        productUomId: input.productUomId || null,
+                        productUomName: input.productUomName || null,
+                        isDualUom: isDual,
+                        secQuantity: secQty,
+                        secUomId: isDual ? input.secUomId || null : null,
+                        secUomName: isDual ? input.secUomName || null : null,
+                        uomRatio: isDual ? ratio : null,
                     },
                 ];
             });
@@ -198,18 +251,39 @@ export function usePosCart({
                 .map((line) => {
                     if (line.key !== key) return line;
                     const next = { ...line, ...patch };
-                    if (
-                        patch.quantity !== undefined &&
-                        (!patch.quantity || patch.quantity <= 0)
-                    ) {
-                        return null;
+
+                    if (patch.secQuantity !== undefined && next.isDualUom) {
+                        const sec = Math.max(0, Number(patch.secQuantity) || 0);
+                        next.secQuantity = sec;
+                        // Piezas son la fuente logística; recalcula kg teórico si no viene kg explícito.
+                        if (patch.quantity === undefined) {
+                            next.quantity = theoreticalBillingQty(
+                                sec,
+                                next.uomRatio
+                            );
+                        }
                     }
+
                     if (patch.discountPct !== undefined) {
                         next.discountPct = clampPct(patch.discountPct);
                     }
                     if (patch.unitPrice !== undefined) {
                         next.unitPrice = Math.max(0, patch.unitPrice || 0);
                     }
+                    if (patch.quantity !== undefined) {
+                        next.quantity = Math.max(0, Number(patch.quantity) || 0);
+                    }
+
+                    const removeDual =
+                        next.isDualUom &&
+                        ((next.secQuantity != null && next.secQuantity <= 0) ||
+                            next.quantity <= 0);
+                    const removeSimple =
+                        !next.isDualUom &&
+                        patch.quantity !== undefined &&
+                        next.quantity <= 0;
+                    if (removeDual || removeSimple) return null;
+
                     return next;
                 })
                 .filter(Boolean) as PosCartLine[]
