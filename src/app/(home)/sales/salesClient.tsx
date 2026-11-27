@@ -1,6 +1,10 @@
 'use client'
 
-import ReceiptTemplate, { BatchReceiptTemplate, IReceiptProps } from '@/lib/printer/templates/receipt';
+import {
+    ReceiptTemplate,
+    BatchReceiptTemplate,
+    type IReceiptProps,
+} from '@repo/templates/pdfPrintable';
 import { pdf } from '@react-pdf/renderer';
 import { Button } from '@repo/devextreme';
 

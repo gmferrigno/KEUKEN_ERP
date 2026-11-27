@@ -1,3 +1,4 @@
+// ESTE ARCHIVO ES GENERADO AUTOMÁTICAMENTE. NO EDITAR.
 export const ROUTES = [
   {
     "id": "(account)/activate",
@@ -331,12 +332,6 @@ export const ROUTES = [
     "id": "users",
     "path": "/users",
     "routeKey": "users"
-  },
-  {
-    "id": "users/by-role",
-    "parentId": "users",
-    "path": "/users/by-role",
-    "routeKey": "by-role"
   },
   {
     "id": "users/groups",

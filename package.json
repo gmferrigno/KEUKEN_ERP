@@ -38,7 +38,8 @@
     "react-konva": "19.2.3",
     "server-only": "0.0.1",
     "yup": "1.7.1",
-    "@repo/domain-ui": "workspace:*"
+    "@repo/domain-ui": "workspace:*",
+    "@repo/templates": "workspace:*"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",

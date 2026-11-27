@@ -11,7 +11,7 @@ import { currenciesService } from '@repo/erp-services/payments_services/currenci
 import { useAuth } from '@/contexts/AuthContext';
 import { canDo } from "@repo/access";
 import { createGridStateStorage } from '@/lib/storage/gridStateStorage';
-import { createGridPrinter } from '@/lib/printer/gridPrinter';
+import { createGridPrinter } from '@repo/templates/pdfPrintable';
 import CompanyCreationModal from './components/companyCreationModal';
 import CompanyEditModal from './components/companyEditModal';
 import CompanyUsersModal from './components/companyUsersModal';
