@@ -13,13 +13,33 @@ function resolveSessionMaxAgeSeconds(expiresIn?: number): number {
     return DEFAULT_SESSION_MAX_AGE_SECONDS;
 }
 
+/**
+ * Decide si las cookies de sesión van con flag Secure.
+ *
+ * Prioridad:
+ * 1. COOKIE_SECURE=true|false (override explícito por deploy)
+ * 2. x-forwarded-proto del reverse proxy
+ * 3. false (permite HTTP en preprod/staging sin HTTPS)
+ *
+ * En producción final con HTTPS: COOKIE_SECURE=true (o confiar en x-forwarded-proto=https).
+ * En preprod HTTP: COOKIE_SECURE=false.
+ */
 async function getIsSecure(): Promise<boolean> {
-    if (process.env.NODE_ENV === 'production') {
-        return true;
-    }
+    const override = process.env.COOKIE_SECURE?.trim().toLowerCase();
+    if (override === 'true' || override === '1') return true;
+    if (override === 'false' || override === '0') return false;
+
     const headersList = await headers();
-    const xForwardedProto = headersList.get('x-forwarded-proto');
-    return xForwardedProto === 'https';
+    const xForwardedProto = headersList
+        .get('x-forwarded-proto')
+        ?.split(',')[0]
+        ?.trim()
+        .toLowerCase();
+    if (xForwardedProto) {
+        return xForwardedProto === 'https';
+    }
+
+    return false;
 }
 
 function buildPermissionsFromProfile(profile: {
