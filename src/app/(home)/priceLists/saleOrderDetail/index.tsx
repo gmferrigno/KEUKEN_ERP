@@ -1,6 +1,6 @@
 'use client';
 
-import { GenericDataGrid, IGenericDataGridColumn, SelectBox } from '@repo/devextreme';
+import { GenericDataGrid, HeaderSelectBox, IGenericDataGridColumn } from '@repo/devextreme';
 import GenericEmpty from "@/components/GenericEmpty";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -51,8 +51,8 @@ const SaleOrderDetailClient = () => {
                 const data = await saleOrdersService.getFullById(selectedSaleOrderId, token, currentCompany?.id);
                 setSaleOrderDetail(data);
             } catch (error: any) {
-                const errorMessage = error instanceof Error && error.message 
-                    ? error.message 
+                const errorMessage = error instanceof Error && error.message
+                    ? error.message
                     : "Error al cargar el detalle del pedido";
                 notify(errorMessage, "error", 3000);
                 setSaleOrderDetail(null);
@@ -76,11 +76,11 @@ const SaleOrderDetailClient = () => {
     return (
         <div className="flex flex-col w-full min-w-full h-full rounded-dx font-sans overflow-hidden">
             <div className="w-full h-full flex flex-col gap-y-2">
-                {/* Selector */}
+                {}
                 <div className="w-full flex flex-col items-end justify-between">
                     <div className="flex w-full items-center gap-4">
                         <div className="w-full">
-                            <SelectBox
+                            <HeaderSelectBox
                                 dataSource={saleOrders}
                                 valueExpr="id"
                                 displayExpr="name"
@@ -95,7 +95,6 @@ const SaleOrderDetailClient = () => {
                                 searchEnabled={true}
                                 showClearButton={true}
                                 stylingMode="filled"
-                                elementAttr={{ class: "rounded-dx" }}
                             />
                         </div>
                     </div>
@@ -116,12 +115,12 @@ const SaleOrderDetailClient = () => {
 
                 {!isDetailLoading && saleOrderDetail && (
                     <>
-                        {/* Custom order detail header */}
+
                         <SaleOrderDetailHeader order={saleOrderDetail} />
 
                         <AdviseFacturasPanel saleOrderId={saleOrderDetail.id} />
 
-                        {/* Grid */}
+
                         <div className="w-full flex-1 min-h-0">
                             <GenericDataGrid
                                 ref={gridRef}

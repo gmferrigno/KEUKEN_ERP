@@ -69,7 +69,6 @@ export default function CompaniesClient() {
     const [refreshVersion, setRefreshVersion] = useState(0);
     const [currencies, setCurrencies] = useState<IFCurrency[]>([]);
 
-    // Modals state
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [selectedCompany, setSelectedCompany] = useState<IFCompany | null>(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -77,17 +76,14 @@ export default function CompaniesClient() {
     const [selectedCompanyForUsers, setSelectedCompanyForUsers] = useState<IFCompany | null>(null);
     const [isUsersModalOpen, setIsUsersModalOpen] = useState(false);
 
-    // Permissions evaluation
     const canModify = useMemo(() => {
         return Boolean(isSuperAdmin || (permissions && canDo('modify', ['companies'], permissions)));
     }, [isSuperAdmin, permissions]);
 
-    // Contract gate: Crear empresa requiere common:companies:write + is_superadmin
     const canCreate = useMemo(() => {
         return Boolean(isSuperAdmin && canModify);
     }, [isSuperAdmin, canModify]);
 
-    // Fetch currencies for lookup
     useEffect(() => {
         let isMounted = true;
         const loadCurrencies = async () => {
@@ -368,7 +364,7 @@ export default function CompaniesClient() {
                 />
             </div>
 
-            {/* Modal de Creación de Empresa */}
+
             <CompanyCreationModal
                 isOpen={isCreateModalOpen}
                 onClose={() => setIsCreateModalOpen(false)}
@@ -376,7 +372,7 @@ export default function CompaniesClient() {
                 onSave={handleCreateCompany}
             />
 
-            {/* Modal de Edición de Empresa */}
+
             <CompanyEditModal
                 isOpen={isEditModalOpen}
                 onClose={() => setIsEditModalOpen(false)}
@@ -386,7 +382,7 @@ export default function CompaniesClient() {
                 onSave={handleUpdateCompany}
             />
 
-            {/* Modal de Asignación de Usuarios a la Empresa */}
+
             <CompanyUsersModal
                 isOpen={isUsersModalOpen}
                 onClose={() => setIsUsersModalOpen(false)}

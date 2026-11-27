@@ -13,9 +13,7 @@ interface HeaderProps {
   routes: IAppRoute[];
 }
 
-/** DX DropDownButton `render` (alias de `template`): pinta el botón base con tokens propios.
- * `.dx-button-mode-text .dx-icon` hardcodea color en el tema DX; el style inline en el ícono lo gana.
- */
+
 function renderChromeButton(data: { text?: string; icon?: string }) {
   const iconStyle = { color: 'var(--text-variant)' } as const;
   return (
@@ -151,7 +149,7 @@ export default function CustomHeader({ routes }: HeaderProps) {
             width: 240,
             maxHeight: 180,
             wrapperAttr: {
-              class: 'popup-menu-container company-dropdown-popup',
+              class: 'popup-menu-container company-dropdown-popup header-dropdown-offset',
             },
           }}
         />

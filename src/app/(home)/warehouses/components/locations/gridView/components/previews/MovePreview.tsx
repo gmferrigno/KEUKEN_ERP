@@ -26,7 +26,6 @@ const MovePreview = memo(({
     const initialZones = zones.filter(z => explicitIds.includes(z.id));
     const zonesToMove = [...initialZones];
 
-    // Include children of selected zones
     initialZones.forEach(parent => {
         const children = zones.filter(z => z.parentId === parent.id && !explicitIds.includes(z.id));
         zonesToMove.push(...children);
@@ -34,7 +33,6 @@ const MovePreview = memo(({
 
     if (zonesToMove.length === 0) return null;
 
-    // Bounding box for relative offset calculation
     const { minR: bMinR, minC: bMinC, maxR: bMaxR, maxC: bMaxC } = getMultiZoneBoundingBox(zonesToMove);
 
     const previewStartBase = {

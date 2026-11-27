@@ -74,8 +74,8 @@ const KeysManagerPage = () => {
 
     const handleSave = (newPermissions: string[], active: boolean) => {
         if (token && currentCompany) {
-            roleService.update(selectedRoleId!, { scopes: newPermissions, active }, token, currentCompany.id).then((res) => {
-                notify(res?.message || 'Clave actualizada con éxito', 'success', 3000);
+            roleService.update(selectedRoleId!, { scopes: newPermissions, active }, token, currentCompany.id).then(() => {
+                notify('Clave actualizada con éxito', 'success', 3000);
                 getAllKeys();
             }).catch((error: any) => {
                 console.error("Error al actualizar la clave:", error);
@@ -100,7 +100,6 @@ const KeysManagerPage = () => {
                 const { key, ...role } = res;
                 setKeys((prevKeys) => [...prevKeys, role]);
                 if (key) {
-                    // Secreto one-shot: copiar al portapapeles si se puede
                     if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
                         navigator.clipboard.writeText(key).catch(() => undefined);
                     }

@@ -62,7 +62,7 @@ const Timeline = () => {
     return (
         <div className={`w-full mt-2 p-3 backdrop-blur-md border rounded-dx shadow-xl flex flex-col gap-3 transition-all duration-500 ${isLive ? 'bg-green-500/5 border-green-500/20' : 'bg-primary-500/30 border-primary-500/20'
             }`}>
-            {/* Minimalist Header */}
+
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-6">
                     <div className="flex items-center gap-3 pr-6">
@@ -89,7 +89,7 @@ const Timeline = () => {
                 </ButtonGroup>
             </div>
 
-            {/* Compact Range Selector */}
+            {}
             <div className={`w-full transition-opacity duration-500 ${isLive ? 'opacity-40 pointer-events-none grayscale-[0.5]' : 'opacity-100'}`}>
                 <RangeSelector
                     id="range-selector"

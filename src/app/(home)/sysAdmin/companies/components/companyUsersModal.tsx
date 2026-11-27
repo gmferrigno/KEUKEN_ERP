@@ -76,7 +76,7 @@ const UserRowItem = React.memo(function UserRowItem({
                 </div>
             </div>
 
-            {/* Role selector for this company */}
+            {}
             <div className="flex-1 max-w-[340px]">
                 <SelectBox
                     dataSource={roleOptions}
@@ -90,7 +90,7 @@ const UserRowItem = React.memo(function UserRowItem({
                 />
             </div>
 
-            {/* Remove action */}
+            {}
             <div className="shrink-0 flex items-center justify-end">
                 <Button
                     icon="trash"
@@ -209,7 +209,6 @@ function CompanyUsersModal({
     const [loading, setLoading] = useState(false);
     const [actionLoading, setActionLoading] = useState(false);
 
-    // New assignment form state
     const [selectedUserIdToAdd, setSelectedUserIdToAdd] = useState<string>('');
     const [selectedRoleToAdd, setSelectedRoleToAdd] = useState<string>('user');
 
@@ -416,7 +415,7 @@ function CompanyUsersModal({
             <Position at="center" my="center" of="window" />
 
             <div className="w-full h-full flex flex-col p-4 gap-4 overflow-hidden">
-                {/* Header info */}
+
                 <div className="flex items-center justify-between p-3 rounded-dx bg-primary-900/40 border border-primary-500/10">
                     <div className="flex items-center gap-3">
                         <div className="w-9 h-9 rounded-full bg-focus-100 flex items-center justify-center text-focus-500 font-bold border border-focus-300">
@@ -431,7 +430,7 @@ function CompanyUsersModal({
                     </div>
                 </div>
 
-                {/* Add User Section (Memoized to prevent list re-renders) */}
+
                 <AddUserSection
                     availableUsers={availableUsers}
                     roleOptions={roleOptions}
@@ -444,7 +443,7 @@ function CompanyUsersModal({
                     loading={loading}
                 />
 
-                {/* Assigned Users List */}
+
                 <div className="flex-1 overflow-y-auto flex flex-col gap-2 pr-1">
                     <span className="text-xs font-semibold text-main/80 uppercase tracking-wider mb-1">
                         Usuarios Actuales

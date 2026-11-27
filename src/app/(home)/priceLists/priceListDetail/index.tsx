@@ -39,7 +39,6 @@ const PriceListDetailClient = ({ initialId }: PriceListDetailClientProps) => {
     const gridRef = useRef<any>(null);
     const [isEditingMode, setIsEditingMode] = useState(false);
 
-    // Lista de precios activa
     const [selectedPriceListId, setSelectedPriceListId] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -89,7 +88,6 @@ const PriceListDetailClient = ({ initialId }: PriceListDetailClientProps) => {
                         skip
                     );
 
-                    // Group items by productId
                     const catalogItems = res.items || [];
                     const result: IFPriceListCatalogItem[] = [];
                     const productGroups: { [productId: string]: IFPriceListCatalogItem[] } = {};
@@ -157,7 +155,6 @@ const PriceListDetailClient = ({ initialId }: PriceListDetailClientProps) => {
         });
     }, [selectedPriceListId, token, refreshVersion]);
 
-    // Calcular celdas reactivamente con herencia
     const calculateCellValueWithInheritance = useCallback((fieldName: string) => {
         return (rowData: any) => {
             const grid = gridRef.current?.instance();
@@ -178,7 +175,6 @@ const PriceListDetailClient = ({ initialId }: PriceListDetailClientProps) => {
         };
     }, []);
 
-    // Cambiar estado a 'Especifico' al editar un hijo
     const setCellValueWithState = useCallback((fieldName: string) => {
         return (newData: any, value: any, currentRowData: any) => {
             let val = value;
@@ -192,7 +188,6 @@ const PriceListDetailClient = ({ initialId }: PriceListDetailClientProps) => {
         };
     }, []);
 
-    // Opciones adicionales del grid memoizadas para evitar re-renderizados que reinicien la paginación
     const dataGridProps = useMemo(() => ({
         onRowPrepared: (e: any) => {
             if (e.rowType === 'data' && (e.data?.itemId !== e.data?.productId)) {
@@ -220,7 +215,6 @@ const PriceListDetailClient = ({ initialId }: PriceListDetailClientProps) => {
         }
     }), []);
 
-    // Opciones de stateStoring memoizadas para evitar re-renderizados del grid
     const stateStoringOptions = useMemo(() => ({
         enabled: true,
         type: 'custom' as 'custom',
@@ -230,7 +224,6 @@ const PriceListDetailClient = ({ initialId }: PriceListDetailClientProps) => {
         customSave,
     }), []);
 
-    // Hook de modo edición para el grid
     const {
         editingOptions,
         handleRevertRow,
@@ -260,7 +253,6 @@ const PriceListDetailClient = ({ initialId }: PriceListDetailClientProps) => {
                 const next = { ...prev };
                 let mapChanged = false;
 
-                // Agregar nuevas claves con la página actual
                 currentChanges.forEach((change: any) => {
                     if (next[change.key] === undefined) {
                         next[change.key] = pageIndex;
@@ -268,7 +260,6 @@ const PriceListDetailClient = ({ initialId }: PriceListDetailClientProps) => {
                     }
                 });
 
-                // Eliminar claves que ya no estén en los cambios
                 const activeKeys = new Set(currentChanges.map((c: any) => c.key));
                 Object.keys(next).forEach(key => {
                     if (!activeKeys.has(key)) {
@@ -384,8 +375,8 @@ const PriceListDetailClient = ({ initialId }: PriceListDetailClientProps) => {
                                 }
                             }}
                             onMouseDown={(e) => e.stopPropagation()}
-                            className={`p-0.5 rounded-full flex items-center justify-center leading-none transition-colors cursor-pointer ${isDeleted 
-                                ? 'bg-rose-500/10 text-rose-500' 
+                            className={`p-0.5 rounded-full flex items-center justify-center leading-none transition-colors cursor-pointer ${isDeleted
+                                ? 'bg-rose-500/10 text-rose-500'
                                 : 'text-main/40 hover:bg-rose-500/10 hover:text-rose-500'}`}
                             title={isDeleted ? "Regla marcada para eliminar" : "Eliminar regla específica"}
                         >

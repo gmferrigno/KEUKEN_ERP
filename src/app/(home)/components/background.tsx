@@ -17,8 +17,8 @@ interface Particle {
 }
 
 interface BackgroundProps {
-    density?: number; // 1 to 10
-    opacity?: number; // 0 to 1
+    density?: number;
+    opacity?: number;
     direction?: "left" | "right" | "up" | "down";
     icons?: (keyof typeof DX_ICON_MAP)[];
     color?: string;

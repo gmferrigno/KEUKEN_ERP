@@ -42,11 +42,9 @@ const SalesRoutesClient = () => {
 
         const fetchData = async () => {
             try {
-                // Fetch Users
                 const usersResponse = await usersService.getSalesmenOptions({ limit: 200, companyId: currentCompany.id }, token);
                 setUsers(usersResponse.items);
 
-                // Fetch Zones (limit high enough to get all for lookup)
                 const zonesResponse = await zonesService.getAll(token, 200, 0);
                 setZones(zonesResponse.items.map(z => ({ id: z.id, label: z.name })));
             } catch (error) {
@@ -79,8 +77,8 @@ const SalesRoutesClient = () => {
                     };
                 } catch (error: any) {
                     console.error('Error loading sales routes:', error);
-                    const errorMessage = error instanceof Error && error.message 
-                        ? error.message 
+                    const errorMessage = error instanceof Error && error.message
+                        ? error.message
                         : 'Error al cargar las rutas de venta';
                     notify(errorMessage, 'error', 3000);
                     return { data: [], totalCount: 0 };
@@ -101,8 +99,8 @@ const SalesRoutesClient = () => {
             notify("Ruta de venta desactivada exitosamente", "success", 3000);
         } catch (error: any) {
             console.error("Error al desactivar la ruta de venta:", error);
-            const errorMessage = error instanceof Error && error.message 
-                ? error.message 
+            const errorMessage = error instanceof Error && error.message
+                ? error.message
                 : "Error al desactivar la ruta de venta";
             notify(errorMessage, "error", 3000);
         }

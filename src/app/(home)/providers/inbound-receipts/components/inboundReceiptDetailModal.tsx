@@ -21,7 +21,6 @@ export default function InboundReceiptDetailModal({
     onConfirm,
     onCancel,
 }: Props) {
-    // Mantener Popup montado durante animación de cierre (limpiar entidad en onHidden del padre)
     const canConfirm = receipt?.state === "draft";
     const canCancelBiz = receipt?.state === "draft" || receipt?.state === "confirmed";
 

@@ -3,7 +3,7 @@
 import PERMISSIONS_CONSTANTS from "@repo/access";
 import { canDo } from "@repo/access";
 import { systemService } from "@repo/erp-services/system.service";
-import { GenericDataGrid, IGenericDataGridColumn } from '@repo/devextreme';
+import { escapeHtml, escapeHtmlValue, GenericDataGrid, IGenericDataGridColumn  } from '@repo/devextreme';
 import { useAuth } from "@/contexts/AuthContext";
 import { createGridStateStorage } from "@/lib/storage/gridStateStorage";
 import CustomStore from "devextreme/data/custom_store";
@@ -193,7 +193,7 @@ const SystemClient = () => {
                     text = "INACTIVO";
                 }
                 
-                container.innerHTML = `<span class="px-2 py-0.5 text-xs font-semibold rounded ${badgeClass}">${text}</span>`;
+                container.innerHTML = `<span class="px-2 py-0.5 text-xs font-semibold rounded ${badgeClass}">${escapeHtmlValue(text)}</span>`;
             }
         },
         {

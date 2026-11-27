@@ -173,7 +173,7 @@ function CompanyEditModal({
                     <div className="relative flex items-center gap-4 p-4 rounded-dx bg-linear-to-r from-primary-900/60 to-primary-900/20 border border-primary-500/10 shadow-sm overflow-hidden mb-2">
                         <div className="absolute left-0 top-0 bottom-0 w-1 bg-focus-500/80" />
 
-                        {/* Avatar con dot de estado Activo/Inactivo con tooltip */}
+
                         <div className="relative shrink-0">
                             <div className="w-12 h-12 rounded-full bg-focus-100 flex items-center justify-center text-focus-500 text-xl font-bold border border-focus-300 shadow-sm">
                                 {company.name ? company.name[0].toUpperCase() : 'E'}

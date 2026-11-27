@@ -3,10 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
-/**
- * companyId en query string con estado local optimista.
- * Evita que el SelectBox se limpie mientras `router.replace` aún no refleja el param.
- */
+
 export function useCompanyQueryParam() {
     const router = useRouter();
     const pathname = usePathname();

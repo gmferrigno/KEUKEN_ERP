@@ -109,7 +109,7 @@ export const ViewClusterModal: React.FC<ViewClusterModalProps> = ({
                     </div>
                 ) : activeCluster ? (
                     <>
-                        {/* Header Badges */}
+
                         <div className="flex flex-wrap items-center justify-between gap-2 p-3 bg-main/5 border border-main/10 rounded-dx">
                             <div className="flex items-center gap-2">
                                 <span className="font-bold text-sm text-main">
@@ -137,7 +137,7 @@ export const ViewClusterModal: React.FC<ViewClusterModalProps> = ({
                             </div>
                         </div>
 
-                        {/* General Info Grid */}
+
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                             <div className="p-2.5 bg-main/5 border border-main/10 rounded-dx flex flex-col">
                                 <span className="text-[11px] text-main/60">Modo de Actualización</span>
@@ -177,7 +177,7 @@ export const ViewClusterModal: React.FC<ViewClusterModalProps> = ({
                             )}
                         </div>
 
-                        {/* Rules Inspector */}
+
                         {hasRules && (
                             <div className="border-t border-main/10 pt-3 flex flex-col gap-2">
                                 <h5 className="font-bold text-xs text-main">Reglas y Condiciones Configuradas:</h5>

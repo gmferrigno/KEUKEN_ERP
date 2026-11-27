@@ -59,11 +59,9 @@ export const ClusterManagerModal = ({
     const [isLoading, setIsLoading] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Estado modo existente
     const [clusters, setClusters] = useState<IClusterItemOption[]>([]);
     const [selectedClusterId, setSelectedClusterId] = useState<string | null>(null);
 
-    // Estado modo nuevo
     const [formData, setFormData] = useState<NewClusterFormData>(emptyFormData);
     const [kind, setKind] = useState<ClusterKindOption>('static');
     const [ruleSet, setRuleSet] = useState<any>(null);
@@ -94,7 +92,6 @@ export const ClusterManagerModal = ({
         setRuleSet(strategy.getDefaultRuleSet());
         setIsFormValid(false);
 
-        // Reseteo explícito de la instancia de Form de DevExtreme
         setTimeout(() => {
             const formInstance = formRef.current?.instance();
             if (formInstance) {
@@ -227,7 +224,6 @@ export const ClusterManagerModal = ({
         }
     };
 
-    // Bloqueo imperativo de editores al enviar
     useEffect(() => {
         const instance = formRef.current?.instance();
         if (instance) {
@@ -338,7 +334,7 @@ export const ClusterManagerModal = ({
 
                 {hasSelectedMembers && (
                     <>
-                        {/* Resumen de elementos seleccionados */}
+
                         <div className="bg-focus-500/10 border border-focus-500/50 p-3 rounded-dx text-xs text-main flex items-center justify-between">
                             <span>{strategy.entityLabel.plural} seleccionados a agrupar:</span>
                             <span className="font-bold text-sm bg-focus-500/20 text-focus-300 px-2.5 py-0.5 rounded-full">
@@ -346,7 +342,7 @@ export const ClusterManagerModal = ({
                             </span>
                         </div>
 
-                        {/* Selector de Modo */}
+
                         {!existingClusterOnly && (
                             <div className="flex border border-main/10 rounded-dx overflow-hidden p-1 bg-main/5 flex-shrink-0">
                                 <button
@@ -376,7 +372,7 @@ export const ClusterManagerModal = ({
                     </>
                 )}
 
-                {/* Formulario según modo activo */}
+
                 {mode === 'existing' ? (
                     <div className="flex flex-col gap-1.5 mt-1">
                         <label className="text-xs font-semibold text-main/80">
@@ -404,7 +400,7 @@ export const ClusterManagerModal = ({
                     <div className="flex flex-col gap-3 mt-1">
                         {formContent}
 
-                        {/* Constructor de Reglas si es Dinámica o Híbrida */}
+
                         {isDynamicOrHybrid && (
                             <div className="border-t border-main/10 pt-3 mt-1">
                                 <ClusterRuleBuilder
@@ -422,7 +418,7 @@ export const ClusterManagerModal = ({
                 )}
             </div>
 
-            {/* Acciones de Footer según ui-components-standard */}
+
             <ToolbarItem toolbar="bottom" location="after">
                 <Button
                     text="Cancelar"

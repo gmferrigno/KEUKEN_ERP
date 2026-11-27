@@ -86,7 +86,6 @@ export const ClusterDetailModal: React.FC<ClusterDetailModalProps> = ({
             setRuleSet(initialRules);
         }
 
-        // Reseteo explícito de la instancia de Form de DevExtreme
         setTimeout(() => {
             const formInstance = formRef.current?.instance();
             if (formInstance) {
@@ -189,7 +188,6 @@ export const ClusterDetailModal: React.FC<ClusterDetailModalProps> = ({
         }
     };
 
-    // Control dinámico de editores (disabled / readOnly) para evitar re-render del Form
     useEffect(() => {
         const instance = formRef.current?.instance();
         if (instance) {
@@ -294,7 +292,7 @@ export const ClusterDetailModal: React.FC<ClusterDetailModalProps> = ({
                 <div className="flex flex-col gap-4">
                     {formContent}
 
-                    {/* Constructor de Reglas para Dinámica o Híbrida */}
+
                     {isDynamicOrHybrid && (
                         <div className="border-t border-main/10 pt-3">
                             <ClusterRuleBuilder

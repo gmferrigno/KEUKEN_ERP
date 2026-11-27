@@ -34,7 +34,6 @@ const Gridmap = () => {
         maxLevel,
     } = useGridMapContext();
 
-    // ── Extracted hooks ─────────────────────────────────────────────────
     const {
         blueprintCatalog,
         pendingStructure, setPendingStructure,
@@ -43,7 +42,6 @@ const Gridmap = () => {
         fetchLocations
     } = useLocations();
 
-    // ── Local canvas state ──────────────────────────────────────────────
     const [canvaSize] = useState(DEFAULT_CANVA_SIZE);
     const [cameraZoom, setCameraZoom] = useState(1);
     const [hoveredZoneId] = useState<string | null>(null);
@@ -58,7 +56,6 @@ const Gridmap = () => {
     const [blueprintPreviewPos, setBlueprintPreviewPos] = useState<{ row: number; col: number } | null>(null);
     const wasDraggingLeftRef = useRef(false);
 
-    // ── Grid map operations ─────────────────────────────────────────────
     const levels = Array.from({ length: maxLevel - BASE_LEVEL + 1 }, (_, i) => BASE_LEVEL + i);
     const zones = zonesByLevel[currentLevel] || [];
     const { drawElement, finalizeZone, drawIcon, clearZones, clearArea, handleMove, selectElement, placeBlueprintGroup, handleRotate, rotateCoords, handleResizeCols, handleResizeRows } = useGridMap({
@@ -69,11 +66,9 @@ const Gridmap = () => {
         handleRotate(direction, setMoveOffset);
     };
 
-    // ── Effects ─────────────────────────────────────────────────────────
 
     useEffect(() => { Konva.dragButtons = [2]; }, []);
 
-    // Escape key to cancel move/blueprint
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key !== 'Escape') return;
@@ -89,7 +84,6 @@ const Gridmap = () => {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [activeAction, setActiveAction]);
 
-    // Reset previews when action changes
     useEffect(() => {
         if (activeAction !== 'move' && activeAction !== 'blueprint') {
             setMovePreviewPos(null);
@@ -99,7 +93,6 @@ const Gridmap = () => {
         }
     }, [activeAction, structureType]);
 
-    // ── Helpers ──────────────────────────────────────────────────────────
 
     const computePreviewCenter = () => {
         const stage = stageRef.current;
@@ -127,7 +120,6 @@ const Gridmap = () => {
         notify({ message: "Guardado con éxito", type: "success", displayTime: 2000, width: 'auto', position: 'bottom center' });
     };
 
-    // ── Konva Interaction Handlers ──────────────────────────────────────
 
     const buildInteractionContext = (e: any) => ({
         e, canvaSize, rows, cols, isSelecting, selectionStart, selectionEnd,
@@ -268,7 +260,6 @@ const Gridmap = () => {
         });
     };
 
-    // ── Zone Rendering ──────────────────────────────────────────────────
 
     const renderKonvaZone = (zone: IZone, isGhost = false, isPreview = false, onlyLabel = false) => {
         const minRow = Math.min(zone.start.row, zone.end.row);
@@ -398,7 +389,6 @@ const Gridmap = () => {
         });
     };
 
-    // ── JSX ─────────────────────────────────────────────────────────────
 
     const handleSetMaxLevel = (newMaxLevel: number) => {
         if (newMaxLevel < maxLevel) {
@@ -434,7 +424,7 @@ const Gridmap = () => {
                     fetchLocations={fetchLocations}
                 />
 
-                {/* AREA CANVAS */}
+
                 <div
                     className="flex-1 h-full bg-primary-900/35 flex items-center justify-center overflow-hidden relative cursor-crosshair"
                     onContextMenu={(e) => e.preventDefault()}
@@ -491,7 +481,7 @@ const Gridmap = () => {
                         onClick={handleStageClick}
                     >
                         <Layer>
-                            {/* Grid */}
+
                             <Shape
                                 sceneFunc={(context, shape) => {
                                     context.beginPath();
@@ -503,7 +493,7 @@ const Gridmap = () => {
                                 listening={false} perfectDrawEnabled={false} transformsEnabled="position"
                             />
 
-                            {/* Pass 1: Structure shapes */}
+
                             {Object.entries(STRUCTURE_RENDERERS)
                                 .sort(([a], [b]) => (MAP_STRUCTURES[a as StructureType]?.drawConfig.zIndex || 0) - (MAP_STRUCTURES[b as StructureType]?.drawConfig.zIndex || 0))
                                 .map(([, renderer]) =>
@@ -514,16 +504,16 @@ const Gridmap = () => {
                                     })
                                 )}
 
-                            {/* Pass 2: Labels on top */}
+
                             {zones.filter(z => z.type === 'Grupo').map(z => renderKonvaZone(z, false, false, true))}
 
-                            {/* Selection previews */}
+
                             {selectionStart && selectionEnd && activeAction === 'create' && renderKonvaZone({ start: selectionStart, end: selectionEnd, id: '', type: structureType }, false, true)}
                             {selectionStart && selectionEnd && activeAction === 'delete' && renderKonvaZone({ start: selectionStart, end: selectionEnd, id: '', type: 'Area', color: '#ef4444' }, false, true)}
                             {selectionStart && selectionEnd && activeAction === 'clone' && renderKonvaZone({ start: selectionStart, end: selectionEnd, id: '', type: 'Area', color: '#3b82f6' }, false, true)}
                             {selectionStart && selectionEnd && activeAction === 'select' && renderKonvaZone({ start: selectionStart, end: selectionEnd, id: '', type: 'Area', color: '#0ea5e9' }, false, true)}
 
-                            {/* Blueprint preview */}
+
                             {activeAction === 'blueprint' && blueprintPreviewPos && pendingStructure && (
                                 <BlueprintPreview
                                     pendingStructure={pendingStructure}
@@ -533,7 +523,7 @@ const Gridmap = () => {
                                 />
                             )}
 
-                            {/* Move preview */}
+
                             {activeAction === 'move' && movePreviewPos && (selectedElementId || selectedElementIds.length > 0) && moveOffset && (
                                 <MovePreview
                                     zones={zones}

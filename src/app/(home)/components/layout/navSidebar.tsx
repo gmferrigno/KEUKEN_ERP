@@ -68,7 +68,6 @@ const NavSidebar = ({ initialRoutes }: { initialRoutes: IAppRoute[] }) => {
 
     const withShells = [...filtered, ...shells];
 
-    // Identify which routes have children
     const parentIds = new Set<string>();
     withShells.forEach(route => {
       if (route.parentId) {
@@ -76,7 +75,6 @@ const NavSidebar = ({ initialRoutes }: { initialRoutes: IAppRoute[] }) => {
       }
     });
 
-    // Inject a virtual primary sub-route for grouping routes unless hideMainSubRoute is true
     const result = [...withShells];
     withShells.forEach(route => {
       if (parentIds.has(route.id) && route.path && !route.hideMainSubRoute) {
@@ -237,7 +235,7 @@ const NavSidebar = ({ initialRoutes }: { initialRoutes: IAppRoute[] }) => {
 
   const handleLogoMiddleMouseDown = (e: MouseEvent) => {
     if (e.button !== 1) return
-    e.preventDefault() 
+    e.preventDefault()
   }
 
   const handleLogoMiddleClick = (e: MouseEvent) => {
@@ -259,7 +257,6 @@ const NavSidebar = ({ initialRoutes }: { initialRoutes: IAppRoute[] }) => {
         return false;
       })
 
-    {/* Mensaje no encontrado */ }
     if (filteredRouteIds && filteredItems.length === 0) {
       return (
         <div className="px-4 py-6 text-center text-variant/50 select-none">
@@ -318,7 +315,7 @@ const NavSidebar = ({ initialRoutes }: { initialRoutes: IAppRoute[] }) => {
 
   return (
     <aside className={`flex flex-col h-screen max-h-screen bg-linear-to-b from-secondary-500 to-secondary-900 transition-[width] shadow-r-lg z-60 duration-300 ease-in-out overflow-hidden text-variant ${showCollapsedUi ? 'w-16' : 'w-60'}`} >
-      {/* HEADER */}
+
       <div className={`flex items-center justify-between border-b border-main/10 min-h-14 shrink-0 ${showCollapsedUi ? 'px-1 py-3' : 'py-3 px-4'}`}>
         <div
           className="flex items-center cursor-pointer w-full min-w-0"
@@ -368,7 +365,7 @@ const NavSidebar = ({ initialRoutes }: { initialRoutes: IAppRoute[] }) => {
         )}
       </div>
 
-      {/* HAMBURGER BUTTON CUANDO ESTÁ COLAPSADO */}
+
       {showCollapsedUi && (
         <div className="flex justify-center py-1.5">
           <button onClick={toggleSidebar} className="p-1.5 rounded-dx hover:bg-main/10 transition-colors">
@@ -377,7 +374,7 @@ const NavSidebar = ({ initialRoutes }: { initialRoutes: IAppRoute[] }) => {
         </div>
       )}
 
-      {/* SEARCH (solo cuando está expandido) */}
+
       {!showCollapsedUi && (
         <div className="py-2 px-3 border-b border-main/10 shrink-0">
           <TextBox

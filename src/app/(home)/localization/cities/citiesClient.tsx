@@ -8,7 +8,7 @@ import { commonService } from "@repo/erp-services/common.service";
 import { citiesService } from "@repo/erp-services/location_services/cities.service";
 import { statesService } from "@repo/erp-services/location_services/states.service";
 import { IFState } from "@repo/api-contracts/erp";
-import { GenericDataGrid, IGenericDataGridColumn, SelectBox } from '@repo/devextreme';
+import { GenericDataGrid, HeaderSelectBox, IGenericDataGridColumn } from '@repo/devextreme';
 import GenericEmpty from "@/components/GenericEmpty";
 import { useAuth } from "@/contexts/AuthContext";
 import { createGridStateStorage } from "@/lib/storage/gridStateStorage";
@@ -267,7 +267,7 @@ const CitiesClient = () => {
                 <div className="mb-1.5 w-full flex flex-col items-end justify-between gap-2">
                     <div className="flex w-full items-center gap-4">
                         <div className="w-full">
-                            <SelectBox
+                            <HeaderSelectBox
                                 dataSource={states}
                                 valueExpr="id"
                                 displayExpr="name"

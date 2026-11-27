@@ -57,8 +57,6 @@ export const AccountingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                 };
 
                 const flattened = tree.flatMap(t => flattenAccountTree(t));
-                // Si la raíz es una cuenta "dummy" o el nodo principal del plan, 
-                // el resto del sistema espera que las cuentas principales sean las raíces reales.
                 setAccounts(flattened);
             } catch (error) {
                 console.error("Error fetching accounts tree:", error);
@@ -88,7 +86,6 @@ export const AccountingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         return await accountsService.getAccountLines(accountId, token, currentCompany.id, params);
     }, [token, currentCompany]);
 
-    // Usamos las cuentas originales (IFAccountNode) sin recalcular el balance localmente
     const processedAccounts = useMemo(() => {
         return accounts;
     }, [accounts]);

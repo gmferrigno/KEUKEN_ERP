@@ -174,7 +174,6 @@ const CustomerModal = ({ isOpen, onClose, onSuccess, customerId }: CustomerModal
         setIsLoading(true);
         try {
             if (customerId) {
-                // Update
                 const updateData: IFCustomerUpdate = {
                     name: formData.name,
                     email: formData.email,
@@ -189,7 +188,6 @@ const CustomerModal = ({ isOpen, onClose, onSuccess, customerId }: CustomerModal
                 await customersService.update(customerId, updateData, token);
                 notify("Cliente actualizado exitosamente", "success", 3000);
             } else {
-                // Create
                 const createData: IFCustomerCreate = {
                     code: formData.code,
                     companyId: formData.companyId,
@@ -433,7 +431,7 @@ const CustomerModal = ({ isOpen, onClose, onSuccess, customerId }: CustomerModal
                             />
                         </Form>
 
-                        {/* Metadatos Dinámicos (solo en edición) */}
+                        {}
                         {customerId && (
                             <div className="mt-6 border-t border-main/10 pt-4">
                                 <MetadataFieldsClient

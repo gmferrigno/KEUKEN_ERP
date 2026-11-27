@@ -32,7 +32,7 @@ const FooterPanel = ({ currentLevel, levels }: IFooterPanelProps) => {
             className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-4 px-3 py-1.5 bg-primary-950/80 backdrop-blur-md border border-main/10 rounded-full shadow-2xl z-[100]"
             onPointerDown={e => e.stopPropagation()}
         >
-            {/* Context Info */}
+            {}
             <div className="flex items-center gap-2 px-2">
                 {levels.length > 1 ? (
                     <div className="flex items-center gap-1 p-1 rounded-dx" onWheel={handleLevelWheel}>

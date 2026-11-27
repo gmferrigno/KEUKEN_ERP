@@ -2,7 +2,7 @@
 
 import { stockService } from "@repo/erp-services/stock.service";
 import { IFStockByLotsParams } from "@repo/api-contracts/erp";
-import { GenericDataGrid, IGenericDataGridColumn } from '@repo/devextreme';
+import { escapeHtml, escapeHtmlValue, GenericDataGrid, IGenericDataGridColumn  } from '@repo/devextreme';
 import { useAuth } from "@/contexts/AuthContext";
 import { createGridStateStorage } from "@/lib/storage/gridStateStorage";
 import { formatQualityState } from "@/lib/utils/formatter.helper";
@@ -66,7 +66,7 @@ const StockByLotsList = () => {
             alignment: "left",
             allowSorting: false,
             cellTemplate: (container: HTMLElement, options: any) => {
-                container.innerHTML = `<span class="px-1.5 py-0 bg-primary-950/40 text-[11px] text-main rounded-full font-mono uppercase tracking-tighter">${options.value}</span>`;
+                container.innerHTML = `<span class="px-1.5 py-0 bg-primary-950/40 text-[11px] text-main rounded-full font-mono uppercase tracking-tighter">${escapeHtmlValue(options.value)}</span>`;
             }
         },
         {
@@ -92,7 +92,7 @@ const StockByLotsList = () => {
                 container.innerHTML = `
                     <div class="flex items-center gap-1.5 text-[11px] leading-tight opacity-90">
                         <i class="dx-icon-home text-[12px] text-focus-400"></i>
-                        <span class="uppercase tracking-tight">${options.value}</span>
+                        <span class="uppercase tracking-tight">${escapeHtmlValue(options.value)}</span>
                     </div>
                 `;
             }
@@ -108,7 +108,7 @@ const StockByLotsList = () => {
                 container.innerHTML = `
                     <div class="flex items-center gap-1.5 text-[11px] leading-tight">
                         <i class="dx-icon-folder text-[12px] text-focus-400/60"></i>
-                        <span class="font-medium">${path}</span>
+                        <span class="font-medium">${escapeHtmlValue(path)}</span>
                     </div>
                 `;
             }
@@ -125,7 +125,7 @@ const StockByLotsList = () => {
                 const opacity = options.value ? 'opacity-100' : 'opacity-30 italic';
                 container.innerHTML = `
                     <span class="inline-flex items-center justify-center px-1.5 py-[1px] bg-main/5 rounded border border-main/10 text-[11px] leading-none ${opacity}">
-                        ${batch}
+                        ${escapeHtmlValue(batch)}
                     </span>
                 `;
             }
@@ -139,7 +139,7 @@ const StockByLotsList = () => {
             allowSorting: false,
             cellTemplate: (container: HTMLElement, options: any) => {
                 container.innerHTML = `
-                     <span class="text-[12px] font-medium">${options.value ?? 0} <span class="text-[10px] opacity-40 font-normal ml-0.5">${options.data.uomName ?? '-'}</span></span>
+                     <span class="text-[12px] font-medium">${escapeHtmlValue(options.value ?? 0)} <span class="text-[10px] opacity-40 font-normal ml-0.5">${escapeHtmlValue(options.data.uomName ?? '-')}</span></span>
                 `;
             }
         },
@@ -152,7 +152,7 @@ const StockByLotsList = () => {
             allowSorting: false,
             cellTemplate: (container: HTMLElement, options: any) => {
                 container.innerHTML = `
-                    <span class="text-[12px] font-medium">${options.value ?? 0} <span class="text-[10px] opacity-40 font-normal ml-0.5">${options.data.uomName ?? '-'}</span></span>
+                    <span class="text-[12px] font-medium">${escapeHtmlValue(options.value ?? 0)} <span class="text-[10px] opacity-40 font-normal ml-0.5">${escapeHtmlValue(options.data.uomName ?? '-')}</span></span>
                 `;
             }
         },
@@ -177,7 +177,7 @@ const StockByLotsList = () => {
             },
             cellTemplate: (container: HTMLElement, options: any) => {
                 container.innerHTML = `
-                    <span class="text-[12px] text-focus-100 font-medium">${formatQualityState(options.value)}</span>
+                    <span class="text-[12px] text-focus-100 font-medium">${escapeHtmlValue(formatQualityState(options.value))}</span>
                 `;
             }
         }

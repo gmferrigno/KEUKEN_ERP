@@ -3,7 +3,7 @@
 import { documentsService } from "@repo/erp-services/documents.service";
 import { parseDevExtremeFilterToBackend } from "@repo/api-contracts/erp";
 import { IBDocumentsListParams } from "@repo/api-contracts/erp";
-import { GenericDataGrid, IGenericDataGridColumn } from '@repo/devextreme';
+import { escapeHtml, escapeHtmlValue, GenericDataGrid, IGenericDataGridColumn  } from '@repo/devextreme';
 import { useAuth } from "@/contexts/AuthContext";
 import { createGridStateStorage } from "@/lib/storage/gridStateStorage";
 import CustomStore from "devextreme/data/custom_store";
@@ -30,7 +30,6 @@ const DocumentsClient = () => {
                     ...parsedFilter
                 };
 
-                // Filter by the currently active company if not explicitly filtered in the grid
                 if (currentCompany?.id && !searchParams.company_id) {
                     searchParams.company_id = currentCompany.id;
                 }
@@ -127,7 +126,7 @@ const DocumentsClient = () => {
                     bgClass = 'bg-focus-500/20 text-focus-100 border-focus-500/30';
                 }
 
-                container.innerHTML = `<span class="px-1.5 py-0.5 text-[10px] font-semibold rounded-[3px] border uppercase tracking-wider ${bgClass}">${text}</span>`;
+                container.innerHTML = `<span class="px-1.5 py-0.5 text-[10px] font-semibold rounded-[3px] border uppercase tracking-wider ${bgClass}">${escapeHtmlValue(text)}</span>`;
             }
         },
         {
@@ -140,7 +139,7 @@ const DocumentsClient = () => {
             cellTemplate: (container: HTMLElement, options: any) => {
                 const value = options.value || 0;
                 const formatted = new Intl.NumberFormat('es-AR', { style: 'currency', currency: options.data.currencyCode || 'ARS' }).format(value);
-                container.innerHTML = `<span class="font-mono font-semibold text-emerald-600 dark:text-emerald-400">${formatted}</span>`;
+                container.innerHTML = `<span class="font-mono font-semibold text-emerald-600 dark:text-emerald-400">${escapeHtmlValue(formatted)}</span>`;
             }
         },
         {
@@ -175,7 +174,7 @@ const DocumentsClient = () => {
             cellTemplate: (container: HTMLElement, options: any) => {
                 const value = options.value || 0;
                 const formatted = new Intl.NumberFormat('es-AR', { style: 'currency', currency: options.data.currencyCode || 'ARS' }).format(value);
-                container.innerHTML = `<span class="font-mono text-gray-500">${formatted}</span>`;
+                container.innerHTML = `<span class="font-mono text-gray-500">${escapeHtmlValue(formatted)}</span>`;
             }
         }
     ], []);

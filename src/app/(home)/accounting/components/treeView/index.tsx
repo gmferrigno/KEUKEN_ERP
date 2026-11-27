@@ -98,7 +98,7 @@ const TreeView = ({ mirrored }: { mirrored?: boolean }) => {
                     )}
                 </div>
             </ScrollView>
-            {/* </div> */}
+
         </div>
     );
 };

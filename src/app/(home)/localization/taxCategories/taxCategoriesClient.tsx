@@ -5,7 +5,7 @@ import { canDo } from "@repo/access";
 import { countriesService } from "@repo/erp-services/location_services/countries.service";
 import { taxCategoriesService } from "@repo/erp-services/payments_services/taxCategories.service";
 import { IFCountry } from "@repo/api-contracts/erp";
-import { GenericDataGrid, IGenericDataGridColumn, SelectBox } from '@repo/devextreme';
+import { GenericDataGrid, HeaderSelectBox, IGenericDataGridColumn } from '@repo/devextreme';
 import GenericEmpty from "@/components/GenericEmpty";
 import { useAuth } from "@/contexts/AuthContext";
 import { createGridStateStorage } from "@/lib/storage/gridStateStorage";
@@ -222,7 +222,7 @@ const TaxCategoriesClient = () => {
                 <div className="mb-1.5 w-full flex flex-col items-end justify-between gap-2">
                     <div className="flex w-full items-center gap-4">
                         <div className="w-full">
-                            <SelectBox
+                            <HeaderSelectBox
                                 dataSource={countries}
                                 valueExpr="code"
                                 displayExpr="name"
@@ -232,7 +232,6 @@ const TaxCategoriesClient = () => {
                                 searchEnabled={true}
                                 showClearButton={true}
                                 stylingMode="filled"
-                                elementAttr={{ class: "rounded-dx" }}
                             />
                         </div>
                     </div>

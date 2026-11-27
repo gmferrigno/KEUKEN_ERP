@@ -28,12 +28,10 @@ const SalesClient = () => {
 
     const handlePrintBatch = async () => {
         try {
-            // Emulamos 5 facturas con distintos números
             const invoices: IReceiptProps[] = Array.from({ length: BATCH_SIZE }, (_, i) => ({
                 receiptNumber: `0011-000000${i + 1}`,
                 client: `CLIENTE DE PRUEBA ${i + 1}`,
                 entity: 'ORIGINAL',
-                // Podemos variar datos si queremos
             }));
 
             const blob = await pdf(<BatchReceiptTemplate invoices={invoices} copies={4} />).toBlob();

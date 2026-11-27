@@ -33,7 +33,7 @@ const emptyForm = () => ({
     purchaseOrderId: "",
     notes: "",
     lines: [emptyLine()] as IFInboundReceiptLineCreate[],
-    /** Solo para mostrar JSON en el TextArea; no es contrato BE */
+
     linesJson: JSON.stringify([emptyLine()], null, 2),
 });
 
@@ -44,7 +44,7 @@ export default function InboundReceiptModal({ isOpen, onClose, onSuccess, onHidd
     const locationEditorRef = useRef<any>(null);
     const locationsCache = useRef<any[]>([]);
     const [loading, setLoading] = useState(false);
-    /** formData solo se setea al abrir; DX muta el objeto en escritura */
+
     const [formData, setFormData] = useState(emptyForm);
 
     const buildLocationsStore = useCallback(
@@ -161,7 +161,6 @@ export default function InboundReceiptModal({ isOpen, onClose, onSuccess, onHidd
                 purchaseOrderLineId: q.purchaseOrderLineId,
                 productUomQty: q.qtyOpen ?? 0,
             }));
-            // Mutación in-place + updateData (sin reemplazar formData raíz vía setState)
             data.lines = lines;
             data.linesJson = JSON.stringify(lines, null, 2);
             const form = formRef.current?.instance?.();
@@ -186,12 +185,10 @@ export default function InboundReceiptModal({ isOpen, onClose, onSuccess, onHidd
 
         const data = getFormData();
         let lines = data.lines || [];
-        // Preferir JSON del editor si parsea bien (blur ya sincroniza; fallback al submit)
         try {
             const parsed = JSON.parse(String(data.linesJson || "[]"));
             if (Array.isArray(parsed)) lines = parsed;
         } catch {
-            /* usar data.lines */
         }
 
         const hasPo = Boolean(String(data.purchaseOrderId || "").trim());
@@ -270,7 +267,6 @@ export default function InboundReceiptModal({ isOpen, onClose, onSuccess, onHidd
                         stylingMode: "filled",
                         dropDownOptions: { wrapperAttr: { class: "popup-menu-container" } },
                         onValueChanged: (e: any) => {
-                            // Form+SelectBox a veces no manda e.event; habilitar por cambio de valor
                             if (e.value === e.previousValue) return;
                             const form = formRef.current?.instance?.();
                             const locEditor =
@@ -358,7 +354,6 @@ export default function InboundReceiptModal({ isOpen, onClose, onSuccess, onHidd
                         stylingMode: "filled",
                         valueChangeEvent: "change",
                         onFocusOut: (e: any) => {
-                            // Sincronizar lines al salir del editor (no en cada tecla)
                             try {
                                 const parsed = JSON.parse(e.component.option("value") || "[]");
                                 if (!Array.isArray(parsed)) return;

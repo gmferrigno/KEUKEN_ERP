@@ -135,9 +135,7 @@ const LocationDetailCard = ({ onUpdate, onRefresh, onDelete }: IDetailCardProps)
                                 <span className="text-sm !text-main/50 flex items-center gap-1">
                                     <i className="dx-icon-tags text-sm !text-main/50" /> Área: {location.areaId ? (location.areaName || location.areaCode) : 'Sin Área'}
                                 </span>
-                                {/*                                 <span className="py-1 px-2 bg-primary-900/20 text-sm text-main rounded-full">
-                                    {location.id.toString().padStart(6, '0')}
-                                </span> */}
+
                             </div>
                         </div>
                     </div>

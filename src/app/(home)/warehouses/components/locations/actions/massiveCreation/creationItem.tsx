@@ -148,7 +148,7 @@ const CreationItem = ({ formData, updateFormData, onDelete, isLast }: ICreationI
                     />
             </div>
 
-            {/* Technical grid: Quantity, Format, and Range */}
+
             <div className="flex flex-col gap-4">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="col-span-1">

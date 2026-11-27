@@ -27,7 +27,6 @@ const TemperatureLevelsList = () => {
         return permissions ? canDo('modify', PERMISSIONS_CONSTANTS.products, permissions) : false;
     }, [permissions, isSuperAdmin]);
 
-    // Refetch reactivo cuando cambia el switch de RecoveryMode o RecoveryVisibility
     useEffect(() => {
         setRefreshVersion(prev => prev + 1);
         if (gridRef.current?.instance?.refresh) {
@@ -47,8 +46,8 @@ const TemperatureLevelsList = () => {
                     return data;
                 } catch (error: any) {
                     console.error('Error loading temperature classes:', error);
-                    const errorMessage = error instanceof Error && error.message 
-                        ? error.message 
+                    const errorMessage = error instanceof Error && error.message
+                        ? error.message
                         : 'Error al cargar los niveles de temperatura';
                     notify(errorMessage, 'error', 3000);
                     return [];
@@ -70,8 +69,8 @@ const TemperatureLevelsList = () => {
             notify("Nivel de temperatura eliminado exitosamente", "success", 3000);
         } catch (error: any) {
             console.error("Error deleting temperature class:", error);
-            const errorMessage = error instanceof Error && error.message 
-                ? error.message 
+            const errorMessage = error instanceof Error && error.message
+                ? error.message
                 : "Error al eliminar el nivel de temperatura";
             notify(errorMessage, "error", 3000);
         }

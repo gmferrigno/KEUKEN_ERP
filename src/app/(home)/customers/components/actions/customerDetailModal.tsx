@@ -225,7 +225,6 @@ const CustomerDetailModal = ({ isOpen, onClose, customerId }: CustomerDetailModa
                                 status: customerFull.customer.active ? "Activo" : "Inactivo",
                                 country: customerFull.customer.countryIsoCode,
                                 state: customerFull.customer.stateName || customerFull.customer.stateCode,
-                                // cityLabel: display-only (BE city name/code); never written back
                                 cityLabel:
                                     customerFull.customer.cityName ||
                                     customerFull.customer.cityCode ||
@@ -235,7 +234,7 @@ const CustomerDetailModal = ({ isOpen, onClose, customerId }: CustomerDetailModa
                             colCount={2}
                             scrollingEnabled={false}
                         >
-                            {/* Card 1: Información General */}
+
                             <GroupItem
                                 colSpan={2}
                                 colCount={2}
@@ -258,7 +257,7 @@ const CustomerDetailModal = ({ isOpen, onClose, customerId }: CustomerDetailModa
                                 <SimpleItem dataField="email" label={{ text: "Email" }} editorOptions={{ stylingMode: "filled" }} />
                             </GroupItem>
 
-                            {/* Card 2: Información Fiscal */}
+
                             <GroupItem
                                 colSpan={2}
                                 colCount={2}
@@ -274,8 +273,8 @@ const CustomerDetailModal = ({ isOpen, onClose, customerId }: CustomerDetailModa
                                 <SimpleItem dataField="taxId" label={{ text: "Identificación Fiscal" }} editorOptions={{ stylingMode: "filled" }} />
                                 <SimpleItem dataField="ivaCondition" label={{ text: "Condición IVA" }} editorOptions={{ stylingMode: "filled" }} />
                             </GroupItem>
-                            
-                            {/* Card 3: Ubicación Principal */}
+
+
                             <GroupItem
                                 colSpan={2}
                                 colCount={3}
@@ -292,7 +291,7 @@ const CustomerDetailModal = ({ isOpen, onClose, customerId }: CustomerDetailModa
                                 <SimpleItem dataField="cityLabel" label={{ text: "Ciudad" }} editorOptions={{ stylingMode: "filled", readOnly: true }} />
                             </GroupItem>
 
-                            {/* Card 4: Direcciones (Lista) */}
+
                             <GroupItem
                                 colSpan={2}
                                 cssClass="!p-5 !rounded-dx !bg-primary-0/40 !border !border-focus-100/40 !shadow-sm !mb-6"
@@ -311,7 +310,7 @@ const CustomerDetailModal = ({ isOpen, onClose, customerId }: CustomerDetailModa
                                 </SimpleItem>
                             </GroupItem>
 
-                            {/* Card 5: Exenciones (Lista) */}
+
                             <GroupItem
                                 colSpan={2}
                                 cssClass="!p-5 !rounded-dx !bg-primary-0/40 !border !border-focus-100/40 !shadow-sm !mb-6"
@@ -332,9 +331,9 @@ const CustomerDetailModal = ({ isOpen, onClose, customerId }: CustomerDetailModa
                                 cssClass="!p-5 !rounded-dx !bg-primary-0/40 !border !border-focus-100/40 !shadow-sm"
                             >
                                 <SimpleItem colSpan={2} label={{ visible: false }}>
-                                    {customerFull?.id && (
+                                    {customerFull?.customer?.id && (
                                         <CustomerPaymentTermsEffective
-                                            customerId={customerFull.id}
+                                            customerId={customerFull.customer.id}
                                             addresses={(customerFull.addresses || []).map((a: any) => ({
                                                 id: a.id,
                                                 label:
@@ -349,7 +348,7 @@ const CustomerDetailModal = ({ isOpen, onClose, customerId }: CustomerDetailModa
                             </GroupItem>
                         </Form>
 
-                        {/* Metadatos Dinámicos */}
+
                         <div className="mt-6 border-t border-main/10 pt-4">
                             <MetadataFieldsClient
                                 entityType="common.customer"

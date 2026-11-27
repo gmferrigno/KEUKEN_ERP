@@ -11,7 +11,6 @@ import { CUSTOMERS_ORGIN_LABELS } from "@/app/lib/constants/audiences.constants"
 export const customerStrategy: IClusterStrategy<IFCustomerCluster, any, IFCustomerRuleSet> = {
     entityType: 'customer',
 
-    // Labels & Textos
     entityLabel: {
         singular: 'cliente',
         plural: 'clientes',
@@ -27,7 +26,6 @@ export const customerStrategy: IClusterStrategy<IFCustomerCluster, any, IFCustom
     membersExportFileName: 'Miembros_Clientes',
     emptySelectDescription: 'Seleccione un clúster de clientes en el desplegable superior para ver y gestionar sus miembros.',
 
-    // CRUD Clúster
     getById: (id, token, companyId) => customerClustersService.getById(id, token, companyId),
     update: (id, data, token, companyId) => customerClustersService.update(id, data, token, companyId),
     delete: (id, token, companyId) => customerClustersService.delete(id, token, companyId),
@@ -64,7 +62,6 @@ export const customerStrategy: IClusterStrategy<IFCustomerCluster, any, IFCustom
         return { detail: "Clúster de clientes creado exitosamente" };
     },
 
-    // Miembros del Clúster
     membersKeyExpr: 'customerId',
     membersColumns: [
         {
@@ -102,7 +99,6 @@ export const customerStrategy: IClusterStrategy<IFCustomerCluster, any, IFCustom
     removeMembers: (clusterId, memberIds, token, companyId) =>
         customerClustersService.removeMembers(clusterId, memberIds, token, companyId),
 
-    // Selección para Añadir Miembros
     addMembersColumns: [
         {
             dataField: 'id',
@@ -139,7 +135,6 @@ export const customerStrategy: IClusterStrategy<IFCustomerCluster, any, IFCustom
     addMembers: (clusterId, memberIds, token, companyId) =>
         customerClustersService.addMembers(clusterId, memberIds, token, companyId),
 
-    // Exclusión
     supportsExclusion: true,
     excludeMember: (clusterId, memberId, token, companyId) =>
         customerClustersService.excludeMember(clusterId, memberId, token, companyId),
@@ -147,7 +142,6 @@ export const customerStrategy: IClusterStrategy<IFCustomerCluster, any, IFCustom
         customerClustersService.includeMember(clusterId, memberId, token, companyId),
 
 
-    // Reglas Dinámicas
     supportsRules: true,
     supportsPreview: true,
     supportsSummary: true,
@@ -194,7 +188,6 @@ export const customerStrategy: IClusterStrategy<IFCustomerCluster, any, IFCustom
         return { isValid: true };
     },
 
-    // Métricas y Refresco
     refreshCluster: (clusterId, token, companyId) =>
         clusterRulesService.refreshCustomerCluster(clusterId, companyId, token),
     getSummary: (clusterId, lookbackDays, companyId, token) =>

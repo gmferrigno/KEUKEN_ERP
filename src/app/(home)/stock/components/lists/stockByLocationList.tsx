@@ -1,7 +1,7 @@
 'use client';
 
 import { stockService } from "@repo/erp-services/stock.service";
-import { GenericDataGrid, IGenericDataGridColumn } from '@repo/devextreme';
+import { escapeHtml, escapeHtmlValue, GenericDataGrid, IGenericDataGridColumn  } from '@repo/devextreme';
 import { useAuth } from "@/contexts/AuthContext";
 import { createGridStateStorage } from "@/lib/storage/gridStateStorage";
 import CustomStore from "devextreme/data/custom_store";
@@ -75,7 +75,7 @@ const StockByLocationList = () => {
             allowSorting: false,
             cellTemplate: (container: HTMLElement, options: any) => {
                 const value = options.value || 'N/A';
-                container.innerHTML = `<span class="px-1.5 py-0 bg-primary-500/40 text-[11px] text-variant rounded-full font-mono uppercase tracking-tighter">${value}</span>`;
+                container.innerHTML = `<span class="px-1.5 py-0 bg-primary-500/40 text-[11px] text-variant rounded-full font-mono uppercase tracking-tighter">${escapeHtmlValue(value)}</span>`;
             }
         },
         {
@@ -88,8 +88,8 @@ const StockByLocationList = () => {
                 const productName = options.data.productName || '';
                 container.innerHTML = `
                     <div class="flex flex-col gap-0">
-                        <span class="font-semibold text-[11px] leading-tight">${value}</span>
-                        <span class="text-[9px] leading-tight opacity-40 uppercase tracking-tight">${productName}</span>
+                        <span class="font-semibold text-[11px] leading-tight">${escapeHtmlValue(value)}</span>
+                        <span class="text-[9px] leading-tight opacity-40 uppercase tracking-tight">${escapeHtmlValue(productName)}</span>
                     </div>
                 `;
             }
@@ -105,7 +105,7 @@ const StockByLocationList = () => {
                 container.innerHTML = `
                     <div class="flex items-center gap-1.5 text-[11px] leading-tight">
                         <i class="dx-icon-folder text-[12px] text-focus-400/60"></i>
-                        <span class="font-medium">${path}</span>
+                        <span class="font-medium">${escapeHtmlValue(path)}</span>
                     </div>
                 `;
             }
@@ -121,7 +121,7 @@ const StockByLocationList = () => {
                 container.innerHTML = `
                     <div class="flex items-center gap-1.5 text-[11px] leading-tight">
                         <i class="dx-icon-folder text-[12px] text-focus-400/60"></i>
-                        <span class="font-medium">${path}</span>
+                        <span class="font-medium">${escapeHtmlValue(path)}</span>
                     </div>
                 `;
             }
@@ -138,7 +138,7 @@ const StockByLocationList = () => {
                 const opacity = options.value ? 'opacity-100' : 'opacity-30 italic';
                 container.innerHTML = `
                     <span class="inline-flex items-center justify-center px-1.5 py-[1px] bg-main/5 rounded border border-main/10 text-[11px] leading-none ${opacity}">
-                        ${batch}
+                        ${escapeHtmlValue(batch)}
                     </span>
                 `;
             }
@@ -152,7 +152,7 @@ const StockByLocationList = () => {
             allowSorting: false,
             cellTemplate: (container: HTMLElement, options: any) => {
                 container.innerHTML = `
-                    <span class="text-[12px] font-medium">${options.value ?? 0} <span class="text-[10px] opacity-40 font-normal ml-0.5">${options.data.uomName || ''}</span></span>
+                    <span class="text-[12px] font-medium">${escapeHtmlValue(options.value ?? 0)} <span class="text-[10px] opacity-40 font-normal ml-0.5">${escapeHtmlValue(options.data.uomName || '')}</span></span>
                 `;
             }
         },
@@ -165,7 +165,7 @@ const StockByLocationList = () => {
             allowSorting: false,
             cellTemplate: (container: HTMLElement, options: any) => {
                 container.innerHTML = `
-                    <span class="text-[12px] font-medium">${options.value ?? 0} <span class="text-[10px] opacity-40 font-normal ml-0.5">${options.data.uomName || ''}</span></span>
+                    <span class="text-[12px] font-medium">${escapeHtmlValue(options.value ?? 0)} <span class="text-[10px] opacity-40 font-normal ml-0.5">${escapeHtmlValue(options.data.uomName || '')}</span></span>
                 `;
             }
         },

@@ -40,9 +40,7 @@ export function createGridPrinter(options: GridPrinterOptions): GridPrinterResul
     };
 }
 
-/**
- * Aplica branding dinámico desde el template y abre el diálogo de impresión nativo
- */
+
 export function printPdfWithTemplate(
     doc: jsPDF,
     title: string,
@@ -60,7 +58,6 @@ export function printPdfWithTemplate(
     for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i);
 
-        // Determinar si debemos dibujar el header/footer en esta página
         const shouldDrawHeader = i === 1;
         const shouldDrawFooter = templateInAll || i === pageCount;
 
@@ -73,12 +70,10 @@ export function printPdfWithTemplate(
         }
     }
 
-    // Preparar para impresión nativa
     doc.autoPrint();
     const blob = doc.output('blob');
     const url = URL.createObjectURL(blob);
 
-    // Iframe oculto para disparar la impresión nativa del navegador
     const iframe = document.createElement('iframe');
     Object.assign(iframe.style, {
         position: 'fixed',
@@ -90,11 +85,5 @@ export function printPdfWithTemplate(
     iframe.src = url;
     document.body.appendChild(iframe);
 
-    // Limpieza después de que el diálogo se abra (o se intente abrir)
-    /*     setTimeout(() => {
-            URL.revokeObjectURL(url);
-            if (document.body.contains(iframe)) {
-                document.body.removeChild(iframe);
-            }
-        }, 60000); */
+
 }

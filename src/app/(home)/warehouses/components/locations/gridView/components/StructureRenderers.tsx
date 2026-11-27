@@ -1,8 +1,4 @@
-/**
- * Rendering functions extracted from MAP_STRUCTURES config.
- * These were previously embedded as JSX callbacks inside configuration objects,
- * violating the principle that constants should contain only pure configuration data.
- */
+
 import { IDirections, IZone, StructureType } from "@/types/gridMap.types";
 import React from 'react';
 import { Shape } from 'react-konva';
@@ -32,7 +28,6 @@ interface PreviewRenderContext {
     activeDirections: IDirections;
 }
 
-// ── Render functions per structure type ──────────────────────────────────
 
 const renderGrupo = (ctx: StructureRenderContext) => (
     <React.Fragment key="Grupo">
@@ -156,7 +151,6 @@ const renderDirecciones = (ctx: StructureRenderContext) => (
     />
 );
 
-// ── Public API ──────────────────────────────────────────────────────────
 
 export const STRUCTURE_RENDERERS: Record<StructureType, {
     renderElements: (ctx: StructureRenderContext) => any;

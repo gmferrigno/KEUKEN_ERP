@@ -52,7 +52,6 @@ const CashRegisterModal = ({ isOpen, onClose, onSuccess, initialData, registerTy
             try {
                 const response = await cashRegistersService.getAll(token, currentCompany.id);
                 if (mounted) {
-                    // Filter out current cash register to prevent circular hierarchy references
                     const filtered = initialData?.id
                         ? response.items.filter(r => r.id !== initialData.id)
                         : response.items;
@@ -94,16 +93,13 @@ const CashRegisterModal = ({ isOpen, onClose, onSuccess, initialData, registerTy
     }, [isOpen, initialData?.id, currentCompany?.id]);
 
     const availableRegisterTypes = useMemo(() => {
-        // If we are editing the existing Tesoreria, they can ONLY keep it as Tesoreria
         if (initialData?.registerType === "tesoreria") {
             return registerTypes.filter(t => t.id === "tesoreria");
         }
-        // Otherwise (creating, or editing central/cajero), Tesoreria is not allowed
         return registerTypes.filter(t => t.id !== "tesoreria");
     }, [initialData?.registerType, registerTypes]);
 
     const availableParents = useMemo(() => {
-        // Recursive function to find all descendant IDs
         const getDescendants = (id: string, list: IFCashRegister[]): string[] => {
             const descendants: string[] = [];
             const queue = [id];
@@ -120,21 +116,16 @@ const CashRegisterModal = ({ isOpen, onClose, onSuccess, initialData, registerTy
 
         let list = registers;
 
-        // Prevent cycles: exclude the register itself and all its descendants
         if (initialData?.id) {
             const descendants = getDescendants(initialData.id, registers);
             list = list.filter(r => r.id !== initialData.id && !descendants.includes(r.id));
         }
 
-        // Apply rules based on selected registerType:
         if (formData.registerType === "central_rendiciones") {
-            // Central must have a parent of type 'tesoreria'
             list = list.filter(r => r.registerType === "tesoreria");
         } else if (formData.registerType === "cajero_cobrador") {
-            // Cajero/Cobrador must have a parent of type 'central_rendiciones'
             list = list.filter(r => r.registerType === "central_rendiciones");
         } else if (formData.registerType === "tesoreria") {
-            // Tesoreria cannot have a parent
             list = [];
         }
 

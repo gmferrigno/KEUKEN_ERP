@@ -55,7 +55,6 @@ export const ClusterSummaryCard: React.FC<ClusterSummaryCardProps> = ({
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [isLoadingSummary, setIsLoadingSummary] = useState(false);
 
-    // Modals state
     const [isViewOpen, setIsViewOpen] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
@@ -109,10 +108,10 @@ export const ClusterSummaryCard: React.FC<ClusterSummaryCardProps> = ({
 
     return (
         <div className="flex flex-col gap-2 p-2.5 bg-main/5 border border-main/10 rounded-dx font-sans text-xs shadow-sm">
-            {/* Top row: Badges, Code, Description & Action buttons */}
+
             <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex flex-wrap items-center gap-2">
-                    {/* Active Status */}
+
                     {cluster?.active !== undefined && (
                         <span
                             title={cluster.active ? 'Activa' : 'Inactiva'}
@@ -120,28 +119,28 @@ export const ClusterSummaryCard: React.FC<ClusterSummaryCardProps> = ({
                         />
                     )}
 
-                    {/* Kind Badge */}
+
                     {kindText && (
                         <span className="px-2 py-0.5 text-[11px] font-bold rounded bg-focus-300/15 text-focus-300 border border-focus-300/30">
                             {kindText}
                         </span>
                     )}
 
-                    {/* Refresh Mode Badge */}
+
                     {cluster?.refreshMode && (
                         <span className="px-2 py-0.5 text-[11px] font-medium rounded bg-focus-300/10 text-focus-300 border border-focus-300/20">
                             Modo: {REFRESH_MODE_LABELS[cluster.refreshMode] || cluster.refreshMode}
                         </span>
                     )}
 
-                    {/* Code */}
+
                     {cluster?.code && (
                         <span className="text-xs font-mono font-bold text-focus-300 bg-focus-300/10 px-2 py-0.5 rounded border border-focus-300/25">
                             {cluster.code}
                         </span>
                     )}
 
-                    {/* Description */}
+
                     {cluster?.description && (
                         <span className="text-[11px] text-main/60 italic truncate max-w-xs md:max-w-md" title={cluster.description}>
                             "{cluster.description}"
@@ -149,9 +148,9 @@ export const ClusterSummaryCard: React.FC<ClusterSummaryCardProps> = ({
                     )}
                 </div>
 
-                {/* Acciones: Ver (ojito), Editar (lápiz), Eliminar (tacho) y Recalcular */}
+
                 <div className="flex items-center gap-0.5">
-                    {/* Botón Ver (Ojito) */}
+
                     <Button
                         icon="eyeopen"
                         hint="Ver Detalle del Clúster"
@@ -160,7 +159,7 @@ export const ClusterSummaryCard: React.FC<ClusterSummaryCardProps> = ({
                         className="!bg-transparent"
                     />
 
-                    {/* Botón Editar (Lápiz) */}
+
                     <Button
                         icon="edit"
                         hint="Editar Clúster"
@@ -169,7 +168,7 @@ export const ClusterSummaryCard: React.FC<ClusterSummaryCardProps> = ({
                         className="!bg-transparent"
                     />
 
-                    {/* Botón Eliminar (Tacho) */}
+
                     <Button
                         icon="trash"
                         hint="Eliminar Clúster"
@@ -178,7 +177,7 @@ export const ClusterSummaryCard: React.FC<ClusterSummaryCardProps> = ({
                         className="!bg-transparent"
                     />
 
-                    {/* Recalcular Button (Oculto e inhabilitado en clústeres estáticos) */}
+
                     {!isStaticCluster && (
                         <Button
                             icon="refresh"
@@ -193,9 +192,9 @@ export const ClusterSummaryCard: React.FC<ClusterSummaryCardProps> = ({
                 </div>
             </div>
 
-            {/* Bottom row: Divider & Metrics ribbon */}
+
             <div className="flex flex-wrap items-center gap-3 md:gap-4 pt-1.5 border-t border-main/10 text-xs">
-                {/* Miembros */}
+
                 <div className="flex items-center gap-1.5">
                     <i className="dx-icon-group text-focus-300 text-sm" />
                     <span className="text-main/70">Miembros:</span>
@@ -204,7 +203,7 @@ export const ClusterSummaryCard: React.FC<ClusterSummaryCardProps> = ({
 
                 <div className="h-3 w-px bg-main/15 hidden md:block" />
 
-                {/* Excluidos */}
+
                 <div className="flex items-center gap-1.5">
                     <i className="dx-icon-clear text-focus-300 text-sm" />
                     <span className="text-main/70">Excluidos:</span>
@@ -215,7 +214,7 @@ export const ClusterSummaryCard: React.FC<ClusterSummaryCardProps> = ({
                     <>
                         <div className="h-3 w-px bg-main/15 hidden md:block" />
 
-                        {/* Ventas */}
+
                         <div className="flex items-center gap-1.5">
                             <i className="dx-icon-money text-focus-300 text-sm" />
                             <span className="text-main/70">Ventas (90d):</span>
@@ -226,7 +225,7 @@ export const ClusterSummaryCard: React.FC<ClusterSummaryCardProps> = ({
 
                         <div className="h-3 w-px bg-main/15 hidden md:block" />
 
-                        {/* Pedidos */}
+
                         <div className="flex items-center gap-1.5">
                             <i className="dx-icon-cart text-focus-300 text-sm" />
                             <span className="text-main/70">Pedidos (90d):</span>
@@ -239,7 +238,7 @@ export const ClusterSummaryCard: React.FC<ClusterSummaryCardProps> = ({
 
                 <div className="h-3 w-px bg-main/15 hidden md:block" />
 
-                {/* Último Refresco */}
+
                 <div className="flex items-center gap-1.5 text-[11px] text-main/60">
                     <i className="dx-icon-clock text-main/50 text-xs" />
                     <span>Refresco:</span>
@@ -248,7 +247,7 @@ export const ClusterSummaryCard: React.FC<ClusterSummaryCardProps> = ({
                     </span>
                 </div>
 
-                {/* Fecha Creación */}
+
                 {cluster?.createdAt && (
                     <>
                         <div className="h-3 w-px bg-main/15 hidden md:block" />
@@ -263,7 +262,7 @@ export const ClusterSummaryCard: React.FC<ClusterSummaryCardProps> = ({
                 )}
             </div>
 
-            {/* Modal de Detalle (Ver) */}
+
             <ClusterDetailModal
                 isOpen={isViewOpen}
                 onClose={() => setIsViewOpen(false)}
@@ -273,7 +272,7 @@ export const ClusterSummaryCard: React.FC<ClusterSummaryCardProps> = ({
                 mode="view"
             />
 
-            {/* Modal de Edición */}
+
             <ClusterDetailModal
                 isOpen={isEditOpen}
                 onClose={() => setIsEditOpen(false)}

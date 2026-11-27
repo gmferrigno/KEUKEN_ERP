@@ -10,7 +10,6 @@ interface CompanyContextType {
 const CompanyContext = createContext<CompanyContextType | undefined>(undefined);
 
 export const CompanyProvider = ({ children }: { children: ReactNode }) => {
-    // Valor estático inicial (puedes cambiarlo manualmente aquí)
     const [companyId, setCompanyId] = useState<string>("019c7bb9-8c60-79fb-8563-8de329549beb");
 
     return (

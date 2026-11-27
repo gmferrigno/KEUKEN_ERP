@@ -1,6 +1,5 @@
 import { Document, Image, Page, StyleSheet, Text, View } from '@react-pdf/renderer';
 
-// Interface for dynamic data
 export interface IArticle {
     code: string;
     description: string;
@@ -24,7 +23,6 @@ export interface IReceiptProps {
     locality?: string;
     receiptNumber?: string;
     articles?: IArticle[];
-    // Adding optional metadata for headers
     companyName?: string;
     totalAmount?: number;
     client?: string;
@@ -44,7 +42,6 @@ export interface IReceiptProps {
     requireAccordance?: boolean;
 }
 
-// Professional Enterprise Styles
 const styles = StyleSheet.create({
     page: {
         padding: 30,
@@ -55,7 +52,6 @@ const styles = StyleSheet.create({
         flexDirection: 'column',
         justifyContent: 'space-between',
     },
-    // Header styling for A/B/C Invoices
     header: {
         flexDirection: 'row',
         borderWidth: 1,
@@ -104,7 +100,6 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         marginTop: 10,
     },
-    // Meta data grids
     detailsRow: {
         flexDirection: 'row',
         marginBottom: 0,
@@ -141,7 +136,6 @@ const styles = StyleSheet.create({
         backgroundColor: '#eee',
         height: '100%',
     },
-    // Metadata Section
     metaSection: {
         borderWidth: 1,
         borderColor: '#000',
@@ -154,7 +148,6 @@ const styles = StyleSheet.create({
         paddingHorizontal: 10,
         paddingBottom: 3,
     },
-    // Table
     tableHeader: {
         flexDirection: 'row',
         borderBottomWidth: 1,
@@ -176,7 +169,6 @@ const styles = StyleSheet.create({
     colSub: { width: '12.5%', textAlign: 'right', fontSize: 8, },
     colTotal: { width: '12.5%', textAlign: 'right', paddingRight: 5, fontSize: 8, },
 
-    // Page number
     pageNumberContainer: {
         position: 'absolute',
         right: 10,
@@ -187,7 +179,6 @@ const styles = StyleSheet.create({
         fontSize: 7,
         color: '#666',
     },
-    // Footer
     summarySection: {
         marginTop: 'auto', // Esto empuja el footer al fondo si el contenedor tiene flex
         paddingTop: 10,
@@ -229,7 +220,6 @@ const styles = StyleSheet.create({
         fontSize: 10,
         fontWeight: 'bold',
     },
-    // Stub / Talonario Styles
     stubSection: {
         marginTop: 20,
         borderTopWidth: 1,
@@ -293,7 +283,6 @@ const generateArticles = (quantity: number) => {
     return articles;
 };
 
-// Default Mock Data
 const defaultProps: IReceiptProps = {
     type: 'A',
     emissionDate: new Date().toLocaleDateString(),
@@ -327,11 +316,7 @@ const defaultProps: IReceiptProps = {
     requireAccordance: false,
 };
 
-/**
- * 
- * Copies of the same invoice helper
- *  
- */
+
 export const getCopiesTitles = (copies: number) => {
     const titles: string[] = ['ORIGINAL', 'DUPLICADO', 'TRIPLICADO'];
     return titles.slice(0, Math.min(copies, titles.length));
@@ -339,38 +324,31 @@ export const getCopiesTitles = (copies: number) => {
 
 
 
-// Configuración de artículos por página
 const ARTICLES_PER_PAGE = 40;
 const MIN_SPACE_FOR_STUB = 20;
 
-/**
- * Individual Page component for a single invoice.
- * This can be reused in single or batch documents.
- */
+
 export const ReceiptPage = (props: IReceiptProps) => {
     const data = { ...defaultProps, ...props };
     const articles = data.articles || [];
     const lastArticlePage = Math.ceil(articles.length / ARTICLES_PER_PAGE);
 
-    // Lógica de espacio para el Stub:
-    // 1. Obtenemos cuántos artículos hay en la última página (si es 0 pero hay artículos, significa que la página está llena, ej: 40, 80...)
     const articlesInLastPage = articles.length % ARTICLES_PER_PAGE || (articles.length > 0 ? ARTICLES_PER_PAGE : 0);
-    // 2. Si hay más artículos de los que permite el espacio mínimo (40 - 20 = 20), forzamos el salto.
     const shouldBreakStub = props.requireAccordance && (articlesInLastPage > (ARTICLES_PER_PAGE - MIN_SPACE_FOR_STUB));
 
     return (
         <Page size="A4" style={styles.page}>
-            {/* This block is for the header of all the pages of the receipt */}
+
             <View fixed={true} render={({ subPageNumber }) => {
                 if (subPageNumber > lastArticlePage) return null;
                 return (
                     <>
-                        {/* Type Box (The A/B/C middle box) */}
+
                         <View style={styles.typeBox}>
                             <Text style={styles.typeText}>{data.type}</Text>
                         </View>
 
-                        {/* Header */}
+
                         <View style={styles.header}>
                             <View style={styles.headerLeft}>
                                 <Text style={styles.title}>{data.companyName}</Text>
@@ -385,9 +363,9 @@ export const ReceiptPage = (props: IReceiptProps) => {
                             </View>
                         </View>
 
-                        {/* Meta details section - Structured in Rows */}
+
                         <View style={styles.metaSection}>
-                            {/* Row 1: Primary Identity */}
+
                             <View style={styles.metaRow}>
                                 <View style={styles.metaColumnHalf}>
                                     <View style={styles.detailsRow}><Text style={styles.label}>Cliente:</Text><Text style={styles.value}>{data.client}</Text></View>
@@ -398,7 +376,7 @@ export const ReceiptPage = (props: IReceiptProps) => {
                                 </View>
                             </View>
 
-                            {/* Row 2: Location */}
+
                             <View style={styles.metaRow}>
                                 <View style={styles.metaColumnHalf}>
                                     <View style={styles.detailsRow}><Text style={styles.label}>Domicilio:</Text><Text style={styles.value}>{data.homeAddress}</Text></View>
@@ -409,7 +387,7 @@ export const ReceiptPage = (props: IReceiptProps) => {
                                 </View>
                             </View>
 
-                            {/* Row 3: Commercial Details */}
+
                             <View style={styles.metaRow}>
                                 <View style={styles.metaColumnHalf}>
                                     <View style={styles.detailsRow}><Text style={styles.label}>Catg. IVA:</Text><Text style={styles.value}>{data.IVACategory}</Text></View>
@@ -420,7 +398,7 @@ export const ReceiptPage = (props: IReceiptProps) => {
                                 </View>
                             </View>
 
-                            {/* Row 4: Canal & Reparto */}
+
                             <View style={styles.metaRow}>
                                 <View style={styles.metaColumnHalf}>
                                     <View style={styles.detailsRow}><Text style={styles.label}>Canal:</Text><Text style={styles.value}>{data.channel}</Text></View>
@@ -431,7 +409,7 @@ export const ReceiptPage = (props: IReceiptProps) => {
                                 </View>
                             </View>
 
-                            {/* Row 5: Zona & Pedido */}
+
                             <View style={styles.metaRow}>
                                 <View style={styles.metaColumnHalf}>
                                     <View style={styles.detailsRow}><Text style={styles.label}>Zona:</Text><Text style={styles.value}>{data.zone}</Text></View>
@@ -441,7 +419,7 @@ export const ReceiptPage = (props: IReceiptProps) => {
                                     <View style={styles.detailsRow}><Text style={styles.label}>Pedido:</Text><Text style={styles.value}>{data.order}</Text></View>
                                 </View>
                             </View>
-                            {/* Observations Row with Page Counter */}
+
                             <View style={styles.obsSection}>
                                 {data.observations && (
                                     <View style={{ paddingRight: 60 }}>
@@ -463,9 +441,9 @@ export const ReceiptPage = (props: IReceiptProps) => {
                     </>
                 )
             }} />
-            {/* End of the header of all the pages of the receipt */}
 
-            {/* Articles Table */}
+
+
             <View style={styles.tableHeader}>
                 <Text style={styles.colCode}>Cod.Art.</Text>
                 <Text style={styles.colDesc}>Descripción</Text>
@@ -494,7 +472,7 @@ export const ReceiptPage = (props: IReceiptProps) => {
             ))}
 
 
-            {/* Footer Summary Section */}
+
             <View fixed={true} style={styles.summarySection} render={(args: any) => {
                 const { subPageNumber, subPageTotalPages } = args;
                 if (subPageNumber > lastArticlePage) return null;
@@ -502,7 +480,7 @@ export const ReceiptPage = (props: IReceiptProps) => {
                 return (
                     <View style={styles.metaColumnFull}>
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', borderTopWidth: 1, borderTopColor: '#000', paddingTop: 5 }}>
-                            {/* Left Side: QR and Package Info */}
+
                             <View style={styles.footerLeft}>
                                 {data.qrCode && (
                                     <Image
@@ -520,7 +498,7 @@ export const ReceiptPage = (props: IReceiptProps) => {
                                 </View>
                             </View>
 
-                            {/* Right Side: Financial Breakdown */}
+
                             <View style={styles.footerInfo}>
                                 {(
                                     <>
@@ -558,7 +536,7 @@ export const ReceiptPage = (props: IReceiptProps) => {
 
             {data.requireAccordance && (
                 <View wrap={true} break={shouldBreakStub} style={shouldBreakStub ? { position: 'relative', minHeight: '100%' } : {}}>
-                    {/* Stub / Talonario Section */}
+
                     <View
                         style={[
                             styles.stubSection,
@@ -568,7 +546,7 @@ export const ReceiptPage = (props: IReceiptProps) => {
                         ]}
                         wrap={false}
                     >
-                        {/* Stub Header */}
+
                         <View style={styles.stubHeader}>
                             <View>
                                 <Text style={styles.title}>{data.receiptNumber}</Text>
@@ -583,7 +561,7 @@ export const ReceiptPage = (props: IReceiptProps) => {
                             </View>
                         </View>
 
-                        {/* Stub Meta Info */}
+
                         <View style={styles.metaSection}>
                             <View style={styles.metaRow}>
                                 <View style={styles.metaColumnHalf}>
@@ -619,7 +597,7 @@ export const ReceiptPage = (props: IReceiptProps) => {
                             </View>
                         </View>
 
-                        {/* Signature Section */}
+
                         <View style={styles.signatureRow}>
                             <View style={styles.signatureBox}>
                                 <Text style={{ fontSize: 8, marginTop: 2 }}>Firma</Text>
@@ -636,9 +614,7 @@ export const ReceiptPage = (props: IReceiptProps) => {
     );
 };
 
-/**
- * Single Invoice Template
- */
+
 const ReceiptTemplate = (props: IReceiptProps) => {
     const articles = generateArticles(Math.floor(Math.random() * 100) + 1)
     return (
@@ -648,15 +624,12 @@ const ReceiptTemplate = (props: IReceiptProps) => {
     );
 };
 
-/**
- * Batch Invoice Template
- */
+
 export const BatchReceiptTemplate = ({ invoices, copies }: { invoices: IReceiptProps[], copies: number }) => {
     return (
         <Document title="Lote de Facturas">
             {invoices.map((invoice, index) => {
                 const copyTitles = getCopiesTitles(copies);
-                // Random natural quantity of articles for testing pagination
                 const randomQty = Math.floor(Math.random() * 85) + 1;
                 const articles = generateArticles(randomQty);
                 return copyTitles.map((title, copyIndex) => {

@@ -7,7 +7,7 @@ import AddTransaction from './components/actions/addTransaction';
 import { useAccountBreadcrumbs } from './hooks/useAccountBreadcrumbs';
 
 interface IBreadcrumbsProps {
-    currentPath: string; // En este ERP, currentPath es el ID de la cuenta seleccionada
+    currentPath: string;
     onNavigate: (newPath: string | null) => void;
 }
 
@@ -23,7 +23,7 @@ const Breadcrumbs = ({ currentPath, onNavigate }: IBreadcrumbsProps) => {
             <nav className="flex justify-between items-center flex-wrap gap-y-2 gap-x-1 p-2 bg-primary-500 backdrop-blur-md border border-primary-500/10 rounded-dx">
                 <div className='w-full flex items-center justify-between'>
                     <div className='flex items-center flex-wrap'>
-                        {/* Botón de Inicio / Libro Mayor */}
+                        {}
                         <div
                             className="flex items-center gap-2 cursor-pointer group transition-all"
                             onClick={() => onNavigate(null)}
@@ -40,7 +40,7 @@ const Breadcrumbs = ({ currentPath, onNavigate }: IBreadcrumbsProps) => {
                             </span>
                         </div>
 
-                        {/* Path Dinámico reconstruido por jerarquía */}
+
                         {breadcrumbItems.map((account, index) => {
                             const isLast = index === breadcrumbItems.length - 1;
                             return (

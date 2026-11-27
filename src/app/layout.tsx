@@ -27,7 +27,6 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Resolve on the server so DEPLOY_ENV / APP_PORT work without NEXT_PUBLIC_*.
   const deploy = getDefaultDeployConfig();
 
   return (

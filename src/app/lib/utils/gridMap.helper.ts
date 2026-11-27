@@ -129,17 +129,14 @@ export const translateMapStructures = (locations: IFLocation[]): IMapStructureTr
     const groupRows = 3;
     const groupCols = unitsPerGroup * 3;
 
-    // Build blueprints with paths
     const blueprints: IGroupBlueprint[] = [];
 
     const getPathDepth = (path: string) => path === 'warehouse' ? 0 : path.split('.').length;
 
-    // Determinar profundidades exactas basándonos en los niveles detectados
     const subdivisionDepth = getPathDepth(keys[0]) + 1;
     const unitDepth = keys.length > 1 ? getPathDepth(keys[1]) + 1 : subdivisionDepth - 1;
     const groupDepth = keys.length > 2 ? getPathDepth(keys[2]) + 1 : unitDepth - 1;
 
-    // Encontrar todos los paths de grupos en el nivel correspondiente
     const groupPaths = locations
         .filter(loc => loc.path && getPathDepth(loc.path) === groupDepth)
         .map(loc => loc.path!);
@@ -199,7 +196,6 @@ export const cutPath = (path: string, zoneType: StructureType): string => {
     return path;
 }
 
-// ── Geometry Helpers ──────────────────────────────────────────────────────
 
 export interface IBoundingBox {
     minR: number;
@@ -303,7 +299,6 @@ export const getBlueprintBatchDimensions = (
     return { totalRows, maxCols, processed };
 };
 
-// ── Matrix Resize Helpers ─────────────────────────────────────────────────
 
 interface IMatrixDefaults {
     calles: any;
@@ -378,7 +373,6 @@ export const shrinkMatrixRange = (
 
 export { DEFAULT_MATRIX_VALUES };
 
-// ── Validation Helpers ────────────────────────────────────────────────────
 
 export interface IValidationContext {
     start: { row: number, col: number };

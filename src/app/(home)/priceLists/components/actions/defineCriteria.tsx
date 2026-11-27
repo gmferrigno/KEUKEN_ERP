@@ -16,12 +16,10 @@ export default function DefineCriteria({ onClose, product, onSave }: DefineCrite
     const [initialEnabledItems, setInitialEnabledItems] = useState<Record<string, boolean>>({});
     const [enabledItems, setEnabledItems] = useState<Record<string, boolean>>({});
 
-    // Initialize states when the selected product changes
     useEffect(() => {
         if (product?.items) {
             const initial: Record<string, boolean> = {};
             product.items.forEach(item => {
-                // Initialize as checked only if item state is 'Especifico'
                 initial[item.itemId] = item.state === 'Especifico';
             });
             setInitialEnabledItems(initial);
@@ -39,7 +37,6 @@ export default function DefineCriteria({ onClose, product, onSave }: DefineCrite
         }));
     };
 
-    // Detect if the current state differs from the initial state
     const hasChanges = useMemo(() => {
         return Object.keys(enabledItems).some(
             (key) => enabledItems[key] !== initialEnabledItems[key]
@@ -47,7 +44,6 @@ export default function DefineCriteria({ onClose, product, onSave }: DefineCrite
     }, [enabledItems, initialEnabledItems]);
 
     const handleCancel = () => {
-        // Reset state and close
         setEnabledItems(initialEnabledItems);
         onClose();
     };
@@ -61,7 +57,7 @@ export default function DefineCriteria({ onClose, product, onSave }: DefineCrite
 
     return (
         <div className="flex h-full flex-col bg-primary-950/95 border-l border-main/10 shadow-2xl backdrop-blur-md w-[450px]">
-            {/* Header */}
+            {}
             <div className="px-6 py-6 border-b border-main/10 flex items-start justify-between">
                 <div className="space-y-1">
                     <h2 className="text-xl font-semibold text-main">
@@ -81,7 +77,7 @@ export default function DefineCriteria({ onClose, product, onSave }: DefineCrite
                 </div>
             </div>
 
-            {/* Content */}
+            {}
             <ScrollView className="relative flex-1 w-full" showScrollbar="always">
                 <div className="px-6 py-6 h-full min-h-[100%]">
                     {product?.items && product.items.length > 0 ? (
@@ -110,7 +106,7 @@ export default function DefineCriteria({ onClose, product, onSave }: DefineCrite
                 </div>
             </ScrollView>
 
-            {/* Footer */}
+            {}
             <div className="px-6 py-6 border-t border-main/10 flex justify-end gap-x-3 bg-primary-950/50">
                 {hasChanges ? (
                     <>

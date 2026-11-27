@@ -7,7 +7,7 @@ const LocaleContext = createContext({
 });
 
 export const LocaleProvider : React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [locale, setLocale] = useState('en'); 
+    const [locale, setLocale] = useState('en');
 
     useEffect(() => {
         const savedLocale = localStorage.getItem('app_locale');
@@ -32,5 +32,4 @@ export const LocaleProvider : React.FC<{ children: React.ReactNode }> = ({ child
     );
 };
 
-// Custom hook for easy access
 export const useLocale = () => useContext(LocaleContext);

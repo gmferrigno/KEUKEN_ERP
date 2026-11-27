@@ -1,7 +1,4 @@
-/**
- * Reusable subdivision grid preview.
- * Used in both SelectMenu (read-only preview) and InternalStructure (editor preview).
- */
+
 const SubdivisionGrid = ({ rows, cols }: { rows: number; cols: number }) => (
     <div className="relative aspect-square w-full bg-primary-900/60 rounded-dx border border-main/5 overflow-hidden p-2 flex items-center justify-center group/grid">
         <div

@@ -41,7 +41,7 @@ export const AddMembersModal: React.FC<AddMembersModalProps> = ({
 
     useEffect(() => {
         if (isOpen) {
-            setGridKey(prev => prev + 1); // Fuerza el re-montaje limpio de la grilla (resetea paginación, filtros y estado interno)
+            setGridKey(prev => prev + 1);
             setSelectedIds([]);
             setIsSubmitting(false);
         }
@@ -75,7 +75,6 @@ export const AddMembersModal: React.FC<AddMembersModalProps> = ({
                 }
             },
             byKey: async (key: any) => {
-                // Obligatorio para que DevExtreme preserve la selección entre páginas con paginación remota
                 return { id: key };
             }
         });
@@ -147,7 +146,6 @@ export const AddMembersModal: React.FC<AddMembersModalProps> = ({
                         showCheckBoxesMode: 'always'
                     }}
                     onSelectionChanged={(e) => {
-                        // Extraemos la selección directamente del estado nativo de DevExtreme para el botón
                         setSelectedIds(e.selectedRowKeys || []);
                     }}
                     showBorders={true}

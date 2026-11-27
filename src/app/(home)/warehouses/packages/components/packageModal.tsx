@@ -26,7 +26,7 @@ export default function PackageModal({ isOpen, onClose, onSuccess, onHidden }: P
     const { token, currentCompany } = useAuth();
     const formRef = useRef<any>(null);
     const [loading, setLoading] = useState(false);
-    /** Solo se setea al abrir; DX muta el objeto en escritura */
+
     const [formData, setFormData] = useState(emptyForm);
 
     useEffect(() => {

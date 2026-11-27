@@ -161,7 +161,7 @@ const ProviderDetailModal = ({ isOpen, onClose, provider }: ProviderDetailModalP
                             </GroupItem>
                         </Form>
 
-                        {/* Meta information */}
+                        {}
                         <div className="border-t border-main/10 pt-4 flex justify-between text-xs text-main/40 font-medium">
                             <span>Creado: {showLoading ? "Cargando..." : formatDate(fullProvider?.createdAt)}</span>
                             <span>Actualizado: {showLoading ? "Cargando..." : formatDate(fullProvider?.updatedAt)}</span>

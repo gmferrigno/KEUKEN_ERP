@@ -26,7 +26,6 @@ export const useTranslation = () => {
     return { t, locale };
 };
 
-// Fallback function for non-component usage (defaults to 'es')
 export const t = (key: string, locale: string = 'es'): string => {
     const keys = key.split('.');
     let value: any = translations[locale];

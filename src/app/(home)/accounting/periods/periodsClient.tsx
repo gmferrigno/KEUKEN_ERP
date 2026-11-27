@@ -2,7 +2,7 @@
 
 import { periodsService } from "@repo/erp-services/accountant/periods.service";
 import { IFPeriod } from "@repo/api-contracts/erp";
-import { GenericDataGrid, IGenericDataGridColumn } from '@repo/devextreme';
+import { escapeHtml, escapeHtmlValue, GenericDataGrid, IGenericDataGridColumn  } from '@repo/devextreme';
 import { useAuth } from "@/contexts/AuthContext";
 import { createGridStateStorage } from "@/lib/storage/gridStateStorage";
 import CustomStore from "devextreme/data/custom_store";
@@ -87,7 +87,7 @@ const PeriodsClient = () => {
                 const isClosed = state === 'closed';
                 const label = isClosed ? 'Cerrado' : 'Abierto';
                 const textClass = isClosed ? 'text-focus-500' : 'text-focus-300';
-                container.innerHTML = `<span class="text-xs font-medium ${textClass}">${label}</span>`;
+                container.innerHTML = `<span class="text-xs font-medium ${textClass}">${escapeHtmlValue(label)}</span>`;
             }
         }
     ], []);

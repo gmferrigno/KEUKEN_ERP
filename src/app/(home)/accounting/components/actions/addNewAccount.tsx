@@ -107,7 +107,7 @@ export default function AddNewAccount({ isOpen, onClose, parentId }: AddNewAccou
             className="rounded-dx"
         >
             <div className="flex flex-col gap-4 p-2">
-                {/* Visual Path Display */}
+
                 <div className="flex flex-col gap-2">
                     {computedPathDisplay.length > 0 ? (
                         <div className="text-xs text-main/50 flex items-center flex-wrap gap-y-1">

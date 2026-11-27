@@ -3,7 +3,7 @@ import { mutateMatrixArea } from "../utils/gridMap.helper";
 
 export const defaultBoxInteraction: IStructureActions = {
     onPointerDown: (ctx, config) => {
-        if (ctx.e.evt.button !== 0) return; // Only target left click
+        if (ctx.e.evt.button !== 0) return;
         const stage = ctx.e.target.getStage();
         const pointerPos = stage.getRelativePointerPosition();
         const col = Math.floor(pointerPos.x / ctx.canvaSize) + 1;
@@ -21,7 +21,6 @@ export const defaultBoxInteraction: IStructureActions = {
         let targetCol = Math.floor(pointerPos.x / ctx.canvaSize) + 1;
         let targetRow = Math.floor(pointerPos.y / ctx.canvaSize) + 1;
 
-        // Snapping logic based on structure minSize
         const snapFactor = config.minSize;
 
         const diffR = Math.abs(targetRow - ctx.selectionStart.row) + 1;
@@ -36,7 +35,6 @@ export const defaultBoxInteraction: IStructureActions = {
             ? ctx.selectionStart.col + snappedDiffC - 1
             : ctx.selectionStart.col - snappedDiffC + 1;
 
-        // Max Size limit logic
         if (config.maxSize) {
             const currentDR = Math.abs(snappedRow - ctx.selectionStart.row) + 1;
             const currentDC = Math.abs(snappedCol - ctx.selectionStart.col) + 1;
@@ -52,7 +50,6 @@ export const defaultBoxInteraction: IStructureActions = {
             }
         }
 
-        // Boundary safety
         const row = Math.max(1, Math.min(ctx.rows, snappedRow));
         const col = Math.max(1, Math.min(ctx.cols, snappedCol));
 
@@ -149,7 +146,6 @@ export const MAP_STRUCTURES: Record<StructureType, IStructureConfig> = {
 
                     for (let r = minR; r <= maxR; r++) {
                         for (let c = minC; c <= maxC; c++) {
-                            // Validar que la celda origen no sea parte de un Grupo o Unidad, EXCEPTO que sea el BORDE de la estructura.
                             const currentZones = ctx.zonesByLevel[ctx.targetLvlToAdd] || [];
                             const isInternalToStructure = currentZones.some(z => {
                                 if (z.type === 'Area') return false;
@@ -161,14 +157,12 @@ export const MAP_STRUCTURES: Record<StructureType, IStructureConfig> = {
                                 const isCellInside = r >= zMinR && r <= zMaxR && c >= zMinC && c <= zMaxC;
                                 if (!isCellInside) return false;
 
-                                // La celda está dentro de la estructura. Verificamos si estamos intentando colocar un muro
-                                // que "corta" la estructura en lugar de en su borde.
                                 if (ctx.activeWalls.up && r > zMinR) return true;
                                 if (ctx.activeWalls.down && r < zMaxR) return true;
                                 if (ctx.activeWalls.left && c > zMinC) return true;
                                 if (ctx.activeWalls.right && c < zMaxC) return true;
 
-                                return false; // Es un borde válido
+                                return false;
                             });
 
                             if (isInternalToStructure) {
@@ -185,7 +179,6 @@ export const MAP_STRUCTURES: Record<StructureType, IStructureConfig> = {
 
                     const nextMuros = { ...prevMuros, [ctx.targetLvlToAdd]: nextLevel };
 
-                    // Sincronizar direcciones en el área expandida (incluyendo limitrofes)
                     ctx.setDirectionsMatrix((prevDirs: any) => {
                         const startWithNeighbors = { row: Math.max(1, minR - 1), col: Math.max(1, minC - 1) };
                         const endWithNeighbors = { row: Math.min(ctx.rows || 100, maxR + 1), col: Math.min(ctx.cols || 100, maxC + 1) };
@@ -260,7 +253,7 @@ export const DEFAULT_SHAPE = {
         const py = y + pads.top;
         const w = width - (pads.left + pads.right);
         const h = height - (pads.top + pads.bottom);
-        const r = 4; // cornerRadius
+        const r = 4;
 
         context.beginPath();
         if (w < 2 * r || h < 2 * r) {
@@ -279,7 +272,6 @@ export const DEFAULT_SHAPE = {
         }
         context.fillStrokeShape(shape);
 
-        // Renderización de Grillas Internas
         GRID_CONFIG.drawInternalGrid(
             context, px, py, w, h, x, y, width, height, pads,
             subdivisions, innerGridSize, canvaSize
@@ -390,7 +382,6 @@ export const GRID_CONFIG = {
         innerGridSize?: number,
         canvaSize?: number
     ) => {
-        // Renderización de Subdivisiones Internas (Cortes)
         if (subdivisions && subdivisions.rows > 0 && subdivisions.cols > 0) {
             context.beginPath();
             context.setLineDash([]);
@@ -399,13 +390,11 @@ export const GRID_CONFIG = {
 
             const { rows: sRows, cols: sCols } = subdivisions;
 
-            // Cortes Verticales
             for (let i = 1; i < sCols; i++) {
                 const lx = px + (i * w) / sCols;
                 context.moveTo(lx, py);
                 context.lineTo(lx, py + h);
             }
-            // Cortes Horizontales
             for (let i = 1; i < sRows; i++) {
                 const ly = py + (i * h) / sRows;
                 context.moveTo(px, ly);
@@ -414,7 +403,6 @@ export const GRID_CONFIG = {
             context.stroke();
         }
 
-        // Renderización de Grilla Interna (Segmentación)
         if (innerGridSize && innerGridSize > 0 && canvaSize) {
             context.beginPath();
             context.setLineDash([2, 5]);
@@ -422,7 +410,6 @@ export const GRID_CONFIG = {
             context.lineWidth = 0.5;
             const step = innerGridSize * canvaSize;
 
-            // Alineación con la grilla global
             const startX = step - (x % step);
             for (let lx = startX; lx < width - pads.right; lx += step) {
                 if (lx > pads.left) {

@@ -54,7 +54,6 @@ const CustomersClient = () => {
     const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
     const [refreshVersion, setRefreshVersion] = useState(0);
 
-    // Refetch reactivo cuando cambia el switch de RecoveryMode o RecoveryVisibility
     useEffect(() => {
         setRefreshVersion(prev => prev + 1);
         if (gridRef.current?.instance?.refresh) {

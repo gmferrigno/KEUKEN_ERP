@@ -28,19 +28,19 @@ export default function HomeLayout({
             <section className="h-screen w-screen flex flex-col overflow-hidden">
               <DevExtremeIntlBridge />
               <Box direction="row" width="100%" height="100%">
-                {/* Sidebar */}
+                {}
                 <Item ratio={0} baseSize="auto">
                   <Sidebar initialRoutes={routes} />
                 </Item>
 
-                {/* Main Content Area */}
+                {}
                 <Item ratio={1}>
                   <Box direction="col" width="100%" height="100%">
-                    {/* Header */}
+                    {}
                     <Item ratio={0} baseSize="56px">
                       <Header routes={routes} />
                     </Item>
-                    {/* Main Content */}
+                    {}
                     <Item ratio={1}>
                       <div className="h-full w-full overflow-y-auto flex flex-col relative bg-primary-950/80 backdrop-blur-sm p-4">
                         <LicenseGraceStatusClient>
@@ -48,7 +48,7 @@ export default function HomeLayout({
                         </LicenseGraceStatusClient>
                       </div>
                     </Item>
-                    {/* Footer */}
+                    {}
                     <Item ratio={0} baseSize="31px">
                       <div className="h-full w-full relative flex items-center">
                         <Footer />

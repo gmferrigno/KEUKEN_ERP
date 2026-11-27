@@ -133,7 +133,6 @@ export default function MetadataFieldsClient({
 
     const isFormReadOnly = readOnly || (canEdit ? !isEditing : false);
 
-    // Actualizar la propiedad readOnly de cada editor NATIVAMENTE sin regenerar editorOptionsMap para evitar saltos de scroll
     useEffect(() => {
         if (formRef.current && (attributes || []).length > 0) {
             (attributes || []).forEach(attr => {
@@ -198,7 +197,6 @@ export default function MetadataFieldsClient({
         return groupsMap;
     }, [visibleAttributes]);
 
-    // Mantener la referencia de editorOptionsMap 100% estable excluyendo isEditing de sus dependencias
     const editorOptionsMap = useMemo(() => {
         const map: Record<string, any> = {};
         visibleAttributes.forEach(attr => {
@@ -224,7 +222,6 @@ export default function MetadataFieldsClient({
         }
     }, [onChange]);
 
-    // Memoizar el árbol JSX del Formulario para que no se re-renderice al cambiar estados de cabecera (isEditing, isSaving, etc.)
     const formContent = useMemo(() => {
         if (visibleAttributes.length === 0) {
             return <MetadataEmptyState />;
@@ -238,7 +235,7 @@ export default function MetadataFieldsClient({
                 labelLocation="top"
                 onFieldDataChanged={handleFieldDataChanged}
             >
-                {/* Atributos no agrupados */}
+
                 {unGroupedAttrs.map(attr => {
                     const attrName = attr.name || attr.code;
                     return (
@@ -254,7 +251,7 @@ export default function MetadataFieldsClient({
                     );
                 })}
 
-                {/* Pestañas (tabs) */}
+
                 {mode === "tabs" && (groups || []).length > 0 ? (
                     <TabbedItem tabPanelOptions={{ deferRendering: false }}>
                         {(groups || []).map(g => {
@@ -281,7 +278,7 @@ export default function MetadataFieldsClient({
                         })}
                     </TabbedItem>
                 ) : (
-                    /* Grupos normales */
+
                     (groups || []).map(g => {
                         const groupAttrs = attrsByGroup[g.code] || [];
                         if (groupAttrs.length === 0) return null;
@@ -311,12 +308,12 @@ export default function MetadataFieldsClient({
 
     return (
         <div className="metadata-fields-container flex flex-col">
-            {/* Cabecera */}
+
             <div className="flex justify-between items-center">
                 {title && <h4 className="text-sm font-semibold text-main">{title}</h4>}
 
                 <div className="flex items-center gap-2">
-                    {/* Botón de toggle (si se provee onToggle) */}
+
                     {onToggle && !isEditing && (
                         <Button
                             icon={isToggled && !loading && !error && visibleAttributes.length === 0 ? "refresh" : "fields"}
@@ -336,7 +333,7 @@ export default function MetadataFieldsClient({
                         />
                     )}
 
-                    {/* Botones de Guardar/Edición (si no es readOnly y se muestran los campos) */}
+
                     {!readOnly && (!onToggle || isToggled) && !loading && !error && visibleAttributes.length > 0 && (
                         <div>
                             {canEdit ? (
@@ -385,7 +382,7 @@ export default function MetadataFieldsClient({
                 </div>
             </div>
 
-            {/* Contenido condicional al toggle */}
+
             {(!onToggle || isToggled) && (
                 <div className="mt-3">
                     {loading ? (

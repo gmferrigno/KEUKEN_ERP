@@ -40,7 +40,6 @@ const CashRegistersClient = () => {
   const [allRegisters, setAllRegisters] = useState<IFCashRegister[]>([]);
   const [registerTypes, setRegisterTypes] = useState<IFCashRegisterType[]>([]);
 
-  // Refetch reactivo cuando cambia el switch de RecoveryMode o RecoveryVisibility
   useEffect(() => {
     setRefreshVersion((prev) => prev + 1);
     if (gridRef.current?.instance?.refresh) {

@@ -27,8 +27,7 @@ let periodsPromise: Record<string, Promise<IFPeriod[]> | undefined> = {};
 const CustomToolbarDateFilter = ({ onRangeChange, selectedPeriod: externalSelectedPeriod, onPeriodChange }: CustomToolbarDateFilterProps) => {
     const { token, currentCompany } = useAuth();
     const [periods, setPeriods] = useState<IFPeriod[]>([]);
-    
-    // Soporte para estado controlado por contexto, por props o interno
+
     const context = useContext(PeriodFilterContext);
     const [internalSelectedPeriod, setInternalSelectedPeriod] = useState<string | null>(null);
 
@@ -39,7 +38,6 @@ const CustomToolbarDateFilter = ({ onRangeChange, selectedPeriod: externalSelect
     const activePeriodRef = useRef(activePeriod);
     activePeriodRef.current = activePeriod;
 
-    // Fetch inicial de periodos con cache
     useEffect(() => {
         if (!token || !currentCompany?.id) return;
 
@@ -50,7 +48,6 @@ const CustomToolbarDateFilter = ({ onRangeChange, selectedPeriod: externalSelect
             if (!isMounted) return;
             setPeriods(res);
 
-            // Si al cargar no hay ninguno seleccionado, elegimos por defecto
             if (!activePeriodRef.current) {
                 const today = new Date();
                 const current = res.find(p => {
@@ -87,7 +84,6 @@ const CustomToolbarDateFilter = ({ onRangeChange, selectedPeriod: externalSelect
         };
     }, [token, currentCompany?.id, setActivePeriod]);
 
-    // Avisar al padre cuando cambia el periodo activo
     useEffect(() => {
         if (activePeriod && periods.length > 0) {
             const period = periods.find(p => p.id === activePeriod);
@@ -107,7 +103,6 @@ const CustomToolbarDateFilter = ({ onRangeChange, selectedPeriod: externalSelect
             displayExpr="name"
             value={activePeriod}
             onValueChanged={(e) => {
-                // Previene el bug de DevExtreme: si la data aún no carga, evita que intente limpiar el valor a null
                 if (periods.length === 0 && e.value === null) return;
                 setActivePeriod(e.value);
             }}

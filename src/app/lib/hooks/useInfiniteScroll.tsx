@@ -49,7 +49,6 @@ export function useInfiniteScroll<T>(
         try {
             const { data: newItems, total } = await fetchData(pageNum, currentParams);
 
-            // Ignore stale responses
             if (requestId !== lastRequestId.current) return;
 
             setTotalItems(total);

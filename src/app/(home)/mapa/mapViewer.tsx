@@ -27,7 +27,6 @@ const MapContainer: React.FC = () => {
   useEffect(() => {
     initializeMap();
 
-    // Marcador de prueba utilizando la iconografía unificada de @repo/icons
     handleMarkers({
       id: 'demo-marker',
       pointData: {
@@ -43,7 +42,6 @@ const MapContainer: React.FC = () => {
       target: { current: {} },
     });
 
-    // Polígono de prueba inicial
     createPolygon({
       id: 'demo-zone',
       points: [
@@ -63,7 +61,6 @@ const MapContainer: React.FC = () => {
       tooltipLabel: 'Zona Demo ERP #1',
     });
 
-    // Escuchar eventos de dibujo para sincronizar el estado del menú flotante
     const map = mapRef.current;
     if (map) {
       const handleCreated = () => {
@@ -78,7 +75,6 @@ const MapContainer: React.FC = () => {
     }
   }, [initializeMap, handleMarkers, createPolygon, mapRef]);
 
-  // Acciones de creación de zonas
   const handleStartDraw = () => {
     if (drawControl.current) {
       setIsDrawing(true);
@@ -146,7 +142,7 @@ const MapContainer: React.FC = () => {
     <div id="map-wrapper" className="relative w-full h-[calc(100vh-140px)] min-h-[500px] rounded-lg overflow-hidden border border-border shadow-xs">
       <div ref={mapContainerRef} className="w-full h-full" />
 
-      {/* Menú flotante móvil con DevExtreme */}
+
       <Popup
         visible={true}
         dragEnabled={true}

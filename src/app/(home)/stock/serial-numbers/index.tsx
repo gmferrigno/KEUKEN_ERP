@@ -8,7 +8,7 @@ import { canDo } from "@repo/access";
 
 import { useAuth } from "@/contexts/AuthContext";
 import { useMemo, useRef, useState, useCallback, useEffect } from "react";
-import { GenericDataGrid, IGenericDataGridColumn, SelectBox } from '@repo/devextreme';
+import { GenericDataGrid, HeaderSelectBox, IGenericDataGridColumn } from '@repo/devextreme';
 import GenericEmpty from "@/components/GenericEmpty";
 import CustomStore from "devextreme/data/custom_store";
 import CheckBox from "devextreme-react/check-box";
@@ -45,7 +45,6 @@ const SerialNumbersClient = () => {
     return permissions ? canDo('modify', PERMISSIONS_CONSTANTS.modifyStock, permissions) : false;
   }, [permissions, isSuperAdmin]);
 
-  // Refetch reactivo cuando cambia el switch de RecoveryMode, RecoveryVisibility o includeInactive
   useEffect(() => {
     setRefreshVersion(prev => prev + 1);
     if (gridRef.current?.instance?.refresh) {
@@ -233,7 +232,7 @@ const SerialNumbersClient = () => {
         <div className="w-full flex flex-col items-end justify-between">
           <div className="flex w-full items-center">
             <div className="w-full">
-              <SelectBox
+              <HeaderSelectBox
                 dataSource={items}
                 valueExpr="id"
                 displayExpr="label"
@@ -243,7 +242,6 @@ const SerialNumbersClient = () => {
                 searchEnabled={true}
                 showClearButton={true}
                 stylingMode="filled"
-                elementAttr={{ class: "rounded-dx" }}
               />
             </div>
           </div>

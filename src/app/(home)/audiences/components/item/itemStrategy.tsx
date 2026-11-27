@@ -11,7 +11,6 @@ import { ITEMS_ORGIN_LABELS } from "@/app/lib/constants/audiences.constants";
 export const itemStrategy: IClusterStrategy<IFItemCluster, any, IFItemRuleSet> = {
     entityType: 'item',
 
-    // Labels & Textos
     entityLabel: {
         singular: 'ítem',
         plural: 'ítems',
@@ -27,7 +26,6 @@ export const itemStrategy: IClusterStrategy<IFItemCluster, any, IFItemRuleSet> =
     membersExportFileName: 'Miembros_Items',
     emptySelectDescription: 'Seleccione un clúster de ítems en el desplegable superior para ver y gestionar sus miembros.',
 
-    // CRUD Clúster
     getById: (id, token, companyId) => itemClustersService.getById(id, token, companyId),
     update: (id, data, token, companyId) => itemClustersService.update(id, data, token, companyId),
     delete: (id, token, companyId) => itemClustersService.delete(id, token, companyId),
@@ -64,7 +62,6 @@ export const itemStrategy: IClusterStrategy<IFItemCluster, any, IFItemRuleSet> =
         return { detail: "Clúster de ítems creado exitosamente" };
     },
 
-    // Miembros del Clúster
     membersKeyExpr: 'itemId',
     membersColumns: [
         {
@@ -102,7 +99,6 @@ export const itemStrategy: IClusterStrategy<IFItemCluster, any, IFItemRuleSet> =
     removeMembers: (clusterId, memberIds, token, companyId) =>
         itemClustersService.removeMembers(clusterId, memberIds, token, companyId),
 
-    // Selección para Añadir Miembros
     addMembersColumns: [
         {
             dataField: 'id',
@@ -134,14 +130,12 @@ export const itemStrategy: IClusterStrategy<IFItemCluster, any, IFItemRuleSet> =
     addMembers: (clusterId, memberIds, token, companyId) =>
         itemClustersService.addMembers(clusterId, memberIds, token, companyId),
 
-    // Exclusión
     supportsExclusion: true,
     excludeMember: (clusterId, memberId, token, companyId) =>
         itemClustersService.excludeMember(clusterId, memberId, token, companyId),
     includeMember: (clusterId, memberId, token, companyId) =>
         itemClustersService.includeMember(clusterId, memberId, token, companyId),
 
-    // Reglas Dinámicas
     supportsRules: true,
     supportsPreview: false,
     supportsSummary: false,
@@ -166,7 +160,6 @@ export const itemStrategy: IClusterStrategy<IFItemCluster, any, IFItemRuleSet> =
         return { isValid: true };
     },
 
-    // Métricas y Refresco
     refreshCluster: (clusterId, token, companyId) =>
         clusterRulesService.refreshItemCluster(clusterId, companyId, token),
 };

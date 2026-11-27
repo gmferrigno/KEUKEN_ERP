@@ -1,4 +1,3 @@
-// ESTE ARCHIVO ES GENERADO AUTOMÁTICAMENTE. NO EDITAR.
 export const ROUTES = [
   {
     "id": "(account)/activate",

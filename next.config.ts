@@ -1,6 +1,5 @@
 import type { NextConfig } from "next";
 
-// Prefer explicit NEXT_PUBLIC_* (client-safe). Fall back to server-style names.
 const themeSheet =
   process.env.NEXT_PUBLIC_THEME_SHEET ||
   process.env.THEME_SHEET ||
@@ -13,8 +12,6 @@ const appBrand =
 
 const nextConfig: NextConfig = {
   output: "standalone",
-  /* config options here */
-  // Expose both names so packages/ui and app code resolve the same values.
   env: {
     THEME_SHEET: themeSheet,
     APP_BRAND: appBrand,
@@ -30,12 +27,24 @@ const nextConfig: NextConfig = {
   reactCompiler: true,
   logging: {
     fetches: {
-      fullUrl: true, // Muestra la URL completa para identificar mejor la request
+      fullUrl: false,
     },
   },
-  productionBrowserSourceMaps: true,
+  productionBrowserSourceMaps: false,
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
+  },
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+        ],
+      },
+    ];
   },
   async rewrites() {
     return [

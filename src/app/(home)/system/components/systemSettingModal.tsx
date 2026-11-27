@@ -125,7 +125,6 @@ const SystemSettingModal = ({ isOpen, onClose, onSuccess, initialData }: SystemS
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [formData, initialData?.key, onClose, onSuccess, token]);
 
-    // Determines value editor options based on secret, read-only and data-type
     const getValueEditorOptions = () => {
         const baseOptions: Record<string, unknown> = {
             stylingMode: 'filled',

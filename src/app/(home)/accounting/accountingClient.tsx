@@ -64,9 +64,7 @@ const AccountingClient = () => {
                             </SplitterItem>
                         </Splitter>
                     </div>
-                    {/* <div className="shrink-0 pb-2">
-                        <Timeline />
-                    </div> */}
+
                 </div>
             </div>
         </>

@@ -7,7 +7,7 @@ import PERMISSIONS_CONSTANTS from "@repo/access";
 import { canDo } from "@repo/access";
 import { locationService } from "@repo/erp-services/warehouse/locations.service";
 import { IFLocation, IFLocationSeachParams } from "@repo/api-contracts/erp";
-import { GenericDataGrid, IGenericDataGridColumn, Button } from '@repo/devextreme';
+import { escapeHtml, escapeHtmlValue, GenericDataGrid, IGenericDataGridColumn, Button  } from '@repo/devextreme';
 import { useAuth } from "@/contexts/AuthContext";
 import { useLocations } from "@/contexts/LocationsContext";
 import { Template } from "devextreme-react/core/template";
@@ -188,7 +188,7 @@ const LocationsList = ({ warehouseId, currentParentId, onSelectLocation }: Locat
                 container.innerHTML = `
                     <div class="flex items-center gap-2">
                         <i class="dx-icon-folder text-sm text-focus-400"></i>
-                        <span class="font-bold">${options.value}</span>
+                        <span class="font-bold">${escapeHtmlValue(options.value)}</span>
                     </div>
                 `;
             }
@@ -239,7 +239,7 @@ const LocationsList = ({ warehouseId, currentParentId, onSelectLocation }: Locat
                 }
                 container.innerHTML = `
                     <div class="flex items-center justify-center gap-1.5">
-                        <span class="font-medium">${areaName}</span>
+                        <span class="font-medium">${escapeHtmlValue(areaName)}</span>
                     </div>
                 `;
             }

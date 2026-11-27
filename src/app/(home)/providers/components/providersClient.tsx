@@ -67,7 +67,6 @@ const ProvidersClient = () => {
         }
     };
 
-    // Refetch reactivo cuando cambia el switch de RecoveryMode o RecoveryVisibility
     useEffect(() => {
         handleSuccess();
     }, [isRecoveryMode, recoveryVisibility]);
@@ -138,8 +137,8 @@ const ProvidersClient = () => {
                     };
                 } catch (error: any) {
                     console.error('Error loading providers:', error);
-                    const errorMessage = error instanceof Error && error.message 
-                        ? error.message 
+                    const errorMessage = error instanceof Error && error.message
+                        ? error.message
                         : 'Error al cargar los proveedores';
                     notify(errorMessage, 'error', 3000);
                     return {

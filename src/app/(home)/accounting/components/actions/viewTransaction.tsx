@@ -65,7 +65,7 @@ const ViewTransaction: React.FC<ViewTransactionProps> = ({ visible, onClose, mov
             <div className="p-2 min-h-[300px]">
                 <>
                     <div className="relative flex items-center justify-between bg-gradient-to-r from-primary-900/60 to-primary-900/20 p-4 pl-5 rounded-dx border border-primary-500/10 mb-4 shadow-sm overflow-hidden">
-                        {/* Accent line */}
+                        {}
                         <div className="absolute left-0 top-0 bottom-0 w-1 bg-focus-500/80"></div>
 
                         <div className="flex flex-col gap-1.5">
@@ -108,7 +108,7 @@ const ViewTransaction: React.FC<ViewTransactionProps> = ({ visible, onClose, mov
 
                         <div className="pr-1">
                             <div className="grid grid-cols-[1fr_auto_1fr] gap-4">
-                                {/* Debe */}
+                                {}
                                 <div className="flex flex-col min-h-60 max-h-60 overflow-y-auto bg-primary-950/50 rounded-dx border border-primary-500/10">
                                     <div className="sticky top-0 z-10 bg-primary-950 flex flex-col rounded-t-dx shadow-sm">
                                         <div className="flex justify-between items-center border-b border-main/10 p-2">
@@ -133,7 +133,7 @@ const ViewTransaction: React.FC<ViewTransactionProps> = ({ visible, onClose, mov
 
                                 <div className="border-l border-main/10 h-full"></div>
 
-                                {/* Haber */}
+                                {}
                                 <div className="flex flex-col min-h-60 max-h-60 overflow-y-auto bg-primary-950/50 rounded-dx border border-primary-500/10">
                                     <div className="sticky top-0 z-10 bg-primary-950 flex flex-col rounded-t-dx shadow-sm">
                                         <div className="flex justify-between items-center border-b border-main/10 p-2">

@@ -17,9 +17,7 @@ export default async function MetadataFields({
     error,
     initialValues,
 }: IFMetadataFieldsProps) {
-    
-    // Si no hay entityId, por convención de la guía no mostramos el formulario
-    // y devolvemos un mensaje o null.
+
     if (!entityId) {
         return (
             <div className="p-4 border border-dashed rounded text-gray-500 text-sm">
@@ -36,7 +34,6 @@ export default async function MetadataFields({
     }
 
     try {
-        // Ejecutamos las llamadas en paralelo para optimizar tiempo
         const [attributes, groups, initialFetchedValues] = await Promise.all([
             metadataService.getAttributes(entityType, token, true),
             metadataService.getGroups(entityType, token),
@@ -44,7 +41,7 @@ export default async function MetadataFields({
         ]);
 
         return (
-            <MetadataFieldsClient 
+            <MetadataFieldsClient
                 entityType={entityType}
                 entityId={entityId}
                 title={title}

@@ -3,7 +3,7 @@
 import PERMISSIONS_CONSTANTS from "@repo/access";
 import { canDo } from "@repo/access";
 
-import { GenericDataGrid, IGenericDataGridColumn, SelectBox } from '@repo/devextreme';
+import { GenericDataGrid, HeaderSelectBox, IGenericDataGridColumn } from '@repo/devextreme';
 import GenericEmpty from "@/components/GenericEmpty";
 import { useAuth } from "@/contexts/AuthContext";
 import { createGridStateStorage } from "@/lib/storage/gridStateStorage";
@@ -43,7 +43,6 @@ const MetadataClient = () => {
         return permissions ? canDo('modify', PERMISSIONS_CONSTANTS.modifyProviders, permissions) : false;
     }, [permissions, isSuperAdmin]);
 
-    // Fetch groups for lookup and for modal
     useEffect(() => {
         const fetchGroups = async () => {
             if (!token || !selectedEntityType) return;
@@ -216,11 +215,11 @@ const MetadataClient = () => {
     return (
         <div className="flex flex-col w-full min-w-full h-full rounded-dx font-sans overflow-hidden">
             <div className="w-full h-full flex flex-col gap-y-2">
-                {/* Selector */}
+                {}
                 <div className="w-full flex flex-col items-end justify-between">
                     <div className="flex w-full items-center gap-4">
                         <div className="w-full">
-                            <SelectBox
+                            <HeaderSelectBox
                                 dataSource={entityTypes}
                                 valueExpr="id"
                                 displayExpr="name"
@@ -230,13 +229,12 @@ const MetadataClient = () => {
                                 searchEnabled={true}
                                 showClearButton={true}
                                 stylingMode="filled"
-                                elementAttr={{ class: "rounded-dx" }}
                             />
                         </div>
                     </div>
                 </div>
 
-                {/* Grid o Empty State */}
+                {}
                 <div className="w-full flex-1 min-h-0 flex flex-col">
                     {selectedEntityType ? (
                         <GenericDataGrid

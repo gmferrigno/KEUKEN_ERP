@@ -18,7 +18,6 @@ export default function Breadcrumb({ routes }: BreadcrumbProps) {
     const router = useRouter();
     const segments = pathname.split('/').filter(Boolean);
 
-    // Si la ruta actual forma parte de la blacklist, ocultamos el Breadcrumb por completo
     if (segments.some(seg => IGNORED_ROUTE_KEYS.includes(seg))) {
         return null;
     }

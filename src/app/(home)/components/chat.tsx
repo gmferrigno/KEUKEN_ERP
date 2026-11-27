@@ -37,7 +37,6 @@ const ChatAI = () => {
         setInput("");
         setIsTyping(true);
 
-        // Simulate AI response
         setTimeout(() => {
             const aiResponse: Message = {
                 id: (Date.now() + 1).toString(),

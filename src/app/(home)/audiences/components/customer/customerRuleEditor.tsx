@@ -193,7 +193,7 @@ export const CustomerRuleEditor: React.FC<CustomerRuleEditorProps> = ({
 
     return (
         <div className="flex flex-col gap-4">
-            {/* Header del Combinador y Universo */}
+            {}
             <div className="flex flex-col gap-3 p-3 bg-main/5 border border-main/10 rounded-dx">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="flex items-center gap-2 justify-between w-full">
@@ -265,7 +265,7 @@ export const CustomerRuleEditor: React.FC<CustomerRuleEditorProps> = ({
                 </div>
             </div>
 
-            {/* Lista de Predicados */}
+
             <div className="flex flex-col gap-3">
                 <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-main">
@@ -339,7 +339,7 @@ export const CustomerRuleEditor: React.FC<CustomerRuleEditorProps> = ({
                                 )}
                             </div>
 
-                            {/* Controles según tipo de regla */}
+
                             {predicate.type === "purchase_exists" && (
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                                     <div className="flex flex-col gap-1">
@@ -625,7 +625,7 @@ export const CustomerRuleEditor: React.FC<CustomerRuleEditorProps> = ({
                 )}
             </div>
 
-            {/* Botón inferior Agregar Regla */}
+
             {!disabled && (
                 <div className="flex flex-col items-start gap-1 pt-1">
                     <Button

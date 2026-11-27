@@ -26,25 +26,19 @@ export const DEFAULT_COMBO_DESCRIPTIONS: Record<string, string> = {
 
 export const DEFAULT_SALE_BILLING_DESCRIPTION = "El modo de venta determina cómo se comercializa y factura el producto o combo (por unidades, por peso o bajo modalidad dual).";
 
-/**
- * Traduce y formatea el tipo de aprovisionamiento en español
- */
+
 export const getProcurementTypeLabel = (type?: string | null): string => {
     if (!type) return "-";
     return PROCUREMENT_TYPES_LABELS[type] || type;
 };
 
-/**
- * Traduce y formatea el tipo de kit en español
- */
+
 export const getComboTypeLabel = (type?: string | null): string => {
     if (!type) return "-";
     return COMBO_TYPE_LABELS[type] || type;
 };
 
-/**
- * Traduce el estado activo/inactivo
- */
+
 export const getComboStatusLabel = (isActive?: boolean | null): string => {
     return isActive ? "Activo" : "Inactivo";
 };

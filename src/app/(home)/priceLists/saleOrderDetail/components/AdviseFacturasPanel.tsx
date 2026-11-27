@@ -36,7 +36,6 @@ const mapAdviseError = (error: unknown) => {
     return "Error en advise de facturas";
 };
 
-/** Resultado listo para reenviar overrides cuando exista emisión FAC/380 */
 export type AdviseSessionState = {
     response: IFAdviseFacturasResponse;
     maxTotalOverride?: number;

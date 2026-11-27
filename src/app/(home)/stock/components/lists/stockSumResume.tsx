@@ -2,7 +2,7 @@
 
 import { stockService } from "@repo/erp-services/stock.service";
 import { IFStockSummaryParams } from "@repo/api-contracts/erp";
-import { GenericDataGrid, IGenericDataGridColumn } from '@repo/devextreme';
+import { escapeHtml, escapeHtmlValue, GenericDataGrid, IGenericDataGridColumn  } from '@repo/devextreme';
 import { useAuth } from "@/contexts/AuthContext";
 import { createGridStateStorage } from "@/lib/storage/gridStateStorage";
 import CustomStore from "devextreme/data/custom_store";
@@ -60,7 +60,7 @@ const StockSumResume = () => {
                     container.innerHTML = `
                         <div class="flex items-center gap-1.5 text-[11px] leading-tight opacity-90">
                             <i class="dx-icon-building text-[12px] text-focus-400"></i>
-                            <span class="uppercase tracking-tight font-medium">${options.value ?? '-'}</span>
+                            <span class="uppercase tracking-tight font-medium">${escapeHtmlValue(options.value ?? '-')}</span>
                         </div>
                     `;
                 }
@@ -80,7 +80,7 @@ const StockSumResume = () => {
                     container.innerHTML = `
                         <div class="flex items-center gap-1.5 text-[11px] leading-tight opacity-90">
                             <i class="dx-icon-home text-[12px] text-focus-400"></i>
-                            <span class="uppercase tracking-tight font-medium">${options.value ?? '-'}</span>
+                            <span class="uppercase tracking-tight font-medium">${escapeHtmlValue(options.value ?? '-')}</span>
                         </div>
                     `;
                 }
@@ -98,7 +98,7 @@ const StockSumResume = () => {
                 allowFiltering: true,
                 allowHeaderFiltering: true,
                 cellTemplate: (container: HTMLElement, options: any) => {
-                    container.innerHTML = `<span class="px-1.5 py-0 bg-primary-950/40 text-[11px] text-main rounded-full font-mono uppercase">${options.value}</span>`;
+                    container.innerHTML = `<span class="px-1.5 py-0 bg-primary-950/40 text-[11px] text-main rounded-full font-mono uppercase">${escapeHtmlValue(options.value)}</span>`;
                 }
             },
             {
@@ -125,7 +125,7 @@ const StockSumResume = () => {
                 allowSorting: true,
                 allowFiltering: true,
                 cellTemplate: (container: HTMLElement, options: any) => {
-                    container.innerHTML = `<span class="text-[12px] font-semibold">${options.value ?? 0}</span>`;
+                    container.innerHTML = `<span class="text-[12px] font-semibold">${escapeHtmlValue(options.value ?? 0)}</span>`;
                 }
             },
             {
@@ -136,7 +136,7 @@ const StockSumResume = () => {
                 allowSorting: true,
                 allowFiltering: true,
                 cellTemplate: (container: HTMLElement, options: any) => {
-                    container.innerHTML = `<span class="text-[12px] font-semibold text-emerald-400/80">${options.value ?? 0}</span>`;
+                    container.innerHTML = `<span class="text-[12px] font-semibold text-emerald-400/80">${escapeHtmlValue(options.value ?? 0)}</span>`;
                 }
             },
             {
@@ -147,7 +147,7 @@ const StockSumResume = () => {
                 allowSorting: true,
                 allowFiltering: true,
                 cellTemplate: (container: HTMLElement, options: any) => {
-                    container.innerHTML = `<span class="text-[12px] font-semibold text-emerald-400">${options.value ?? 0}</span>`;
+                    container.innerHTML = `<span class="text-[12px] font-semibold text-emerald-400">${escapeHtmlValue(options.value ?? 0)}</span>`;
                 }
             },
             {
@@ -158,7 +158,7 @@ const StockSumResume = () => {
                 allowSorting: true,
                 allowFiltering: true,
                 cellTemplate: (container: HTMLElement, options: any) => {
-                    container.innerHTML = `<span class="text-[12px] font-medium opacity-80">${options.value ?? 0}</span>`;
+                    container.innerHTML = `<span class="text-[12px] font-medium opacity-80">${escapeHtmlValue(options.value ?? 0)}</span>`;
                 }
             },
             {
@@ -179,7 +179,7 @@ const StockSumResume = () => {
                 cellTemplate: (container: HTMLElement, options: any) => {
                     const val = options.value ?? 0;
                     const cls = val > 0 ? 'text-amber-400 font-medium' : 'opacity-40';
-                    container.innerHTML = `<span class="text-[12px] ${cls}">${val}</span>`;
+                    container.innerHTML = `<span class="text-[12px] ${cls}">${escapeHtmlValue(val)}</span>`;
                 }
             },
             {
@@ -192,7 +192,7 @@ const StockSumResume = () => {
                 cellTemplate: (container: HTMLElement, options: any) => {
                     const val = options.value ?? 0;
                     const cls = val > 0 ? 'text-rose-400 font-medium' : 'opacity-40';
-                    container.innerHTML = `<span class="text-[12px] ${cls}">${val}</span>`;
+                    container.innerHTML = `<span class="text-[12px] ${cls}">${escapeHtmlValue(val)}</span>`;
                 }
             },
             {
@@ -205,7 +205,7 @@ const StockSumResume = () => {
                 cellTemplate: (container: HTMLElement, options: any) => {
                     const val = options.value ?? 0;
                     const cls = val > 0 ? 'text-amber-300 font-medium' : 'opacity-40';
-                    container.innerHTML = `<span class="text-[12px] ${cls}">${val}</span>`;
+                    container.innerHTML = `<span class="text-[12px] ${cls}">${escapeHtmlValue(val)}</span>`;
                 }
             }
         );

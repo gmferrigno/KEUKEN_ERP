@@ -3,10 +3,6 @@ import { ApiError } from "@repo/erp-api-client";
 import notify from "devextreme/ui/notify";
 import { confirm } from "devextreme/ui/dialog";
 
-/**
- * Purge individual con dry_run obligatorio primero.
- * Requiere canPurge en UI antes de llamar.
- */
 export async function purgeWithDryRunConfirm(params: {
     schema: string;
     table: string;

@@ -104,7 +104,6 @@ export const useGridMap = (props?: Partial<IUseGridMapLocalProps>) => {
         const zonesToDelete = zoneId ? currentZones.filter(z => z.id === zoneId || z.parentId === zoneId) : currentZones;
         if (zonesToDelete.length === 0) return;
 
-        // Cascade delete: find all zones on higher levels that overlap with deleted zones
         let allZonesToDelete = [...zonesToDelete];
         let currentDeletionBatch = [...zonesToDelete];
         const allLevels = Object.keys(zonesByLevel).map(Number);
@@ -115,17 +114,16 @@ export const useGridMap = (props?: Partial<IUseGridMapLocalProps>) => {
             if (levelZones.length === 0) continue;
 
             const nextBatch = levelZones.filter(lz => {
-                if (lz.type === 'Area') return false; // Areas are global, don't cascade delete them
+                if (lz.type === 'Area') return false;
                 return currentDeletionBatch.some(deleted => checkRangesOverlap(lz.start, lz.end, deleted.start, deleted.end));
             });
 
             if (nextBatch.length > 0) {
-                // Also add their children
                 const nextBatchWithChildren = levelZones.filter(lz => nextBatch.includes(lz) || nextBatch.some(nb => nb.id === lz.parentId));
                 allZonesToDelete.push(...nextBatchWithChildren);
                 currentDeletionBatch = nextBatchWithChildren;
             } else {
-                break; // If nothing deleted on level l, nothing will be cascade deleted on l+1
+                break;
             }
         }
 
@@ -140,7 +138,6 @@ export const useGridMap = (props?: Partial<IUseGridMapLocalProps>) => {
                 }
             });
 
-            // Matrices logic for base level
             if (tempLevel === BASE_LEVEL && zoneId) {
                 const zoneToDelete = zonesToDelete.find(z => z.id === zoneId);
                 if (zoneToDelete && zoneToDelete.type !== 'Area') {
@@ -159,7 +156,6 @@ export const useGridMap = (props?: Partial<IUseGridMapLocalProps>) => {
                     }));
                 }
             } else if (!zoneId && tempLevel === BASE_LEVEL) {
-                // Clearing the whole base level
                 const emptyFaces = { up: false, down: false, left: false, right: false };
                 const fullFaces = { up: true, down: true, left: true, right: true };
                 setCallesMatrix({ [BASE_LEVEL]: createInitialMatrix(rows, cols, true) });
@@ -348,7 +344,7 @@ export const useGridMap = (props?: Partial<IUseGridMapLocalProps>) => {
         });
 
         for (const { item, targetStart, targetEnd, itemLevel } of newTargets) {
-            const isMovingWithParent = true; // Set to true to bypass parent/support checks since we're moving the whole block
+            const isMovingWithParent = true;
             const check = validatePlacement(item.type, targetStart, targetEnd, itemLevel, itemsToMoveIds, isMovingWithParent);
             if (!check.isValid) {
                 notify?.({ message: check.error || "Movimiento inválido", type: 'error', displayTime: 2000 });
@@ -581,7 +577,6 @@ export const useGridMap = (props?: Partial<IUseGridMapLocalProps>) => {
         const nMinC = Math.min(start.col, end.col);
         const nMaxC = Math.max(start.col, end.col);
 
-        // 1. Identificar grupos y áreas que intersectan con el rectángulo
         const topLevelZones = zones.filter(z => {
             if (!cloneFilters[z.type]) return false;
             if (z.type !== 'Grupo' && z.type !== 'Area') return false;
@@ -591,7 +586,6 @@ export const useGridMap = (props?: Partial<IUseGridMapLocalProps>) => {
             const zMinC = Math.min(z.start.col, z.end.col);
             const zMaxC = Math.max(z.start.col, z.end.col);
 
-            // Intersección: al menos una celda solapada
             return (nMinR <= zMaxR && nMaxR >= zMinR) && (nMinC <= zMaxC && nMaxC >= zMinC);
         });
 
@@ -609,7 +603,6 @@ export const useGridMap = (props?: Partial<IUseGridMapLocalProps>) => {
             return;
         }
 
-        // Calcular el nuevo bounding box de todos los elementos capturados
         let bMinR = Infinity, bMaxR = -Infinity, bMinC = Infinity, bMaxC = -Infinity;
         finalCaptured.forEach(z => {
             bMinR = Math.min(bMinR, z.start.row, z.end.row);
@@ -637,11 +630,10 @@ export const useGridMap = (props?: Partial<IUseGridMapLocalProps>) => {
             blueprints: [],
             cloneBundle: {
                 zones: bundleZones,
-                groupDimensions: { rows: bMaxR - bMinR + 1, cols: bMaxC - nMinC + 1 } // Wait, bMaxC - bMinC
+                groupDimensions: { rows: bMaxR - bMinR + 1, cols: bMaxC - nMinC + 1 }
             }
         };
 
-        // Arreglar error de dedo en el código anterior
         cloneStructure.cloneBundle!.groupDimensions.cols = bMaxC - bMinC + 1;
 
         setPendingStructure?.(cloneStructure);
@@ -699,7 +691,6 @@ export const useGridMap = (props?: Partial<IUseGridMapLocalProps>) => {
     ) => {
         const { zones: bundleZones, groupDimensions } = config.cloneBundle!;
 
-        // 1. Validar cada zona individualmente tras rotación antes de proceder
         for (const z of bundleZones) {
             const { rS, cS, rE, cE } = rotateCoords(
                 z.relStart.row, z.relStart.col, z.relEnd.row, z.relEnd.col,
@@ -717,7 +708,6 @@ export const useGridMap = (props?: Partial<IUseGridMapLocalProps>) => {
         const newInternals = { ...internalStructures };
         const idMap: Record<string, string> = {};
 
-        // 2. Crear las nuevas zonas y mapear IDs
         bundleZones.forEach(z => {
             const newId = generateUUID();
             idMap[z.id] = newId;
@@ -740,7 +730,6 @@ export const useGridMap = (props?: Partial<IUseGridMapLocalProps>) => {
             }
         });
 
-        // 3. Aplicar matrices si existen
         if (config.cloneBundle!.matrices) {
             const { muros, directions, calles } = config.cloneBundle!.matrices;
 
@@ -787,7 +776,6 @@ export const useGridMap = (props?: Partial<IUseGridMapLocalProps>) => {
         setZonesByLevel((prev: any) => ({ ...prev, [currentLevel]: newZones }));
         setInternalStructures?.(newInternals);
 
-        // 4. Marcar ocupación final en la matriz
         bundleZones.forEach(z => {
             if (z.type !== 'Area' && MAP_STRUCTURES[z.type]?.clearUnderneath) {
                 const { rS, cS, rE, cE } = rotateCoords(

@@ -3,14 +3,36 @@ import { TFMeLicenseField } from '@repo/api-contracts/erp';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-/** Rutas que no deben pasar por chequeo de módulos/permisos ni exigir sesión. */
 const publicPaths = ['/login', '/activate'];
-
-/** Rutas autenticadas exentas del filtro canRenderRoute (no expulsar / no redirigir en loop). */
 const accessExemptPaths = ['/refused'];
 
 function matchesPath(pathname: string, prefixes: string[]): boolean {
     return prefixes.some(path => pathname === path || pathname.startsWith(`${path}/`));
+}
+
+function parsePermissionsCookie(cookieVal: string | undefined): string[] | null {
+    if (!cookieVal) return null;
+    try {
+        const parsed = JSON.parse(decodeURIComponent(cookieVal));
+        if (!Array.isArray(parsed) || !parsed.every((p) => typeof p === 'string')) {
+            return null;
+        }
+        return parsed;
+    } catch {
+        return null;
+    }
+}
+
+function parseLicenseCookie(cookieVal: string | undefined): TFMeLicenseField | null {
+    if (!cookieVal) return null;
+    try {
+        const parsed = JSON.parse(decodeURIComponent(cookieVal));
+        if (parsed === null) return null;
+        if (typeof parsed !== 'object' || Array.isArray(parsed)) return null;
+        return parsed as TFMeLicenseField;
+    } catch {
+        return null;
+    }
 }
 
 export function proxy(request: NextRequest) {
@@ -26,7 +48,6 @@ export function proxy(request: NextRequest) {
         return NextResponse.redirect(new URL('/login', request.url));
     }
 
-    // Gate first-login / forced password change: stay on /login until flag is cleared.
     if (token && mustChangePassword && !isPublicPath) {
         return NextResponse.redirect(new URL('/login', request.url));
     }
@@ -35,32 +56,16 @@ export function proxy(request: NextRequest) {
         return NextResponse.redirect(new URL('/', request.url));
     }
 
-    // /refused (y similares) deben renderizar sin re-evaluar canRenderRoute,
-    // o un fallo de cookie/licencia puede disparar un loop de redirect.
     if (isPublicPath || isAccessExempt) {
         return NextResponse.next();
     }
 
-    const cookieVal = request.cookies.get('permissions')?.value;
-    let userPermissions: string[] = [];
-
-    try {
-        userPermissions = cookieVal ? JSON.parse(decodeURIComponent(cookieVal)) : [];
-        if (!Array.isArray(userPermissions)) userPermissions = [];
-    } catch (e) {
-        console.error('Error parsing permissions cookie in proxy:', e);
-        userPermissions = [];
+    const userPermissions = parsePermissionsCookie(request.cookies.get('permissions')?.value);
+    if (userPermissions === null) {
+        return NextResponse.redirect(new URL('/login', request.url));
     }
 
-    const licenseCookieVal = request.cookies.get('companyLicense')?.value;
-    let companyLicense: TFMeLicenseField = null;
-
-    try {
-        companyLicense = licenseCookieVal ? JSON.parse(decodeURIComponent(licenseCookieVal)) : null;
-    } catch (e) {
-        console.error('Error parsing companyLicense cookie in proxy:', e);
-        companyLicense = null;
-    }
+    const companyLicense = parseLicenseCookie(request.cookies.get('companyLicense')?.value);
 
     const canRenderGlobalView = canRenderRoute(pathname, userPermissions, companyLicense);
 

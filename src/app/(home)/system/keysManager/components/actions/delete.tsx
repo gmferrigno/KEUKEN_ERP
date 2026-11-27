@@ -15,7 +15,6 @@ interface RoleDeleteModalProps {
 const RoleDeleteModal = ({ visible, onHiding, onConfirm, roleName }: RoleDeleteModalProps) => {
     const [inputValue, setInputValue] = useState("");
 
-    // Reset input when modal closes or opens
     useEffect(() => {
         if (!visible) {
             setInputValue("");

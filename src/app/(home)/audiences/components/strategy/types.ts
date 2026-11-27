@@ -11,7 +11,6 @@ import { IFClusterAddMembersResponse } from "@repo/api-contracts/erp";
 export interface IClusterStrategy<TCluster = any, TMember = any, TRuleSet = any> {
     entityType: ClusterEntityType;
 
-    // Labels & Textos
     entityLabel: {
         singular: string;
         plural: string;
@@ -27,7 +26,6 @@ export interface IClusterStrategy<TCluster = any, TMember = any, TRuleSet = any>
     membersExportFileName: string;
     emptySelectDescription: string;
 
-    // Operaciones CRUD de Clúster
     getById: (id: string, token: string, companyId?: string) => Promise<TCluster>;
     update: (id: string, data: Partial<TCluster>, token: string, companyId?: string) => Promise<TCluster>;
     delete: (id: string, token: string, companyId?: string) => Promise<any>;
@@ -40,7 +38,6 @@ export interface IClusterStrategy<TCluster = any, TMember = any, TRuleSet = any>
         companyId?: string
     ) => Promise<IFClusterAddMembersResponse>;
 
-    // Listado de Miembros del Clúster
     membersKeyExpr: string;
     membersColumns: IGenericDataGridColumn[];
     getMembers: (
@@ -64,7 +61,6 @@ export interface IClusterStrategy<TCluster = any, TMember = any, TRuleSet = any>
         companyId: string
     ) => Promise<any>;
 
-    // Exclusión (opcional, solo soportado por algunos clústeres)
     supportsExclusion?: boolean;
     excludeMember?: (
         clusterId: string,
@@ -79,7 +75,6 @@ export interface IClusterStrategy<TCluster = any, TMember = any, TRuleSet = any>
         companyId: string
     ) => Promise<any>;
 
-    // Grilla de Selección para Añadir Miembros
     addMembersColumns: IGenericDataGridColumn[];
     loadAvailableMembers: (
         limit: number,
@@ -94,7 +89,6 @@ export interface IClusterStrategy<TCluster = any, TMember = any, TRuleSet = any>
         companyId?: string
     ) => Promise<IFClusterAddMembersResponse>;
 
-    // Reglas Dinámicas
     supportsRules: boolean;
     supportsPreview: boolean;
     supportsSummary: boolean;
@@ -106,7 +100,6 @@ export interface IClusterStrategy<TCluster = any, TMember = any, TRuleSet = any>
         disabled?: boolean;
     }>;
 
-    // Métricas y Refresco
     refreshCluster: (clusterId: string, token: string, companyId?: string) => Promise<any>;
     getSummary?: (
         clusterId: string,

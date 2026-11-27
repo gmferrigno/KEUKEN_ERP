@@ -19,7 +19,7 @@ export interface IRenderContext {
 export type StructureType = 'Grupo' | 'Unidad' | 'Area' | 'Muro' | 'Direcciones';
 
 export interface IPlacementRules {
-    collisionScore: number;    // 0: Excluyente, -1: Fantasma
+    collisionScore: number;
     requiresParent?: StructureType;
     forbiddenOverlaps?: StructureType[];
     mustBeOnSpecificGround?: 'Muro';

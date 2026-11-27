@@ -162,7 +162,7 @@ const AddTransaction: React.FC<AddTransactionProps> = ({ visible, onClose, accou
                         }}
                     >
                         <Label text="Diario (Journal)" />
-                        {/* <RequiredRule message="El diario es obligatorio" /> */}
+                        {}
                     </SimpleItem>
 
                     <SimpleItem
@@ -196,7 +196,7 @@ const AddTransaction: React.FC<AddTransactionProps> = ({ visible, onClose, accou
                     <div className="flex justify-between items-center mb-2">
                         <p className="text-sm font-medium">Líneas del Asiento</p>
                         <div className="flex gap-2">
-                            {/* Global buttons removed as they are now per column */}
+                            {}
                         </div>
                     </div>
 

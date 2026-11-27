@@ -9,7 +9,6 @@ import { useEffect } from 'react';
 export default function DevExtremeIntlBridge() {
     const { locale } = useLocale();
     useEffect(() => {
-        // es.json de DX aún trae "Tabla de datos" sin placeholders; EN ya tiene rows/cols.
         const esPatched = {
             ...esMessages,
             es: {

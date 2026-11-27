@@ -27,7 +27,6 @@ const LogisticProfilesList = () => {
         return permissions ? canDo('modify', PERMISSIONS_CONSTANTS.products, permissions) : false;
     }, [permissions, isSuperAdmin]);
 
-    // Refetch reactivo cuando cambia el switch de RecoveryMode o RecoveryVisibility
     useEffect(() => {
         setRefreshVersion(prev => prev + 1);
         if (gridRef.current?.instance?.refresh) {
@@ -47,8 +46,8 @@ const LogisticProfilesList = () => {
                     return data;
                 } catch (error: any) {
                     console.error('Error loading logistic profiles:', error);
-                    const errorMessage = error instanceof Error && error.message 
-                        ? error.message 
+                    const errorMessage = error instanceof Error && error.message
+                        ? error.message
                         : 'Error al cargar los perfiles logísticos';
                     notify(errorMessage, 'error', 3000);
                     return [];
@@ -70,8 +69,8 @@ const LogisticProfilesList = () => {
             notify("Perfil logístico eliminado exitosamente", "success", 3000);
         } catch (error: any) {
             console.error("Error deleting logistic profile:", error);
-            const errorMessage = error instanceof Error && error.message 
-                ? error.message 
+            const errorMessage = error instanceof Error && error.message
+                ? error.message
                 : "Error al eliminar el perfil logístico";
             notify(errorMessage, "error", 3000);
         }

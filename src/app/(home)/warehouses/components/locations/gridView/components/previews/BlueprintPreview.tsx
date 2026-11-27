@@ -16,7 +16,6 @@ const BlueprintPreview = memo(({
     rotation,
     renderKonvaZone
 }: BlueprintPreviewProps) => {
-    // Clone bundle preview (from cloning tool)
     if (pendingStructure.cloneBundle) {
         const { zones: bundleZones, groupDimensions } = pendingStructure.cloneBundle;
         return (
@@ -39,7 +38,6 @@ const BlueprintPreview = memo(({
         );
     }
 
-    // Standard blueprint preview
     const { processed } = getBlueprintBatchDimensions(pendingStructure, rotation);
     let currentOffsetRow = blueprintPreviewPos.row;
 

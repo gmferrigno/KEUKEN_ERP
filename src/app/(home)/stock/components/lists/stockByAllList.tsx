@@ -2,7 +2,7 @@
 
 import { stockService } from "@repo/erp-services/stock.service";
 import { IFStockByLotsParams } from "@repo/api-contracts/erp";
-import { GenericDataGrid, IGenericDataGridColumn } from '@repo/devextreme';
+import { escapeHtml, escapeHtmlValue, GenericDataGrid, IGenericDataGridColumn  } from '@repo/devextreme';
 import { useAuth } from "@/contexts/AuthContext";
 import { createGridStateStorage } from "@/lib/storage/gridStateStorage";
 import { formatQualityState } from "@/lib/utils/formatter.helper";
@@ -58,7 +58,7 @@ const StockByAllList = () => {
             allowFiltering: true,
             allowHeaderFiltering: true,
             cellTemplate: (container: HTMLElement, options: any) => {
-                container.innerHTML = `<span class="px-1.5 py-0 bg-primary-950/40 text-[11px] text-main rounded-full font-mono uppercase">${options.value}</span>`;
+                container.innerHTML = `<span class="px-1.5 py-0 bg-primary-950/40 text-[11px] text-main rounded-full font-mono uppercase">${escapeHtmlValue(options.value)}</span>`;
             }
         },
         {
@@ -81,7 +81,7 @@ const StockByAllList = () => {
                 container.innerHTML = `
                     <div class="flex items-center gap-1.5 text-[11px] leading-tight opacity-90">
                         <i class="dx-icon-home text-[12px] text-focus-400"></i>
-                        <span class="uppercase tracking-tight">${options.value ?? '-'}</span>
+                        <span class="uppercase tracking-tight">${escapeHtmlValue(options.value ?? '-')}</span>
                     </div>
                 `;
             }
@@ -95,7 +95,7 @@ const StockByAllList = () => {
             allowFiltering: true,
             allowHeaderFiltering: true,
             cellTemplate: (container: HTMLElement, options: any) => {
-                const path = options.value || 'N/A';
+                const path = escapeHtmlValue(options.value || 'N/A');
                 container.innerHTML = `
                     <div class="flex items-center gap-1.5 text-[11px] leading-tight">
                         <i class="dx-icon-folder text-[12px] text-focus-400/60"></i>
@@ -114,7 +114,7 @@ const StockByAllList = () => {
             allowFiltering: true,
             allowHeaderFiltering: true,
             cellTemplate: (container: HTMLElement, options: any) => {
-                const batch = options.value || 'Sin asignar';
+                const batch = escapeHtmlValue(options.value || 'Sin asignar');
                 const opacity = options.value ? 'opacity-100' : 'opacity-30 italic';
                 container.innerHTML = `
                     <span class="inline-flex items-center justify-center px-1.5 py-[1px] bg-main/5 rounded border border-main/20 text-[11px] leading-none ${opacity}">
@@ -134,7 +134,7 @@ const StockByAllList = () => {
             allowHeaderFiltering: true,
             cellTemplate: (container: HTMLElement, options: any) => {
                 container.innerHTML = `
-                    <span class="text-[12px] font-medium">${options.value ?? 0} <span class="text-[10px] opacity-40 font-normal ml-0.5">${options.data.uomName ?? '-'}</span></span>
+                    <span class="text-[12px] font-medium">${escapeHtmlValue(options.value ?? 0)} <span class="text-[10px] opacity-40 font-normal ml-0.5">${escapeHtmlValue(options.data.uomName ?? '-')}</span></span>
                 `;
             }
         },
@@ -149,7 +149,7 @@ const StockByAllList = () => {
             allowHeaderFiltering: true,
             cellTemplate: (container: HTMLElement, options: any) => {
                 container.innerHTML = `
-                    <span class="text-[12px] font-medium">${options.value ?? 0} <span class="text-[10px] opacity-40 font-normal ml-0.5">${options.data.uomName ?? '-'}</span></span>
+                    <span class="text-[12px] font-medium">${escapeHtmlValue(options.value ?? 0)} <span class="text-[10px] opacity-40 font-normal ml-0.5">${escapeHtmlValue(options.data.uomName ?? '-')}</span></span>
                 `;
             }
         },
@@ -173,7 +173,7 @@ const StockByAllList = () => {
             },
             cellTemplate: (container: HTMLElement, options: any) => {
                 container.innerHTML = `
-                    <span class="text-[12px] text-focus-100 font-medium">${formatQualityState(options.value)}</span>
+                    <span class="text-[12px] text-focus-100 font-medium">${escapeHtmlValue(formatQualityState(options.value))}</span>
                 `;
             }
         }

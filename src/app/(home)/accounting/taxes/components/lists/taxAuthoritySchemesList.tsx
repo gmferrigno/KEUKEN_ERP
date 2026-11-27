@@ -2,7 +2,7 @@
 
 import { useMemo, useRef, useState } from 'react';
 import { localizationService } from '@repo/erp-services/localization.service';
-import { GenericDataGrid, IGenericDataGridColumn, SelectBox } from '@repo/devextreme';
+import { escapeHtml, escapeHtmlValue, GenericDataGrid, IGenericDataGridColumn, SelectBox  } from '@repo/devextreme';
 import { useAuth } from '@/contexts/AuthContext';
 import { CheckBox } from 'devextreme-react/check-box';
 import CustomStore from 'devextreme/data/custom_store';
@@ -138,7 +138,7 @@ export default function TaxAuthoritySchemesList() {
             allowEditing: canModify,
             cellTemplate: (container: HTMLElement, options: any) => {
                 const val = options.value || '-';
-                container.innerHTML = `<span class="capitalize">${val}</span>`;
+                container.innerHTML = `<span class="capitalize">${escapeHtmlValue(val)}</span>`;
             }
         },
         {

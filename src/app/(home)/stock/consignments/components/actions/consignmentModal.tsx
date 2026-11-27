@@ -125,7 +125,6 @@ export default function ConsignmentModal({
                         return partner;
                     }
                 } catch (e) {
-                    // Ignorar error si no se puede obtener
                 }
                 return { id: key };
             }

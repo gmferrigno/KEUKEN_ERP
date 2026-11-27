@@ -27,7 +27,6 @@ const HazardLevelsList = () => {
         return permissions ? canDo('modify', PERMISSIONS_CONSTANTS.products, permissions) : false;
     }, [permissions, isSuperAdmin]);
 
-    // Refetch reactivo cuando cambia el switch de RecoveryMode o RecoveryVisibility
     useEffect(() => {
         setRefreshVersion(prev => prev + 1);
         if (gridRef.current?.instance?.refresh) {

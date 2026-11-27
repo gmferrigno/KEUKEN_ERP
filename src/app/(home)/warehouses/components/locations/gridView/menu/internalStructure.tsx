@@ -48,7 +48,7 @@ const InternalStructure = () => {
                 <p className="text-sm text-main/30 uppercase font-bold tracking-widest pl-1">Estructura Interna</p>
             </div>
 
-            {/* Inputs de Configuración */}
+            {}
             <div className="grid grid-cols-2 gap-2">
                 <NumberBox
                     label="Filas"
@@ -72,7 +72,7 @@ const InternalStructure = () => {
 
             <SubdivisionGrid rows={iRows} cols={iCols} />
 
-            {/* Patrón de Recolección */}
+            {}
             <div className="flex flex-col gap-2">
                 <p className="text-sm text-main/30 uppercase font-bold tracking-widest pl-1">Patrón de Recolección</p>
                 <div className="grid grid-cols-5 gap-1 bg-primary-900/40 p-1 rounded-dx border border-main/5">

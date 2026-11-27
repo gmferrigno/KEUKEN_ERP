@@ -78,7 +78,7 @@ export default function DeleteAccount({ isOpen, onClose, accountId }: DeleteAcco
             <Position at="center" my="center" />
 
             <div className="p-4 flex flex-col gap-5">
-                {/* Warning banner */}
+                {}
                 <div className="flex items-start gap-3 p-3 rounded-dx border border-red-500/30 bg-red-500/10">
                     <i className="dx-icon-warning text-red-400 text-xl mt-0.5 shrink-0" />
                     <div className="flex flex-col gap-1">
@@ -91,7 +91,7 @@ export default function DeleteAccount({ isOpen, onClose, accountId }: DeleteAcco
                     </div>
                 </div>
 
-                {/* Confirmation input */}
+                {}
                 <div className="flex flex-col gap-2">
                     <label className="text-sm font-medium text-main/80">
                         Para confirmar, escribí el nombre de la cuenta:

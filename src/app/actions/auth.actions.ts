@@ -14,25 +14,89 @@ function resolveSessionMaxAgeSeconds(expiresIn?: number): number {
 }
 
 async function getIsSecure(): Promise<boolean> {
+    if (process.env.NODE_ENV === 'production') {
+        return true;
+    }
     const headersList = await headers();
     const xForwardedProto = headersList.get('x-forwarded-proto');
-    const referer = headersList.get('referer') || '';
+    return xForwardedProto === 'https';
+}
 
-    const clientIsHttps = referer.startsWith('https://');
-    const clientIsHttp = referer.startsWith('http://');
-    const proxyIsHttps = xForwardedProto === 'https';
+function buildPermissionsFromProfile(profile: {
+    rolesEffective?: string[] | null;
+    scopesEffective?: string[] | null;
+}): string[] {
+    return Array.from(new Set([
+        ...(profile.rolesEffective || []),
+        ...(profile.scopesEffective || []),
+    ]));
+}
 
-    let isSecure = false;
-    if (process.env.NODE_ENV === 'production') {
-        if (clientIsHttp) {
-            isSecure = false;
-        } else if (clientIsHttps) {
-            isSecure = true;
-        } else {
-            isSecure = proxyIsHttps;
-        }
+async function writeAccessCookies(options: {
+    permissions: string[];
+    license?: TFMeLicenseField | null;
+    maxAgeSeconds: number;
+    clearLicenseIfEmpty?: boolean;
+}) {
+    const cookieStore = await cookies();
+    const isSecure = await getIsSecure();
+    const maxAge = resolveSessionMaxAgeSeconds(options.maxAgeSeconds);
+
+    cookieStore.set('permissions', encodeURIComponent(JSON.stringify(options.permissions)), {
+        httpOnly: false,
+        secure: isSecure,
+        sameSite: 'lax',
+        path: '/',
+        maxAge,
+    });
+
+    if (options.license) {
+        cookieStore.set('companyLicense', encodeURIComponent(JSON.stringify(options.license)), {
+            httpOnly: false,
+            secure: isSecure,
+            sameSite: 'lax',
+            path: '/',
+            maxAge,
+        });
+    } else if (options.clearLicenseIfEmpty) {
+        cookieStore.delete('companyLicense');
     }
-    return isSecure;
+}
+
+export async function syncAccessCookiesAction(
+    companyId?: string | number | null,
+    maxAgeSeconds: number = DEFAULT_SESSION_MAX_AGE_SECONDS,
+) {
+    try {
+        const cookieStore = await cookies();
+        const token = cookieStore.get('authToken')?.value;
+        if (!token) {
+            return { success: false as const, error: 'No auth token' };
+        }
+
+        const profileData = await authService.getProfileContext(
+            token,
+            companyId != null && companyId !== '' ? String(companyId) : undefined,
+        );
+        const permissions = buildPermissionsFromProfile(profileData);
+
+        await writeAccessCookies({
+            permissions,
+            license: profileData.license ?? null,
+            maxAgeSeconds,
+            clearLicenseIfEmpty: true,
+        });
+
+        return {
+            success: true as const,
+            permissions,
+            license: profileData.license ?? null,
+            profileContext: profileData,
+        };
+    } catch (error: any) {
+        console.error('Error syncing access cookies from server:', error);
+        return { success: false as const, error: error?.message || 'Error syncing access cookies' };
+    }
 }
 
 export async function loginAction(email: string, password: string) {
@@ -77,29 +141,14 @@ export async function loginAction(email: string, password: string) {
 
         const defaultCompanyId = authData.user?.companyIds?.[0];
         const profileData = await authService.getProfileContext(authData.accessToken, defaultCompanyId);
+        const permissionsArray = buildPermissionsFromProfile(profileData);
 
-        const permissionsArray = Array.from(new Set([
-            ...(profileData.rolesEffective || []),
-            ...(profileData.scopesEffective || []),
-        ]));
-
-        cookieStore.set('permissions', encodeURIComponent(JSON.stringify(permissionsArray)), {
-            httpOnly: false,
-            secure: isSecure,
-            sameSite: 'lax',
-            path: '/',
-            maxAge: sessionMaxAge,
+        await writeAccessCookies({
+            permissions: permissionsArray,
+            license: profileData.license ?? null,
+            maxAgeSeconds: sessionMaxAge,
+            clearLicenseIfEmpty: true,
         });
-
-        if (profileData.license) {
-            cookieStore.set('companyLicense', encodeURIComponent(JSON.stringify(profileData.license)), {
-                httpOnly: false,
-                secure: isSecure,
-                sameSite: 'lax',
-                path: '/',
-                maxAge: sessionMaxAge,
-            });
-        }
 
         const userWithRoles = {
             ...authData.user,
@@ -118,52 +167,6 @@ export async function loginAction(email: string, password: string) {
         };
     } catch (error: any) {
         return { success: false, error: error.message || 'Error al iniciar sesión' };
-    }
-}
-
-export async function updatePermissionsCookieAction(
-    permissions: string[],
-    maxAgeSeconds: number = DEFAULT_SESSION_MAX_AGE_SECONDS,
-) {
-    try {
-        const cookieStore = await cookies();
-        const isSecure = await getIsSecure();
-        cookieStore.set('permissions', encodeURIComponent(JSON.stringify(permissions)), {
-            httpOnly: false,
-            secure: isSecure,
-            sameSite: 'lax',
-            path: '/',
-            maxAge: resolveSessionMaxAgeSeconds(maxAgeSeconds),
-        });
-        return { success: true };
-    } catch (error: any) {
-        console.error('Error updating permissions cookie:', error);
-        return { success: false, error: error.message };
-    }
-}
-
-export async function updateCompanyLicenseCookieAction(
-    license: TFMeLicenseField | undefined,
-    maxAgeSeconds: number = DEFAULT_SESSION_MAX_AGE_SECONDS,
-) {
-    try {
-        const cookieStore = await cookies();
-        const isSecure = await getIsSecure();
-        if (license) {
-            cookieStore.set('companyLicense', encodeURIComponent(JSON.stringify(license)), {
-                httpOnly: false,
-                secure: isSecure,
-                sameSite: 'lax',
-                path: '/',
-                maxAge: resolveSessionMaxAgeSeconds(maxAgeSeconds),
-            });
-        } else {
-            cookieStore.delete('companyLicense');
-        }
-        return { success: true };
-    } catch (error: any) {
-        console.error('Error updating companyLicense cookie:', error);
-        return { success: false, error: error.message };
     }
 }
 

@@ -10,7 +10,6 @@ export async function GET(
 ) {
     const { filename } = await params;
 
-    // Only allow dx.*.css files
     if (!/^dx\.[a-z0-9-]+\.css$/.test(filename)) {
         return new NextResponse('Not found', { status: 404 });
     }

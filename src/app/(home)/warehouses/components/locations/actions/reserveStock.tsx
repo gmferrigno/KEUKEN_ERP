@@ -25,7 +25,7 @@ const ReserveStockItem = ({ visible, onHiding, locationId, line, onSuccess }: Re
 
     useEffect(() => {
         if (visible && line) {
-            setQuantity(0); // Restablecer cantidad al abrir
+            setQuantity(0);
         }
     }, [visible, line]);
 

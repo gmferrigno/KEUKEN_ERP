@@ -30,13 +30,11 @@ export const useLocations = () => {
             console.error("Error fetching locations:", error);
         }
     };
-    // Fetch locations on mount (deps: warehouseId, token)
     useEffect(() => {
         if (!warehouseId || !token) return;
         fetchLocations();
     }, [warehouseId, token]);
 
-    // Build blueprint catalog from locations
     useEffect(() => {
         if (locations.length === 0) return;
         const translation = translateMapStructures(locations);
@@ -49,7 +47,6 @@ export const useLocations = () => {
         setCollapsedGroups(initialCollapsed);
     }, [locations]);
 
-    // Count pending (unplaced) blueprints
     const pendingCount = useMemo(() => {
         if (!blueprintCatalog) return 0;
         const placedPaths = new Set(

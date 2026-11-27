@@ -4,8 +4,7 @@ import {
     loginAction,
     logoutAction,
     setMustChangePasswordCookieAction,
-    updateCompanyLicenseCookieAction,
-    updatePermissionsCookieAction,
+    syncAccessCookiesAction,
 } from '@/app/actions/auth.actions';
 import {
     canAccess as canAccessHelper,
@@ -32,7 +31,11 @@ import {
     mapMeCompanyToSessionCompany,
 } from "@repo/api-contracts/erp";
 import { companiesService } from '@repo/erp-services/userContext/companies.service';
-import { getToken } from '@/lib/utils/token.helper';
+import {
+    clearClientAuthToken,
+    getToken,
+    setClientAuthToken,
+} from '@/lib/utils/token.helper';
 import { usePathname, useRouter } from 'next/navigation';
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
@@ -65,7 +68,6 @@ function companiesFromProfile(profile?: IFProfileContext | null): ICompany[] {
     return profile.companies.map(mapMeCompanyToSessionCompany);
 }
 
-/** Prefer `/me.companies`; SA sin membresía (lista vacía) → `GET /common/companies`. */
 async function loadSessionCompanies(
     authToken: string,
     authUser: { companyIds?: string[] } | null | undefined,
@@ -162,9 +164,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const savedCompanies = localStorage.getItem('companies');
             const savedCurrentCompany = localStorage.getItem('currentCompany');
 
-            // Sin authToken en LS la sesión no puede restaurarse tras un remount (p.ej. /refused, 404).
-            if (storedToken && localStorage.getItem(MUST_CHANGE_PASSWORD_KEY) === '1') {
-                setToken(storedToken);
+            if (userData && localStorage.getItem(MUST_CHANGE_PASSWORD_KEY) === '1') {
+                if (storedToken) setToken(storedToken);
                 setMustChangePassword(true);
                 if (userData) {
                     try {
@@ -177,9 +178,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 return;
             }
 
-            if (storedToken && userData) {
+            if (userData) {
                 setIsAuthenticated(true);
-                setToken(storedToken);
+                if (storedToken) setToken(storedToken);
                 const parsedUser = JSON.parse(userData);
                 setUser(parsedUser);
 
@@ -258,11 +259,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 setCompanies(parsedCompanies);
                 localStorage.setItem('companies', JSON.stringify(parsedCompanies));
 
-                // Re-hidratar con /auth/me antes de liberar menús/scopes (evita LS stale).
                 if (activeCompany?.id) {
                     try {
                         const freshProfile = await authService.getProfileContext(
-                            storedToken,
+                            storedToken || '',
                             activeCompany.id,
                         );
                         if (freshProfile.mustChangePassword) {
@@ -339,11 +339,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 setEffectiveScopes(calculatedPermissions);
                 setPermissions(mapPermissionsToFrontend(calculatedPermissions));
 
-                // Proxy lee cookies, no localStorage: re-sincronizar antes de liberar loading.
-                await Promise.all([
-                    updatePermissionsCookieAction(calculatedPermissions),
-                    updateCompanyLicenseCookieAction(restoredLicense ?? undefined),
-                ]).catch((err) => {
+                await syncAccessCookiesAction(activeCompany?.id).catch((err) => {
                     console.error('Error syncing access cookies on session restore:', err);
                 });
             }
@@ -353,7 +349,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         void restoreSession();
     }, []);
 
-    // Guard de sesión client-side: no expulsar en login/activate/refused (acceso público / denegación).
     useEffect(() => {
         if (loading) return;
         const isExemptPath =
@@ -444,12 +439,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setEffectiveScopes(calculatedPermissions);
             setPermissions(mapPermissionsToFrontend(calculatedPermissions));
 
-            // loginAction cookiea la 1ª company del backend; acá puede elegirse otra.
             const remainingMaxAge = getRemainingSessionMaxAgeSeconds();
-            await Promise.all([
-                updateCompanyLicenseCookieAction(activeLicense ?? undefined, remainingMaxAge),
-                updatePermissionsCookieAction(calculatedPermissions, remainingMaxAge),
-            ]).catch((err) => {
+            await syncAccessCookiesAction(
+                selectedCompany?.id ?? fetchedProfileContext.operationalCompanyId,
+                remainingMaxAge,
+            ).catch((err) => {
                 console.error('Error syncing access cookies on login:', err);
             });
 
@@ -463,8 +457,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const permissionsArray = authUser.roles || [];
             setEffectiveScopes(permissionsArray);
             setPermissions(mapPermissionsToFrontend(permissionsArray));
-            await updatePermissionsCookieAction(
-                permissionsArray,
+            await syncAccessCookiesAction(
+                undefined,
                 getRemainingSessionMaxAgeSeconds(),
             ).catch((err) => {
                 console.error('Error syncing permissions cookie on login fallback:', err);
@@ -479,6 +473,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             console.error('Error clearing mustChangePassword cookie:', err);
         });
         setIsAuthenticated(true);
+        setClientAuthToken(authToken);
         setToken(authToken);
         router.push('/');
     };
@@ -494,7 +489,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const authUser = result.user;
             const expiresInSeconds = result.expiresIn ?? DEFAULT_SESSION_MAX_AGE_SECONDS;
 
-            localStorage.setItem('authToken', authToken);
+            setClientAuthToken(authToken);
             localStorage.setItem(AUTH_EXPIRES_AT_KEY, String(Date.now() + expiresInSeconds * 1000));
             localStorage.setItem('userData', JSON.stringify(authUser));
             setToken(authToken);
@@ -516,13 +511,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const changePassword = async (currentPassword: string, newPassword: string) => {
         const authToken = token || getToken();
-        if (!authToken) {
-            throw new Error('No hay sesión activa para cambiar la contraseña');
-        }
+        await authService.changePassword(authToken || '', currentPassword, newPassword);
 
-        await authService.changePassword(authToken, currentPassword, newPassword);
-
-        // Ya autenticado (p.ej. /users/me): limpiar gate sin rehidratar ni redirigir a /.
         if (isAuthenticated) {
             localStorage.removeItem(MUST_CHANGE_PASSWORD_KEY);
             setMustChangePassword(false);
@@ -544,19 +534,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     const logout = useCallback(async () => {
-        // Guardar la empresa actual como previousCompanyId antes de cerrar sesión
         if (currentCompany?.id) {
             localStorage.setItem('previousCompanyId', String(currentCompany.id));
         }
 
         await logoutAction();
 
+        clearClientAuthToken();
         localStorage.removeItem('authToken');
         localStorage.removeItem('userData');
         localStorage.removeItem('profileContext');
         localStorage.removeItem('companyLicense');
         localStorage.removeItem('companies');
         localStorage.removeItem('currentCompany');
+        localStorage.removeItem('currentBranch');
+        localStorage.removeItem('erp_branch_id');
         localStorage.removeItem(AUTH_EXPIRES_AT_KEY);
         localStorage.removeItem(MUST_CHANGE_PASSWORD_KEY);
 
@@ -621,17 +613,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 const newLicense = newProfileContext.license || null;
                 const calculatedPermissions = buildEffectiveScopes(newProfileContext);
 
-                // Cookies primero: si React re-renderiza / dispara un soft-nav a la ruta actual,
-                // el proxy debe ver ya el contexto de la empresa nueva.
                 const remainingMaxAge = getRemainingSessionMaxAgeSeconds();
-                await Promise.all([
-                    updateCompanyLicenseCookieAction(newLicense ?? undefined, remainingMaxAge).catch((err) => {
-                        console.error('Error updating companyLicense cookie on refresh:', err);
-                    }),
-                    updatePermissionsCookieAction(calculatedPermissions, remainingMaxAge).catch((err) => {
-                        console.error('Error updating permissions cookie on refresh:', err);
-                    }),
-                ]);
+                await syncAccessCookiesAction(targetCompanyId, remainingMaxAge).catch((err) => {
+                    console.error('Error syncing access cookies on refresh:', err);
+                });
                 if (refreshId !== profileRefreshSeq.current) return null;
 
                 setProfileContext(newProfileContext);
@@ -689,8 +674,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     localStorage.setItem('userData', JSON.stringify(updatedUser));
                 }
 
-                // Ruta actual ya no permitida → /refused.
-                // En /refused tras recuperar acceso → home (si no, quedás trabado o el proxy re-evalúa mal).
                 if (pathname.startsWith('/refused')) {
                     router.replace('/');
                 } else if (!canRenderRoute(pathname, calculatedPermissions, newLicense ?? undefined)) {

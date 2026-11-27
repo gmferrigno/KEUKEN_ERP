@@ -54,7 +54,6 @@ const ListTypesClient = () => {
         return permissions ? canDo('modify', ['commercialPriceLists'], permissions) : false;
     }, [permissions, isSuperAdmin]);
 
-    // Refetch reactivo cuando cambia el switch de RecoveryMode o RecoveryVisibility
     useEffect(() => {
         setRefreshVersion(prev => prev + 1);
         if (gridRef.current?.instance?.refresh) {
@@ -71,11 +70,11 @@ const ListTypesClient = () => {
                 if (!currentCompany?.id) {
                     return { data: [], totalCount: 0 };
                 }
-                
+
                 try {
                     const skip = loadOptions.skip || 0;
                     const take = loadOptions.take || 50;
-                    
+
                     const response = await listTypesService.getAll(
                         token,
                         currentCompany.id,
@@ -88,8 +87,8 @@ const ListTypesClient = () => {
                     };
                 } catch (error: any) {
                     console.error('Error loading list types:', error);
-                    const errorMessage = error instanceof Error && error.message 
-                        ? error.message 
+                    const errorMessage = error instanceof Error && error.message
+                        ? error.message
                         : 'Error al cargar los tipos de listas';
                     notify(errorMessage, 'error', 3000);
                     return { data: [], totalCount: 0 };
@@ -111,8 +110,8 @@ const ListTypesClient = () => {
             notify("Tipo de lista eliminado exitosamente", "success", 3000);
         } catch (error: any) {
             console.error("Error deleting list type:", error);
-            const errorMessage = error instanceof Error && error.message 
-                ? error.message 
+            const errorMessage = error instanceof Error && error.message
+                ? error.message
                 : "Error al eliminar el tipo de lista";
             notify(errorMessage, "error", 3000);
         }
@@ -147,8 +146,8 @@ const ListTypesClient = () => {
             notify("Estado actualizado exitosamente", "success", 3000);
         } catch (error: any) {
             console.error("Error updating list type:", error);
-            const errorMessage = error instanceof Error && error.message 
-                ? error.message 
+            const errorMessage = error instanceof Error && error.message
+                ? error.message
                 : "Error al actualizar el tipo de lista";
             notify(errorMessage, "error", 3000);
             e.cancel = true;
@@ -314,7 +313,7 @@ const ListTypesClient = () => {
                     />
                 </div>
             </div>
-            
+
             <AddNewListType
                 isOpen={isModalOpen}
                 onClose={() => {

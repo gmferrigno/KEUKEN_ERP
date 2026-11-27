@@ -59,7 +59,6 @@ const PeriodCreationModal = ({ isOpen, onClose, onHidden, onSuccess, initialData
                 }, token, currentCompany.id);
                 notify('Periodo actualizado exitosamente', 'success', 3000);
             } else {
-                // Parse dates to YYYY-MM-DD
                 const formatDate = (date: Date) => {
                     const d = new Date(date);
                     const month = '' + (d.getMonth() + 1);
@@ -81,8 +80,8 @@ const PeriodCreationModal = ({ isOpen, onClose, onHidden, onSuccess, initialData
             onClose();
         } catch (error: any) {
             console.error("Error saving period:", error);
-            const errorMessage = error instanceof Error && error.message 
-                ? error.message 
+            const errorMessage = error instanceof Error && error.message
+                ? error.message
                 : 'Error al guardar el periodo';
             notify(errorMessage, 'error', 3000);
         } finally {

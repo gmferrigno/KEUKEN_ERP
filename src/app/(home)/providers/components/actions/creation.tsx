@@ -120,7 +120,7 @@ const ProviderCreationModal = ({ isOpen, onClose, onSuccess, initialData }: Prov
                     stateCode: initialData.stateCode || "",
                     cityId: initialData.cityId || "",
                     taxData: {
-                        ivaCondition: "Responsable Inscripto" // Valor por defecto si no viene en el listado
+                        ivaCondition: "Responsable Inscripto"
                     }
                 });
             } else {

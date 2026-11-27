@@ -2,7 +2,7 @@
 
 import { ReactNode } from 'react';
 
-/** Panel de contenido SysAdmin — tokens @repo/ui (primary / main / rounded-dx). */
+
 export function SysAdminPanel({
     children,
     className = '',
@@ -139,7 +139,7 @@ export function SysAdminInlineCode({ children }: { children: ReactNode }) {
 
 export type SysAdminBadgeTone = 'neutral' | 'ok' | 'warn' | 'error' | 'info';
 
-/** Badge con tokens de status del theme system (success / warning / error / info). */
+
 export function SysAdminBadge({
     label,
     tone = 'neutral',

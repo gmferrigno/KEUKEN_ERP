@@ -26,7 +26,6 @@ const PaymentTermsClient = () => {
     const [selectedPaymentTerm, setSelectedPaymentTerm] = useState<IFPaymentTerm | null>(null);
     const [refreshVersion, setRefreshVersion] = useState(0);
 
-    // Refetch reactivo cuando cambia el switch de RecoveryMode o RecoveryVisibility
     useEffect(() => {
         setRefreshVersion(prev => prev + 1);
         if (gridRef.current?.instance?.refresh) {
@@ -56,8 +55,8 @@ const PaymentTermsClient = () => {
                     };
                 } catch (error: any) {
                     console.error('Error loading payment terms:', error);
-                    const errorMessage = error instanceof Error && error.message 
-                        ? error.message 
+                    const errorMessage = error instanceof Error && error.message
+                        ? error.message
                         : 'Error al cargar las condiciones de pago';
                     notify(errorMessage, 'error', 3000);
                     return {
@@ -82,8 +81,8 @@ const PaymentTermsClient = () => {
             notify("Condición de pago eliminada exitosamente", "success", 3000);
         } catch (error: any) {
             console.error("Error deleting payment term:", error);
-            const errorMessage = error instanceof Error && error.message 
-                ? error.message 
+            const errorMessage = error instanceof Error && error.message
+                ? error.message
                 : "Error al eliminar la condición de pago";
             notify(errorMessage, "error", 3000);
         }

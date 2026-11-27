@@ -1,7 +1,4 @@
-/**
- * Grid State Storage Manager
- * Proporciona funciones customLoad y customSave para StateStoring
- */
+
 
 export interface GridStateStorageOptions {
     gridId: string;
@@ -9,11 +6,7 @@ export interface GridStateStorageOptions {
     onAfterLoad?: (state: any) => any;
 }
 
-/**
- * Crea funciones customLoad y customSave para un grid específico
- * @param options Configuración con gridId requerido
- * @returns { customLoad, customSave } funciones para StateStoring
- */
+
 export function createGridStateStorage(options: GridStateStorageOptions) {
     const { gridId, onBeforeSave, onAfterLoad } = options;
     const storageKey = `grid:${gridId}`;
@@ -49,9 +42,7 @@ export function createGridStateStorage(options: GridStateStorageOptions) {
     };
 }
 
-/**
- * Limpia el estado guardado de un grid específico
- */
+
 export function clearGridState(gridId: string) {
     try {
         localStorage.removeItem(`grid:${gridId}`);
@@ -60,9 +51,7 @@ export function clearGridState(gridId: string) {
     }
 }
 
-/**
- * Obtiene el estado guardado de un grid (sin cargar en el componente)
- */
+
 export function getGridState(gridId: string) {
     try {
         const stored = localStorage.getItem(`grid:${gridId}`);
@@ -75,9 +64,7 @@ export function getGridState(gridId: string) {
     return null;
 }
 
-/**
- * Establece manualmente el estado de un grid en localStorage
- */
+
 export function setGridState(gridId: string, state: any) {
     try {
         localStorage.setItem(`grid:${gridId}`, JSON.stringify(state));

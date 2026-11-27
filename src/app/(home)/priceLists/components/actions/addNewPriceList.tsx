@@ -70,7 +70,6 @@ export default function AddNewPriceList({ isOpen, onClose, onHidden, onSuccess }
         }
     }, [isOpen, currentCompany?.id]);
 
-    // Cargar monedas al abrir el modal
     useEffect(() => {
         const fetchCurrencies = async () => {
             if (!isOpen || !token) return;
@@ -84,7 +83,6 @@ export default function AddNewPriceList({ isOpen, onClose, onHidden, onSuccess }
         fetchCurrencies();
     }, [isOpen, token]);
 
-    // Cargar listas de precios origen para clonar/copiar
     const fetchSourcePricelists = useCallback(async (selectedCompanyId: string) => {
         if (!token || !selectedCompanyId) {
             setSourcePricelists([]);
@@ -98,7 +96,6 @@ export default function AddNewPriceList({ isOpen, onClose, onHidden, onSuccess }
         }
     }, [token]);
 
-    // Cargar tipos de lista cuando cambie la compañía en formData o al abrir
     const handleCompanyChange = useCallback(async (selectedCompanyId: string) => {
         if (!token || !selectedCompanyId) {
             setListTypes([]);

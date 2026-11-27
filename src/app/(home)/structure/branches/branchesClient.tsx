@@ -5,7 +5,7 @@ import { useRecovery, RECOVERY_ENTITIES } from "@repo/recovery";
 import PERMISSIONS_CONSTANTS from "@repo/access";
 import { canDo, useGridColumns, type IAccessGridColumn } from "@repo/access";
 import { commonService } from "@repo/erp-services/common.service";
-import { GenericDataGrid } from '@repo/devextreme';
+import { escapeHtml, escapeHtmlValue, GenericDataGrid  } from '@repo/devextreme';
 import { useAuth } from "@/contexts/AuthContext";
 import { createGridStateStorage } from "@/lib/storage/gridStateStorage";
 import CustomStore from "devextreme/data/custom_store";
@@ -176,8 +176,8 @@ const BranchesClient = () => {
                         container.innerHTML = '<span class="text-main/40">-</span>';
                         return;
                     }
-                    const codeTag = row.companyCode ? `<span class="text-xs text-main/50 font-mono">(${row.companyCode})</span>` : '';
-                    container.innerHTML = `<span>${row.companyName || ''} ${codeTag}</span>`;
+                    const codeTag = row.companyCode ? `<span class="text-xs text-main/50 font-mono">(${escapeHtmlValue(row.companyCode)})</span>` : '';
+                    container.innerHTML = `<span>${escapeHtmlValue(row.companyName)} ${codeTag}</span>`;
                 }
             },
             {
@@ -190,8 +190,8 @@ const BranchesClient = () => {
                         container.innerHTML = '<span class="text-main/40">-</span>';
                         return;
                     }
-                    const codeTag = row.establishmentCode ? `<span class="text-xs text-main/50 font-mono">(${row.establishmentCode})</span>` : '';
-                    container.innerHTML = `<span>${row.establishmentName || ''} ${codeTag}</span>`;
+                    const codeTag = row.establishmentCode ? `<span class="text-xs text-main/50 font-mono">(${escapeHtmlValue(row.establishmentCode)})</span>` : '';
+                    container.innerHTML = `<span>${escapeHtmlValue(row.establishmentName)} ${codeTag}</span>`;
                 }
             },
             {
@@ -204,8 +204,8 @@ const BranchesClient = () => {
                         container.innerHTML = '<span class="text-main/40">-</span>';
                         return;
                     }
-                    const codeTag = row.logisticsCenterCode ? `<span class="text-xs text-main/50 font-mono">(${row.logisticsCenterCode})</span>` : '';
-                    container.innerHTML = `<span>${row.logisticsCenterName || ''} ${codeTag}</span>`;
+                    const codeTag = row.logisticsCenterCode ? `<span class="text-xs text-main/50 font-mono">(${escapeHtmlValue(row.logisticsCenterCode)})</span>` : '';
+                    container.innerHTML = `<span>${escapeHtmlValue(row.logisticsCenterName)} ${codeTag}</span>`;
                 }
             },
             {
@@ -219,8 +219,8 @@ const BranchesClient = () => {
                         container.innerHTML = '<span class="text-main/40">-</span>';
                         return;
                     }
-                    const typeTag = row.cashRegisterType ? `<span class="text-[10px] px-1.5 py-0.5 rounded font-mono uppercase bg-main/10 text-main/70 ml-1.5">${row.cashRegisterType}</span>` : '';
-                    container.innerHTML = `<span>${row.cashRegisterName} ${typeTag}</span>`;
+                    const typeTag = row.cashRegisterType ? `<span class="text-[10px] px-1.5 py-0.5 rounded font-mono uppercase bg-main/10 text-main/70 ml-1.5">${escapeHtmlValue(row.cashRegisterType)}</span>` : '';
+                    container.innerHTML = `<span>${escapeHtmlValue(row.cashRegisterName)} ${typeTag}</span>`;
                 }
             },
             {

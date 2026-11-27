@@ -26,7 +26,6 @@ const PaymentMethodsClient = () => {
     const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<IFPaymentMethod | null>(null);
     const [refreshVersion, setRefreshVersion] = useState(0);
 
-    // Refetch reactivo cuando cambia el switch de RecoveryMode o RecoveryVisibility
     useEffect(() => {
         setRefreshVersion(prev => prev + 1);
         if (gridRef.current?.instance?.refresh) {
@@ -56,8 +55,8 @@ const PaymentMethodsClient = () => {
                     };
                 } catch (error: any) {
                     console.error('Error loading payment methods:', error);
-                    const errorMessage = error instanceof Error && error.message 
-                        ? error.message 
+                    const errorMessage = error instanceof Error && error.message
+                        ? error.message
                         : 'Error al cargar los métodos de pago';
                     notify(errorMessage, 'error', 3000);
                     return {
@@ -82,8 +81,8 @@ const PaymentMethodsClient = () => {
             notify("Método de pago eliminado exitosamente", "success", 3000);
         } catch (error: any) {
             console.error("Error deleting payment method:", error);
-            const errorMessage = error instanceof Error && error.message 
-                ? error.message 
+            const errorMessage = error instanceof Error && error.message
+                ? error.message
                 : "Error al eliminar el método de pago";
             notify(errorMessage, "error", 3000);
         }

@@ -168,7 +168,7 @@ const SelectMenu = ({ clearZones, onRotate }: { clearZones: (id?: string) => voi
                                 Cancelar Desplazamiento
                             </button>
                         )}
-                        {/*isArea section*/}
+                        {}
                         {isArea && (
                             <div className="flex flex-col gap-3 p-3 bg-purple-500/10 border border-purple-500/20 rounded-dx mb-1">
                                 <div className="flex flex-col gap-1.5">

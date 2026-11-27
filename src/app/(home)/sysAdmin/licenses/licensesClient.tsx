@@ -47,7 +47,7 @@ import {
 
 type LicenseFormState = {
     plan: TFLicensePlanCode | string;
-    /** UUID published; null/omitir = pin actual o última published (BE). */
+
     catalogVersionId: string | null;
     validFrom: string | null;
     validUntil: string | null;
@@ -114,7 +114,6 @@ function formToPutRequest(form: LicenseFormState): IFLicensePutRequest {
         validFrom: form.validFrom || null,
         validUntil: form.validUntil || null,
         graceDays: Number(form.graceDays) >= 0 ? Number(form.graceDays) : 7,
-        // Omitir si vacío: BE pinea la published actual / última
         catalogVersionId: form.catalogVersionId || undefined,
         moduleOverrides: moduleOverrides.length ? moduleOverrides : undefined,
         quotaOverrides: quotaOverrides.length ? quotaOverrides : undefined,
@@ -148,7 +147,7 @@ function LicensesClientInner() {
         return Boolean(isSuperAdmin || (permissions && canDo('modify', PERMISSIONS_CONSTANTS.modifySysAdmin, permissions)));
     }, [isSuperAdmin, permissions]);
 
-    /** Solo versiones published se pueden pinear en PUT (licenses-list-endpoints.md). */
+
     const publishedCatalogVersions = useMemo(
         () => catalogVersions.filter((v) => v.status === 'published'),
         [catalogVersions]
@@ -381,7 +380,7 @@ function LicensesClientInner() {
                 </SysAdminToolbar>
             </div>
 
-            {/* Content box: scroll interno; las cards se muestran completas sin scroll de página */}
+            {}
             <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
                 <div className="flex flex-col gap-3">
                 {!companyId ? (
@@ -597,7 +596,6 @@ function LicensesClientInner() {
                                                 editorType="dxSelectBox"
                                                 isRequired
                                                 editorOptions={{
-                                                    // Códigos fijos: no hay GET /plans (licenses-list-endpoints.md)
                                                     dataSource: LICENSE_PLANS,
                                                     displayExpr: 'name',
                                                     valueExpr: 'id',

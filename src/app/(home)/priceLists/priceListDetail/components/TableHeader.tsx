@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from "react";
-import { SelectBox } from "@repo/devextreme";
+import { HeaderSelectBox } from "@repo/devextreme";
 import notify from "devextreme/ui/notify";
 import { LIST_TYPE_OPERATION_OPTIONS } from "@/app/lib/constants/priceList.constants";
 import { listTypesService } from "@repo/erp-services/priceLists/listTypes.service";
@@ -30,7 +30,6 @@ export default function TableHeader({
     queryId,
     onResetSelection
 }: TableHeaderProps) {
-    // Inicializar selectores de filtros en "ALL" ("Todas" / "Todos") por defecto
     const [selectedOperation, setSelectedOperation] = useState<string>(ALL_VALUE);
     const [selectedListTypeId, setSelectedListTypeId] = useState<string>(ALL_VALUE);
 
@@ -40,19 +39,16 @@ export default function TableHeader({
     const [isLoadingListTypes, setIsLoadingListTypes] = useState<boolean>(false);
     const [isLoadingPriceLists, setIsLoadingPriceLists] = useState<boolean>(false);
 
-    // Opciones para el selector de operaciones (con opción por defecto "Todas")
     const operationOptions = useMemo(() => [
         { id: ALL_VALUE, name: "Todas" },
         ...LIST_TYPE_OPERATION_OPTIONS
     ], []);
 
-    // Opciones para el selector de tipos de lista (con opción por defecto "Todos")
     const listTypeOptions = useMemo(() => [
         { id: ALL_VALUE, name: "Todos" },
         ...listTypes
     ], [listTypes]);
 
-    // Cargar tipos de lista al cambiar de operación o al iniciar
     useEffect(() => {
         const fetchListTypes = async () => {
             if (!token || !companyId) return;
@@ -77,7 +73,6 @@ export default function TableHeader({
         fetchListTypes();
     }, [token, companyId, selectedOperation]);
 
-    // Cargar listas de precios al cambiar de tipo de lista, operación o al iniciar
     useEffect(() => {
         const fetchPriceLists = async () => {
             if (!token || !companyId) return;
@@ -97,7 +92,6 @@ export default function TableHeader({
                 );
                 setPriceLists(res.items);
 
-                // Si viene un queryId por URL en la carga inicial y existe en los resultados, lo seleccionamos
                 if (queryId && res.items.some(item => item.id === queryId)) {
                     onPriceListChange(queryId);
                 }
@@ -139,7 +133,7 @@ export default function TableHeader({
                     <label className="text-xs font-semibold text-main/70">
                         Operación
                     </label>
-                    <SelectBox
+                    <HeaderSelectBox
                         dataSource={operationOptions}
                         valueExpr="id"
                         displayExpr="name"
@@ -149,7 +143,6 @@ export default function TableHeader({
                         searchEnabled={true}
                         showClearButton={false}
                         stylingMode="filled"
-                        elementAttr={{ class: "rounded-dx" }}
                         disabled={disabled}
                     />
                 </div>
@@ -157,7 +150,7 @@ export default function TableHeader({
                     <label className="text-xs font-semibold text-main/70">
                         Tipo de Lista
                     </label>
-                    <SelectBox
+                    <HeaderSelectBox
                         dataSource={listTypeOptions}
                         valueExpr="id"
                         displayExpr="name"
@@ -167,7 +160,6 @@ export default function TableHeader({
                         searchEnabled={true}
                         showClearButton={false}
                         stylingMode="filled"
-                        elementAttr={{ class: "rounded-dx" }}
                         disabled={disabled || isLoadingListTypes}
                     />
                 </div>
@@ -176,7 +168,7 @@ export default function TableHeader({
                 <label className="text-xs font-semibold text-main/70">
                     Lista de Precios
                 </label>
-                <SelectBox
+                <HeaderSelectBox
                     dataSource={priceLists}
                     valueExpr="id"
                     displayExpr="name"
@@ -186,7 +178,6 @@ export default function TableHeader({
                     searchEnabled={true}
                     showClearButton={true}
                     stylingMode="filled"
-                    elementAttr={{ class: "rounded-dx" }}
                     disabled={disabled || isLoadingPriceLists}
                 />
             </div>

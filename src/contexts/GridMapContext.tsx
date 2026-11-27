@@ -110,7 +110,6 @@ export const GridMapProvider = ({ children }: { children: ReactNode }) => {
             try {
                 localStorage.setItem(`gridMapData_${warehouseId}`, JSON.stringify(dataToSave));
             } catch {
-                // localStorage may throw in incognito/private browsing or when quota exceeded
             }
         }
 

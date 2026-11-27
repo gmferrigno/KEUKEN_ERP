@@ -26,7 +26,7 @@ const LocationBreadcrumbs = ({ currentPath, onNavigate, isMode, setViewMode, isG
     return (
         <nav className="flex justify-between items-center flex-wrap gap-y-2 gap-x-1 p-2 bg-primary-500 backdrop-blur-md border border-primary-500/10 rounded-dx">
             <div className='flex items-center flex-wrap'>
-                {/* Botón de Inicio / Raíz */}
+                {}
                 <div
                     className="flex items-center gap-2 cursor-pointer group transition-all"
                     onClick={() => handleNavigate(null)}
@@ -43,7 +43,7 @@ const LocationBreadcrumbs = ({ currentPath, onNavigate, isMode, setViewMode, isG
                     </span>
                 </div>
 
-                {/* Path Dinámico */}
+
                 {breadcrumbs.map((segment, index) => {
                     const isLast = index === breadcrumbs.length - 1;
                     return (
@@ -72,7 +72,7 @@ const LocationBreadcrumbs = ({ currentPath, onNavigate, isMode, setViewMode, isG
                 })}
             </div>
 
-            {/* Selector de Modo (Tabla / Tarjetas) */}
+
             <div className="flex items-center gap-x-1 bg-primary-950/10 rounded-dx p-1 border border-focus-500/25">
                 <div
                     className="cursor-pointer group transition-all"

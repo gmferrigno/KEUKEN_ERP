@@ -16,7 +16,6 @@ const ArticleStockSearch = () => {
     const [stockDetail, setStockDetail] = useState<IFArticleStock | null>(null);
     const [hasSearched, setHasSearched] = useState(false);
 
-    // Filter states
     const [locationId, setLocationId] = useState("");
     const [itemId, setItemId] = useState("");
     const isFetchingRef = useRef(false);

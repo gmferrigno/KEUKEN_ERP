@@ -2,7 +2,7 @@
 
 import { taxesService } from "@repo/erp-services/accountant/taxes.service";
 import { IFTax } from "@repo/api-contracts/erp";
-import { GenericDataGrid, IGenericDataGridColumn } from '@repo/devextreme';
+import { escapeHtml, escapeHtmlValue, GenericDataGrid, IGenericDataGridColumn  } from '@repo/devextreme';
 import { useAuth } from "@/contexts/AuthContext";
 import { createGridStateStorage } from "@/lib/storage/gridStateStorage";
 import CustomStore from "devextreme/data/custom_store";
@@ -91,7 +91,7 @@ const TaxesClient = () => {
             caption: 'Tipo de Importe',
             allowSorting: true,
             cellTemplate: (container: HTMLElement, options: any) => {
-                container.innerHTML = `<span>${TAX_AMOUNT_TYPE_LABELS[options.value] || options.value || ''}</span>`;
+                container.innerHTML = `<span>${escapeHtmlValue(TAX_AMOUNT_TYPE_LABELS[options.value] || options.value || '')}</span>`;
             }
         },
         {
@@ -104,7 +104,7 @@ const TaxesClient = () => {
                 const displayValue = row?.amountType === 'percent'
                     ? `${(options.value * 100).toFixed(2)}%`
                     : options.value;
-                container.innerHTML = `<span>${displayValue}</span>`;
+                container.innerHTML = `<span>${escapeHtmlValue(displayValue)}</span>`;
             }
         },
         {
@@ -112,7 +112,7 @@ const TaxesClient = () => {
             caption: 'Aplicación / Uso',
             allowSorting: true,
             cellTemplate: (container: HTMLElement, options: any) => {
-                container.innerHTML = `<span>${TAX_USE_LABELS[options.value] || options.value || ''}</span>`;
+                container.innerHTML = `<span>${escapeHtmlValue(TAX_USE_LABELS[options.value] || options.value || '')}</span>`;
             }
         },
         {
@@ -120,7 +120,7 @@ const TaxesClient = () => {
             caption: 'Ámbito',
             allowSorting: true,
             cellTemplate: (container: HTMLElement, options: any) => {
-                container.innerHTML = `<span>${TAX_SCOPE_LABELS[options.value] || options.value || ''}</span>`;
+                container.innerHTML = `<span>${escapeHtmlValue(TAX_SCOPE_LABELS[options.value] || options.value || '')}</span>`;
             }
         },
         {

@@ -1,6 +1,4 @@
-/**
- * Mapeo de tipos de cuenta del backend a sus etiquetas en español.
- */
+
 export const ACCOUNT_TYPE_LABELS: Record<string, string> = {
     asset: 'Activo',
     liability: 'Pasivo',
